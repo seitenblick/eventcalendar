@@ -1,0 +1,30 @@
+<div class='flex-table'>
+    <div id='event-table' class='events' data-toggle="table" data-pagination="true">
+        <div class="event-items">
+            {{#each this}}
+                <div class="event-item showcontent testtemplate" data-tags="{{category.id}}">
+                    <a href="{{url}}">
+                        <div class="event-item-date">
+                            <div class="smallertext">{{itemWeekdayLong}}</div>
+                            <div class="event-date">{{itemDateLong}}</div>
+                        </div>
+                        <div class="event-item-info">
+                            <div class="event-item-title">
+                                <div class="event-title">{{title}}</div>
+                            </div>
+                            {{#if timeValid}}
+                                <span class="event-time">
+                                    <time>{{itemHour}}.{{itemMinutes}} Uhr</time>
+                                </span>
+                            {{/if}}
+                            <span class="event-location">{{location}}</span>
+                        </div>
+
+                    </a>
+                    <div class="event-item-links">
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+</div>

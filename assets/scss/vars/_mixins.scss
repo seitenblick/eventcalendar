@@ -1,0 +1,44 @@
+@mixin background-opacity($color, $opacity: 0.3) {
+  background: $color; /* The Fallback */
+  background: rgba($color, $opacity);
+}
+
+@mixin svg-icon($path, $height, $width, $color) {
+  height: $height;
+  width: $width;
+  background-color: $color;
+  -webkit-mask-image: url($path);
+  mask-image: url($path);
+}
+
+@mixin icon-base($icon: false, $icon-mask: false, $position: relative, $display: inline-block, $show: before) {
+  position: relative;
+
+  &:#{$show} {
+    background-repeat: no-repeat;
+    content: '';
+    display: $display;
+
+    @if $icon {
+      background-position: 0 0;
+      background-size: contain;
+      position: $position;
+    }
+    @if $icon-mask {
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-position: center;
+      mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      position: $position;
+
+      @if $position == absolute {
+        top: 50%;
+        -webkit-transform: translateY(-50%);
+        transform: translateY(-50%);
+      }
+    }
+    @content;
+  }
+}

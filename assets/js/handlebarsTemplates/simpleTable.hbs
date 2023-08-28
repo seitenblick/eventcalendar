@@ -1,0 +1,44 @@
+<div id='event-table' class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+            <td>Datum</td>
+            <td>Uhrzeit</td>
+            <td>Titel der Veranstaltung</td>
+            <td>Location</td>
+            <td>Status</td>
+            <td>URL</td>
+            <td>Bild</td>
+            <td>Kategorie Id und Titel</td>
+            <td>Reihe</td>
+            <td>Highlight</td>
+            <td>Topevent</td>
+
+        </tr>
+      </thead>
+      <tbody class="event-items">
+        {{#each this}}
+            <tr class="event-item showcontent" data-tags="{{category.id}}" >
+                <td>{{itemDateLong}}</td>
+                <td>
+                {{#if timeValid}}
+                    <span class="event-time">
+                        <time>{{itemHour}}.{{itemMinutes}} Uhr</time>
+                    </span>
+                {{/if}}
+              </td>
+              <td>{{title}}</td>
+              <td>{{location}}</td>
+              <td>{{status}}</td>
+              <td>{{url}}</td>
+              <td><img src="{{image.thumb_100px}}" width="100" /><br />{{image.thumb_100px}}</td>
+              <td>{{category.id}}<br />{{category.title}}</td>
+              <td>{{series}}</td>
+              <td>{{highlight}}</td>
+              <td>{{topevent}}</td>
+
+            </tr>
+        {{/each}}
+      </tbody>
+    </table>
+</div>
