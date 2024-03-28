@@ -2,6 +2,7 @@
     <table class="table table-striped">
       <thead>
         <tr>
+            <td>ID</td>
             <td>Datum</td>
             <td>Uhrzeit</td>
             <td>Titel der Veranstaltung</td>
@@ -13,12 +14,14 @@
             <td>Reihe</td>
             <td>Highlight</td>
             <td>Topevent</td>
+            <td>Wiederholungs-Regel</td>
 
         </tr>
       </thead>
       <tbody class="event-items">
         {{#each this}}
             <tr class="event-item showcontent" data-tags="{{category.id}}" >
+                <td>{{ id }}</td>
                 <td>{{itemDateLong}}</td>
                 <td>
                 {{#if timeValid}}
@@ -36,6 +39,7 @@
               <td>{{series}}</td>
               <td>{{highlight}}</td>
               <td>{{topevent}}</td>
+              <td>{{rule}}</td>
 
             </tr>
         {{/each}}

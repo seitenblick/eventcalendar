@@ -1,0 +1,35 @@
+<div class="table-responsive">
+    <table id="event-table" class="events table" data-toggle="table" data-pagination="true">
+        <thead>
+              <tr>
+                <th>Datum</th>
+                <th aria-label="status"></th>
+                <th>Titel</th>
+                <th>Weitere Infos</th>
+              </tr>
+        </thead>
+            <tbody>
+                  {{#each this}}
+                      <tr class="event-item showcontent published showme" data-tags="{{category.id}}">
+                            <td>
+                                <div class="smallertext">{{itemWeekdayLong}}</div>
+                                <div class="event-date">{{itemDateLong}}</div>
+                            </td>
+                            <td class="canceled_bg published">
+                                <div class="canceled"></div>
+                            </td>
+                            <td>
+                                <a href="{{url}}" class="series"></a>
+                                <span class="event-title">{{title}}</span>
+                                <div>
+                                    <span class="event-location">{{location}}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{url}}" class="more-link">Details</a>
+                            </td>
+                      </tr>
+                  {{/each}}
+            </tbody>
+    </table>
+</div>

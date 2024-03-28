@@ -30,8 +30,8 @@
   }
   .clearspace {
     position: absolute;
-    right: 45px;
-    top: 17px;
+    right: 50px;
+    top: calc(50% - 7px);
   }
   .clear {
     display: block;
@@ -72,7 +72,7 @@
         color: $light;
 
         @include icon-base($icon-mask: true, $show: after) {
-          @include svg-icon("../../../global/img/icon_event_close.svg", 14px, 14px, $light);
+          @include svg-icon("../../../assets/img/icon_event_close.svg", 14px, 14px, $light);
           margin: 8px 0 0 15px;
         }
       }
@@ -98,7 +98,7 @@
     .clearspace {
       position: absolute;
       right: 40px;
-      top: 18px;
+      top: calc(50% - 7px);
     }
     @include media-breakpoint-up(lg) {
       width: 60%;
@@ -122,7 +122,7 @@
   width: 40%;
 
   @include icon-base($icon-mask: true, $position: absolute, $show: after) {
-    @include svg-icon("../../../global/img/icon_event_calendar.svg", 22px, 24px, $primary);
+    @include svg-icon("../../../assets/img/icon_event_calendar.svg", 22px, 24px, $primary);
     right: 15px;
   }
 }
@@ -393,8 +393,8 @@
 
 .searchval-group {
   @include icon-base($icon-mask: true, $position: absolute) {
-    @include svg-icon("../../../global/img/icon_search.svg", 22px, 22px, $primary-color);
-    top: 24px;
+    @include svg-icon("../../../assets/img/icon_search.svg", 22px, 22px, $primary-color);
+    top: 50%;
     left: 15px;
   }
   #searchval {
@@ -405,7 +405,7 @@
 
 .highlight-icon {
   @include icon-base($icon-mask: true, $position: absolute) {
-    @include svg-icon("../../../global/img/icon_star.svg", 20px, 20px, $primary-color);
+    @include svg-icon("../../../assets/img/icon_star.svg", 20px, 20px, $primary-color);
   }
   width: 20px;
   height: 20px;
@@ -671,7 +671,7 @@
     text-decoration: none;
 
     @include icon-base($icon-mask: true) {
-      @include svg-icon("../../../global/img/icon_ticket.svg", 24px, 35px, $light);
+      @include svg-icon("../../../assets/img/icon_ticket.svg", 24px, 35px, $light);
       margin-right: 20px;
       top: -2px;
     }
@@ -730,7 +730,7 @@
     white-space: nowrap;
     width: 90%;
     @include icon-base($icon-mask: true) {
-      @include svg-icon("../../../global/img/icon_ticket.svg", 24px, 35px, $primary);
+      @include svg-icon("../../../assets/img/icon_ticket.svg", 24px, 35px, $primary);
       margin-right: 20px;
       top: 2px;
     }

@@ -45,6 +45,15 @@ const configuration = {
                 'assets/scss',
             ],
         },
+        // {
+        //     source: [
+        //         'assets/scss/event-dashboard.scss',
+        //     ],
+        //     target: 'public/assets/css/event-dashboard.css',
+        //     includePaths: [
+        //         'assets/scss',
+        //     ],
+        // },
     ],
     // JavaScript-files (multiple source-files are compiled to one target-file)
     javaScript: [
@@ -63,9 +72,35 @@ const configuration = {
         },
         {
             source: [
+                'assets/js/events_v2_new.js',
+            ],
+            target: 'public/assets/js/events_v2_new.js',
+        },
+        {
+            source: [
+                'assets/js/events_v3.js',
+            ],
+            target: 'public/assets/js/events_v3.js',
+        },
+        {
+            source: [
                 'assets/js/events_jquery.js',
             ],
             target: 'public/assets/js/events_jquery.js',
+        },
+        {
+            source: [
+                'assets/js/events_rebuild.js',
+            ],
+            target: 'public/assets/js/events_rebuild.js',
+        },
+    ],
+    images: [
+        {
+            source: [
+                'assets/img/**',
+            ],
+            target: 'public/assets/img/',
         },
     ],
     //Handlebars
@@ -157,6 +192,16 @@ gulp.task('scripts', function () {
 
     return mergeStream(streams);
 });
+/**
+ * Copy images
+ */
+gulp.task('images', function () {
+    let streams = configuration.images.map(function (file) {
+        return gulp.src(file.source)
+            .pipe(gulp.dest(file.target));
+    });
+    return mergeStream(streams);
+});
 
 /**
  * Precompile Handlebars-Template
@@ -226,7 +271,7 @@ gulp.task('clean', function (done) {
 /**
  * Build the project
  */
-gulp.task('build', gulp.parallel('sass', 'handlebars', 'scripts'));
+gulp.task('build', gulp.parallel('sass', 'handlebars', 'scripts', 'images'));
 
 
 

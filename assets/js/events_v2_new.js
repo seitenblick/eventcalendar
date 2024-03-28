@@ -64,6 +64,17 @@ function loadJSON(url) {
     });
 }
 
+//Check for execution only once
+var executedOnce;
+var onlyonce = (function() {
+    executedOnce = false;
+    return function() {
+        if (!executedOnce) {
+            executedOnce = true;
+        }
+    };
+})();
+
 //RRuleSet-Instanz unter Berücksichtiung eines Start-/Endzeitraums und ggf die gewünschte Anzahl an Terminen erzeugen
 function buildrruleset(thisobj) {
     //clear vars
@@ -119,6 +130,8 @@ function buildrruleset(thisobj) {
     } else {
         allEventsResult = allEvents;
     }
+    onlyonce();
+    return allEventsResult;
 }
 
 //Recurrency-Funktion - alle Termine gemäß der Wiederholungsregeln im angegebenen Zeitraum (sliceStart, sliceEnd) erzeugen
@@ -223,6 +236,7 @@ function recurrency(sliceStart, sliceEnd) {
 function contentfiltervalue(filterValue){
     console.log("contentfiltervalue()");
     console.log(filterValue);
+
     $('[data-tags]').each(function() {
         var tags = $(this).attr('data-tags');
         var tofilter = Array();
@@ -288,17 +302,7 @@ function eventfilter() {
         initPagination();
     }
     else {
-        // $("#event-table tr.showcontent").removeClass('showme');
-        $("#event-table .event-item.showcontent").removeClass('showme');
-        $('[data-tags]').addClass(showClass);
-        initPagination();
-        $('#data-container').show();
-        $('.service-messages').html("");
-        //No hits for selected date-range?
-        if(($('#event-table .showcontent').length)==0){
-            $('#data-container').hide();
-            $('.service-messages').html("Keine Treffer");
-        }
+        console.log("Keine Filter ausgewählt");
     }
 }
 
@@ -310,12 +314,17 @@ function initCalendar(url,thisobj) {
     $.when(loadJSON(url)).done(function (response) {
         events = $.parseJSON(response);
         // console.log("EVENTS:" + events)
-        buildrruleset(thisobj);
+        buildrruleset(thisobj); //liefert "alleventsresult" zurück
 
         let allEventResultsLength = allEventsResult.length;
-        console.log("allEventResultsLenght: " + allEventResultsLength);
+        console.log("allEventResultsLength: " + allEventResultsLength);
         console.log("allEventsResult: ");
         console.log(allEventsResult);
+
+        let allEventsLength = allEvents.length;
+        console.log("allEventLength: " + allEventsLength);
+        console.log("allEvents: ");
+        console.log(allEvents);
         //****************************************************************************
         // 3. Filter Events
         //****************************************************************************
@@ -328,6 +337,7 @@ function initCalendar(url,thisobj) {
         //****************************************************************************
         //printEvents();
         printEventsHandlebars();
+        flatpickerhelper();
         initPagination();
         //clear vars
         allEvents = [];
@@ -336,238 +346,7 @@ function initCalendar(url,thisobj) {
 
 }
 
-$(document).ready(function(){
-    //Click on more-filters to show all filter-buttons
-    var showallcategories = false;
-    $('.more-filters').on('click', function(){
-        showallcategories = true;
-        $(this).hide();
-        $('.event-categories').css('height', 'auto');
-        $('.event-categories button').removeClass('hide');
-    });
-    $('[data-filter]').on('click', function() {
-        $(this).toggleClass('active');
-        console.log("Call eventfilter");
-        eventfilter();
-    });
-//Category-Filters: More-Button only,if more buttons than one line
-    function categoryMoreButton() {
-        console.log("categoryMoreButton()");
-        var firstElementPos;
-        var lastElementPos;
-        var categoriebuttons = $('.event-categories button').length;
-        $('.event-categories button').each(function(index, obj) {
-            if (index === 0){
-                firstElementPos = obj.getBoundingClientRect().top;
-            }
-            if (index === categoriebuttons -1) {
-                lastElementPos = obj.getBoundingClientRect().top;
-            }
-        });
-        if (firstElementPos === lastElementPos){
-            $('.more-filters').hide();
-        }
-    }
-    categoryMoreButton();
-    window.onresize = function() {
-        if (showallcategories == false){
-            $('.more-filters').show();
-            categoryMoreButton();
-        }
-    }
 
-
-//Close-Button for flatpickr-range
-    $(".flatpickr-range").after('<span class="clearspace"><img src=" '+ iconpath  + 'icon_event_close.svg" class="clear" title="clear" /></span>');
-//Flatpickr for date-range-field
-    const flatpickrRange = $(".flatpickr-range").flatpickr({
-        mode: "range",
-        locale: "de",
-        dateFormat: "Y-m-d",
-        altInput: true,
-        altFormat: "d.m.Y",
-        onClose: function(selectedDates, dateStr, instance,events,allEvents) {
-            console.log("flatpickr onClose()");
-            // $('.rruleset').attr('data-slice-start',selectedDates[0]);
-            // $('.rruleset').attr('data-slice-end',selectedDates[1]);
-            // alert("onclose");
-            // if(selectedDates!=='') {
-            if(selectedDates.length !== 0) {
-                $('.rruleset').attr('data-slice-start', formatDate(selectedDates[0]));
-                $('.rruleset').attr('data-slice-end', formatDate(selectedDates[1]));
-                $('.rruleset').data('slice-start', formatDate(selectedDates[0]));
-                $('.rruleset').data('slice-end', formatDate(selectedDates[1]));
-
-                console.log("new slice start: " + formatDate(selectedDates[0]));
-                console.log("new slice end: " + formatDate(selectedDates[1]));
-
-                //show/hide Close-Button for flatpickr-range
-                $(".flatpickr-range").on('keyup input',function(){
-                    if ($(this).val()) {
-                        $(".flatpickr-group .clear").addClass("show");
-                    } else {
-                        $(".flatpickr-group .clear").removeClass("show");
-                    }
-                });
-            }
-            else{
-                $('.rruleset').attr('data-slice-start', '');
-                $('.rruleset').attr('data-slice-end', '');
-                $('.rruleset').data('slice-start', '');
-                $('.rruleset').data('slice-end', '');
-            }
-            //Termine erzeugen und darstellen
-            buildrruleset($('.rruleset'));
-            //Filter berücksichtigen
-            eventfilter();
-            printEventsHandlebars();
-            initPagination();
-
-
-            console.log(allEventsResult);
-
-
-
-            // initCalendar(url, $('.rruleset'));
-            /* VA-Export refresh Datatable*/
-            if($('.rruleset').data('mode') === 'datatable') {
-                // $('#data-table').DataTable().ajax.reload();
-                $('#data-table').DataTable({
-                    dom: "<'row'<'col-sm-12 text-end'B>>" +
-                        "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
-                        "<'row'<'col-sm-12'tr>>" +
-                        "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-                    buttons: [
-                        {
-                            extend: 'excel',
-                            text: 'Excel-Export',
-                            className: 'btn btn-default btn-primary data-table-button btn-xlsx'
-                        }
-                    ],
-                    language: {
-                        url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/de-DE.json',
-                    },
-                    lengthMenu: [[10, 20, -1], [10, 20, 'Alle']]
-                });
-            }
-        },
-        onChange: function(selectedDates, dateStr, instance,events,allEvents) {
-            if(selectedDates=='') {
-                console.log("flatpickr onChange()");
-                $('.rruleset').attr('data-slice-start', '');
-                $('.rruleset').attr('data-slice-end', '');
-                $('.rruleset').data('slice-start', '');
-                $('.rruleset').data('slice-end', '');
-                // //Termine erzeugen und darstellen
-                // buildrruleset($('.rruleset'));
-                // //Filter berücksichtigen
-                // eventfilter();
-                // printEventsHandlebars();
-                // initPagination();
-
-                //initCalendar(url, $('.rruleset'));
-            }
-        }
-    });
-
-
-
-
-//Reset Event Filter
-    $('.event-categories .category-reset').on('click', function(){
-        console.log("reset start");
-        $('#data-container').show();
-        $('.service-messages').html("");
-        $('.event-filters #searchval').val('');
-        $('.event-categories button').removeClass('active');
-        $('.district-group select option').prop('selected', function() {
-            return this.defaultSelected;
-        });
-        flatpickrRange.clear();
-
-        $(".searchval-group .clear").removeClass("show");
-        var url = apiurl;
-        console.log("reset url");
-        console.log(url);
-        setTimeout(
-            function()
-            {
-                console.log("initCalendar within RESET");
-                initCalendar(url, $('.rruleset'));
-            }, 500);
-        console.log("reset end");
-    });
-
-    //Show ClearButton for Search-Feld if searchval contains characters
-    $(".event-filters #searchval").after('<span class="clearspace"><img src=" '+ iconpath  + 'icon_event_close.svg" class="clear" title="clear" /></span>');
-    $(".event-filters #searchval").on('keyup input',function(){
-        if ($(this).val()) {
-            $(".searchval-group .clear").addClass("show");
-        } else {
-            $(".searchval-group .clear").removeClass("show");
-        }
-    });
-
-    /*https://stackoverflow.com/questions/1909441/how-to-delay-the-keyup-handler-until-the-user-stops-typing*/
-    function delay(fn, ms) {
-        let timer = 0
-        return function(...args) {
-            clearTimeout(timer)
-            timer = setTimeout(fn.bind(this, ...args), ms || 0)
-        }
-    }
-
-//Searchval-Field: if char>3 in searchfield - get new events from api
-    //     apiurl = apiurl + '?md=' + mandatorId;
-    // url = new URL(apiurl + '?md=' + mandatorId);
-    apiurl = new URL(apiurl);
-    url = apiurl.searchParams.set('md', mandatorId);
-    var eventSearchField = $('#searchval');
-    eventSearchField.keyup(delay(function(){
-
-        // url = new URL(apiurl + '?md=' + mandatorId);
-        if(eventSearchField.val().length >= 3){
-            url.searchParams.set('search', eventSearchField.val());
-        }
-        else if(eventSearchField.val().length == 0){
-            url.searchParams.delete('search');
-        }
-        initCalendar(url, $('.rruleset'));
-    },500));
-//district filter
-    districtSelect.on('change', function() {
-        url.searchParams.set('di', this.value );
-        initCalendar(url, $('.rruleset'));
-    });
-
-//Clear Searchfield if clear-button is clicked
-    $('.searchval-group .clear').on('click', function(){
-        $('.event-filters #searchval').val('');
-        $(".searchval-group .clear").removeClass("show");
-        url.searchParams.delete('search');
-        flatpickrRange.clear();
-        sliceEnd     = "";
-        sliceStart   = "";
-        alert(url);
-        initCalendar(url, $('.rruleset'));
-    });
-
-//Clear Flatpickr if clear-button is clicked
-    $('.flatpickr-group .clear').on('click', function(){
-        flatpickrRange.clear();
-        sliceEnd     = "";
-        sliceStart   = "";
-        alert(url);
-        // setTimeout(
-        //     function()
-        //     {
-        //         console.log("initCalendar within RESET");
-        //         initCalendar(url, $('.rruleset'));
-        //     }, 500);
-        initCalendar(url, $('.rruleset'));
-    });
-
-});
 
 
 /**************************************************************************************************************/
@@ -628,6 +407,7 @@ function getPageList(totalPages, page, maxLength) {
 
 // Below is an example use of the above function.
 function initPagination() {
+    $(".pagination").empty();
     console.log("initPagination");
     // $("#event-table tr.showcontent").removeClass('showme');
     $("#event-table .event-item.showcontent").removeClass('showme');
@@ -725,7 +505,9 @@ function printEventsHandlebars() {
         let quoteData = template(allEventsResult);
         ruleelement.append(quoteData);
     }
+}
 
+function flatpickerhelper () {
     //Ersten und letzten Termin ermitteln zur Einschränkung von flatpickr (minDate, maxDate)
     var firstItemMonth = DateTime.fromJSDate(allEvents[0].eventdate).toFormat('yyyy-MM');
     var lastItemMonth = DateTime.fromJSDate(allEvents[allEvents.length - 1].eventdate).plus({month: 1}).toFormat('yyyy-MM-0');
@@ -801,11 +583,15 @@ function printEventsHandlebars() {
             $('.event-period-end').html(DateTime.fromJSDate(allEvents[allEvents.length - 1].eventdate).toFormat('DD'));
         }
     }
-
 }
 
+
+
+
+
+
 /* EVENTS */
-$(document).ready(function(){
+$(document).ready(function() {
     $('.rruleset').each(function (){
         ruleelement = $(this);
         //Get data-Attributes of ruleelement
@@ -880,4 +666,47 @@ $(document).ready(function(){
 
     });
 
+});
+
+
+$(document).ready(function() {
+    //Click on more-filters to show all filter-buttons
+    var showallcategories = false;
+    $('.more-filters').on('click', function () {
+        showallcategories = true;
+        $(this).hide();
+        $('.event-categories').css('height', 'auto');
+        $('.event-categories button').removeClass('hide');
+    });
+    $('[data-filter]').on('click', function () {
+        $(this).toggleClass('active');
+        console.log("Call eventfilter");
+        eventfilter();
+    });
+
+//Category-Filters: More-Button only,if more buttons than one line
+    function categoryMoreButton() {
+        console.log("categoryMoreButton()");
+        var firstElementPos;
+        var lastElementPos;
+        var categoriebuttons = $('.event-categories button').length;
+        $('.event-categories button').each(function(index, obj) {
+            if (index === 0){
+                firstElementPos = obj.getBoundingClientRect().top;
+            }
+            if (index === categoriebuttons -1) {
+                lastElementPos = obj.getBoundingClientRect().top;
+            }
+        });
+        if (firstElementPos === lastElementPos){
+            $('.more-filters').hide();
+        }
+    }
+    categoryMoreButton();
+    window.onresize = function() {
+        if (showallcategories == false){
+            $('.more-filters').show();
+            categoryMoreButton();
+        }
+    }
 });

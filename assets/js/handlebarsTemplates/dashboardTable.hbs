@@ -1,0 +1,32 @@
+<div class="event-table-wrap">
+    <div id="event-table" class="event-table">
+        <div class="table-head d-flex">
+            <div class="col-date">Datum</div>
+            <div class="d-flex flex-fill">
+                <div class="col-title">Titel</div>
+                <div class="col-location">Veranstaltungsort</div>
+            </div>
+        </div>
+
+        <div class="table-body">
+            {{#each this}}
+                <div class="d-flex event-item showcontent {{status}}" data-tags="{{categories}}">
+                    <a class="simple-ajax-popup event-link d-flex col" href="event_detail.php">
+                        <div class="col-date">
+                            <div>{{itemDateLong}}</div>
+                            <div>
+                                {{#if timeValid}}
+                                    <time>{{itemHour}}:{{itemMinutes}} Uhr</time>
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="d-flex flex-fill">
+                            <div class="col-title">{{title}}</div>
+                            <div class="col-location">{{location}}</div>
+                        </div>
+                    </a>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+</div>
