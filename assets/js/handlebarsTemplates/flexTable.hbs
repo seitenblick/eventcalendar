@@ -10,7 +10,7 @@
                         </div>
                         <div class="event-item-info">
                             <div class="event-item-title">
-                                <div class="event-title">{{title}}</div>
+                                <div class="event-title">{{#if highlight}}<div class="highlight-icon"></div>{{/if}}{{title}}</div>
                             </div>
                             {{#if timeValid}}
                                 <span class="event-time">
@@ -22,6 +22,11 @@
 
                     </a>
                     <div class="event-item-links">
+                    {{!--
+                        {{#ifCond status canceled}}
+                            <div class="rotation-wrapper-outer"><div class="buttonlink canceledevent rotation-wrapper-inner"><span class="linktext element-to-rotate">Abgesagt</span></div></div>
+                        {{/if}}
+                    --}}
                     </div>
                 </div>
             {{/each}}

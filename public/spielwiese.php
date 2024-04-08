@@ -80,7 +80,7 @@
         </div>
     </div>
     <div class="service-messages"></div>
-    <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="defaultTable" data-event-id=""
+    <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="flexTable" data-event-id=""
          data-series-id="" data-count="" data-mandator=""
          data-url="<?php /* https://eventcalendar.ap.seitenblick.com/json/EventApiRules.php.json */ ?>"></div>
 </div>

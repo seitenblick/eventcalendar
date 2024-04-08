@@ -5,6 +5,8 @@ import {RRule, RRuleSet} from 'rrule';
 import flatpickr from "flatpickr";
 import { German } from "flatpickr/dist/l10n/de";
 import {ge} from "nunjucks/src/tests";
+// import handlebars from 'handlebars';
+// require ("./public/assets/js/handlebarsTemplates");
 
 //Variablen
 let apiurl   = 'https://www.aalen.de/api/EventApiRules.php'; //can be overwritten by data-url of .rruleset
@@ -356,16 +358,17 @@ function printEventsHandlebars() {
 
 function flatpickerhelper () {
     //Ersten und letzten Termin ermitteln zur Einschränkung von flatpickr (minDate, maxDate)
-    var firstItemMonth = DateTime.fromJSDate(allEventsResult[0].eventdate).toFormat('yyyy-MM');
-    var lastItemMonth = DateTime.fromJSDate(allEventsResult[allEventsResult.length - 1].eventdate).plus({month: 1}).toFormat('yyyy-MM-0');
+    var firstItemMonth = DateTime.fromJSDate(allEvents[0].eventdate).toFormat('yyyy-MM');
+    var lastItemMonth = DateTime.fromJSDate(allEvents[allEvents.length - 1].eventdate).plus({month: 1}).toFormat('yyyy-MM-0');
 
 
     //Alle Termine in flatpickr eintragen
-    $.each(allEventsResult, function( key, item, element=ruleelement ) {
+    $.each(allEvents, function( key, item, element=ruleelement ) {
         var itemDate            = item.eventdate;//Wed Jul 21 2021 17:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
         var defaultDate = '"' + (DateTime.fromJSDate(itemDate).toFormat('yyyy-MM-dd')) + '"';
         defaultDates.push(defaultDate);
     })
+
     //Flatpickr
     if ($(".flatpickr").length) {
         $(".flatpickr").flatpickr({
@@ -574,7 +577,7 @@ function initCalendar(url,thisobj) {
         // 4. Ausgabe
         //****************************************************************************
         printEventsHandlebars();
-        if (allEventsResult > 0) {
+        if (allEventsResult.length > 0) {
             flatpickerhelper();
             initPagination();
         }
