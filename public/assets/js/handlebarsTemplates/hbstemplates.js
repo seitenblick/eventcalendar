@@ -122,17 +122,47 @@ this["Hbs"]["flexTable"] = Handlebars.template({"1":function(container,depth0,he
     + alias1(((helper = (helper = lookupProperty(helpers,"itemWeekdayLong") || (depth0 != null ? lookupProperty(depth0,"itemWeekdayLong") : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"itemWeekdayLong","hash":{},"data":data,"loc":{"start":{"line":8,"column":53},"end":{"line":8,"column":72}}}) : helper)))
     + "</div>\r\n                            <div class=\"event-date\">"
     + alias1(((helper = (helper = lookupProperty(helpers,"itemDateLong") || (depth0 != null ? lookupProperty(depth0,"itemDateLong") : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"itemDateLong","hash":{},"data":data,"loc":{"start":{"line":9,"column":52},"end":{"line":9,"column":68}}}) : helper)))
-    + "</div>\r\n                        </div>\r\n                        <div class=\"event-item-info\">\r\n                            <div class=\"event-item-title\">\r\n                                <div class=\"event-title\">"
-    + ((stack1 = lookupProperty(helpers,"if").call(alias2,(depth0 != null ? lookupProperty(depth0,"highlight") : depth0),{"name":"if","hash":{},"fn":container.program(2, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":13,"column":57},"end":{"line":13,"column":115}}})) != null ? stack1 : "")
-    + alias1(((helper = (helper = lookupProperty(helpers,"title") || (depth0 != null ? lookupProperty(depth0,"title") : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"title","hash":{},"data":data,"loc":{"start":{"line":13,"column":115},"end":{"line":13,"column":124}}}) : helper)))
+    + "</div>\r\n                        </div>\r\n                        <div class=\"event-item-info\">\r\n                        <div class=\"event-kicker\">\r\n"
+    + ((stack1 = lookupProperty(helpers,"if").call(alias2,(depth0 != null ? lookupProperty(depth0,"category") : depth0),{"name":"if","hash":{},"fn":container.program(2, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":13,"column":28},"end":{"line":15,"column":35}}})) != null ? stack1 : "")
+    + ((stack1 = lookupProperty(helpers,"if").call(alias2,((stack1 = (depth0 != null ? lookupProperty(depth0,"category") : depth0)) != null ? lookupProperty(stack1,"title") : stack1),{"name":"if","hash":{},"fn":container.program(4, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":16,"column":28},"end":{"line":20,"column":35}}})) != null ? stack1 : "")
+    + "                            "
+    + alias1(((helper = (helper = lookupProperty(helpers,"series") || (depth0 != null ? lookupProperty(depth0,"series") : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"series","hash":{},"data":data,"loc":{"start":{"line":21,"column":28},"end":{"line":21,"column":38}}}) : helper)))
+    + "\r\n                        </div>\r\n\r\n                            <div class=\"event-item-title\">\r\n                                <div class=\"event-title\">"
+    + ((stack1 = lookupProperty(helpers,"if").call(alias2,(depth0 != null ? lookupProperty(depth0,"highlight") : depth0),{"name":"if","hash":{},"fn":container.program(7, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":25,"column":57},"end":{"line":25,"column":115}}})) != null ? stack1 : "")
+    + alias1(((helper = (helper = lookupProperty(helpers,"title") || (depth0 != null ? lookupProperty(depth0,"title") : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"title","hash":{},"data":data,"loc":{"start":{"line":25,"column":115},"end":{"line":25,"column":124}}}) : helper)))
     + "</div>\r\n                            </div>\r\n"
-    + ((stack1 = lookupProperty(helpers,"if").call(alias2,(depth0 != null ? lookupProperty(depth0,"timeValid") : depth0),{"name":"if","hash":{},"fn":container.program(4, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":15,"column":28},"end":{"line":19,"column":35}}})) != null ? stack1 : "")
+    + ((stack1 = lookupProperty(helpers,"if").call(alias2,(depth0 != null ? lookupProperty(depth0,"timeValid") : depth0),{"name":"if","hash":{},"fn":container.program(9, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":27,"column":28},"end":{"line":31,"column":35}}})) != null ? stack1 : "")
     + "                            <span class=\"event-location\">"
-    + alias1(((helper = (helper = lookupProperty(helpers,"location") || (depth0 != null ? lookupProperty(depth0,"location") : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"location","hash":{},"data":data,"loc":{"start":{"line":20,"column":57},"end":{"line":20,"column":69}}}) : helper)))
-    + "</span>\r\n                        </div>\r\n\r\n                    </a>\r\n                    <div class=\"event-item-links\">\r\n                    </div>\r\n                </div>\r\n";
+    + alias1(((helper = (helper = lookupProperty(helpers,"location") || (depth0 != null ? lookupProperty(depth0,"location") : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"location","hash":{},"data":data,"loc":{"start":{"line":32,"column":57},"end":{"line":32,"column":69}}}) : helper)))
+    + "</span>\r\n                        </div>\r\n                    </a>\r\n                    <div class=\"event-item-links\">\r\n"
+    + ((stack1 = (lookupProperty(helpers,"eq")||(depth0 && lookupProperty(depth0,"eq"))||alias3).call(alias2,(depth0 != null ? lookupProperty(depth0,"status") : depth0),"canceled",{"name":"eq","hash":{},"fn":container.program(11, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":36,"column":20},"end":{"line":38,"column":27}}})) != null ? stack1 : "")
+    + ((stack1 = lookupProperty(helpers,"if").call(alias2,(depth0 != null ? lookupProperty(depth0,"ticketurl") : depth0),{"name":"if","hash":{},"fn":container.program(13, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":39,"column":20},"end":{"line":41,"column":27}}})) != null ? stack1 : "")
+    + "                    </div>\r\n                </div>\r\n";
 },"2":function(container,depth0,helpers,partials,data) {
-    return "<div class=\"highlight-icon\"></div>";
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return "                              "
+    + container.escapeExpression(container.lambda(((stack1 = (depth0 != null ? lookupProperty(depth0,"category") : depth0)) != null ? lookupProperty(stack1,"title") : stack1), depth0))
+    + "\r\n";
 },"4":function(container,depth0,helpers,partials,data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return ((stack1 = lookupProperty(helpers,"if").call(depth0 != null ? depth0 : (container.nullContext || {}),(depth0 != null ? lookupProperty(depth0,"series") : depth0),{"name":"if","hash":{},"fn":container.program(5, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":17,"column":32},"end":{"line":19,"column":39}}})) != null ? stack1 : "");
+},"5":function(container,depth0,helpers,partials,data) {
+    return "                                |\r\n";
+},"7":function(container,depth0,helpers,partials,data) {
+    return "<div class=\"highlight-icon\"></div>";
+},"9":function(container,depth0,helpers,partials,data) {
     var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=container.hooks.helperMissing, alias3="function", alias4=container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
         if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
           return parent[propertyName];
@@ -141,10 +171,23 @@ this["Hbs"]["flexTable"] = Handlebars.template({"1":function(container,depth0,he
     };
 
   return "                                <span class=\"event-time\">\r\n                                    <time>"
-    + alias4(((helper = (helper = lookupProperty(helpers,"itemHour") || (depth0 != null ? lookupProperty(depth0,"itemHour") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemHour","hash":{},"data":data,"loc":{"start":{"line":17,"column":42},"end":{"line":17,"column":54}}}) : helper)))
+    + alias4(((helper = (helper = lookupProperty(helpers,"itemHour") || (depth0 != null ? lookupProperty(depth0,"itemHour") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemHour","hash":{},"data":data,"loc":{"start":{"line":29,"column":42},"end":{"line":29,"column":54}}}) : helper)))
     + ":"
-    + alias4(((helper = (helper = lookupProperty(helpers,"itemMinutes") || (depth0 != null ? lookupProperty(depth0,"itemMinutes") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemMinutes","hash":{},"data":data,"loc":{"start":{"line":17,"column":55},"end":{"line":17,"column":70}}}) : helper)))
+    + alias4(((helper = (helper = lookupProperty(helpers,"itemMinutes") || (depth0 != null ? lookupProperty(depth0,"itemMinutes") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemMinutes","hash":{},"data":data,"loc":{"start":{"line":29,"column":55},"end":{"line":29,"column":70}}}) : helper)))
     + " Uhr</time>\r\n                                </span>\r\n";
+},"11":function(container,depth0,helpers,partials,data) {
+    return "                        <div class=\"rotation-wrapper-outer\"><div class=\"buttonlink canceledevent rotation-wrapper-inner\"><span class=\"linktext element-to-rotate\">Abgesagt</span></div></div>\r\n";
+},"13":function(container,depth0,helpers,partials,data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return "                        <a href=\""
+    + container.escapeExpression(((helper = (helper = lookupProperty(helpers,"ticketurl") || (depth0 != null ? lookupProperty(depth0,"ticketurl") : depth0)) != null ? helper : container.hooks.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"ticketurl","hash":{},"data":data,"loc":{"start":{"line":40,"column":33},"end":{"line":40,"column":46}}}) : helper)))
+    + "\" class=\"rotation-wrapper-outer\"><div class=\"buttonlink ticket rotation-wrapper-inner\"><span class=\"linktext element-to-rotate\">Tickets</span></div></a>\r\n";
 },"compiler":[8,">= 4.3.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
         if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
@@ -154,8 +197,71 @@ this["Hbs"]["flexTable"] = Handlebars.template({"1":function(container,depth0,he
     };
 
   return "<div class='flex-table'>\r\n    <div id='event-table' class='events' data-toggle=\"table\" data-pagination=\"true\">\r\n        <div class=\"event-items\">\r\n"
-    + ((stack1 = lookupProperty(helpers,"each").call(depth0 != null ? depth0 : (container.nullContext || {}),depth0,{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":4,"column":12},"end":{"line":32,"column":21}}})) != null ? stack1 : "")
+    + ((stack1 = lookupProperty(helpers,"each").call(depth0 != null ? depth0 : (container.nullContext || {}),depth0,{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":4,"column":12},"end":{"line":44,"column":21}}})) != null ? stack1 : "")
     + "        </div>\r\n    </div>\r\n</div>";
+},"useData":true});
+this["Hbs"]["lr_events_list"] = Handlebars.template({"1":function(container,depth0,helpers,partials,data) {
+    var stack1, helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=container.hooks.helperMissing, alias3="function", alias4=container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return "                        <div class=\"event-item\">\r\n                            <div class=\"event-date-wrapper\">\r\n                                <span class=\"event-date\">"
+    + alias4(((helper = (helper = lookupProperty(helpers,"itemDateComplete") || (depth0 != null ? lookupProperty(depth0,"itemDateComplete") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemDateComplete","hash":{},"data":data,"loc":{"start":{"line":5,"column":57},"end":{"line":5,"column":77}}}) : helper)))
+    + "</span>\r\n                                <span class=\"event-time\">"
+    + alias4(((helper = (helper = lookupProperty(helpers,"itemStartTime") || (depth0 != null ? lookupProperty(depth0,"itemStartTime") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemStartTime","hash":{},"data":data,"loc":{"start":{"line":6,"column":57},"end":{"line":6,"column":74}}}) : helper)))
+    + ((stack1 = lookupProperty(helpers,"if").call(alias1,(depth0 != null ? lookupProperty(depth0,"enddate") : depth0),{"name":"if","hash":{},"fn":container.program(2, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":6,"column":74},"end":{"line":6,"column":114}}})) != null ? stack1 : "")
+    + "</span>\r\n                            </div>\r\n                            <div class=\"event-title\">"
+    + alias4(((helper = (helper = lookupProperty(helpers,"title") || (depth0 != null ? lookupProperty(depth0,"title") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"title","hash":{},"data":data,"loc":{"start":{"line":8,"column":53},"end":{"line":8,"column":62}}}) : helper)))
+    + "</div>\r\n                        </div>\r\n";
+},"2":function(container,depth0,helpers,partials,data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return " - "
+    + container.escapeExpression(((helper = (helper = lookupProperty(helpers,"itemEndTime") || (depth0 != null ? lookupProperty(depth0,"itemEndTime") : depth0)) != null ? helper : container.hooks.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"itemEndTime","hash":{},"data":data,"loc":{"start":{"line":6,"column":92},"end":{"line":6,"column":107}}}) : helper)));
+},"compiler":[8,">= 4.3.0"],"main":function(container,depth0,helpers,partials,data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return "                    <div class=\"event-list\">\r\n"
+    + ((stack1 = lookupProperty(helpers,"each").call(depth0 != null ? depth0 : (container.nullContext || {}),depth0,{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":2,"column":12},"end":{"line":10,"column":21}}})) != null ? stack1 : "")
+    + "                    </div>";
+},"useData":true});
+this["Hbs"]["lr_eventteaser"] = Handlebars.template({"1":function(container,depth0,helpers,partials,data) {
+    var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=container.hooks.helperMissing, alias3="function", alias4=container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return "                        <div class=\"event-item\">\r\n                            <div class=\"event-date\">"
+    + alias4(((helper = (helper = lookupProperty(helpers,"itemDateShort") || (depth0 != null ? lookupProperty(depth0,"itemDateShort") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemDateShort","hash":{},"data":data,"loc":{"start":{"line":4,"column":52},"end":{"line":4,"column":69}}}) : helper)))
+    + "</div>\r\n                            <div class=\"event-title\">"
+    + alias4(((helper = (helper = lookupProperty(helpers,"title") || (depth0 != null ? lookupProperty(depth0,"title") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"title","hash":{},"data":data,"loc":{"start":{"line":5,"column":53},"end":{"line":5,"column":62}}}) : helper)))
+    + "</div>\r\n                        </div>\r\n";
+},"compiler":[8,">= 4.3.0"],"main":function(container,depth0,helpers,partials,data) {
+    var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return "                    <div class=\"event-teaser\">\r\n"
+    + ((stack1 = lookupProperty(helpers,"each").call(depth0 != null ? depth0 : (container.nullContext || {}),depth0,{"name":"each","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":2,"column":12},"end":{"line":7,"column":21}}})) != null ? stack1 : "")
+    + "                    </div>";
 },"useData":true});
 this["Hbs"]["nextEventsList"] = Handlebars.template({"1":function(container,depth0,helpers,partials,data) {
     var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=container.hooks.helperMissing, alias3="function", alias4=container.escapeExpression, lookupProperty = container.lookupProperty || function(parent, propertyName) {
@@ -261,7 +367,7 @@ this["Hbs"]["tiles"] = Handlebars.template({"1":function(container,depth0,helper
   return "        <div class=\"col-12 col-sm-4\">\r\n            <div class=\"tiles-event-day smallertext\">\r\n            "
     + alias4(((helper = (helper = lookupProperty(helpers,"itemWeekdayLong") || (depth0 != null ? lookupProperty(depth0,"itemWeekdayLong") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemWeekdayLong","hash":{},"data":data,"loc":{"start":{"line":5,"column":12},"end":{"line":5,"column":31}}}) : helper)))
     + "\r\n            </div>\r\n            <div class=\"tiles-event-date\">\r\n            "
-    + alias4(((helper = (helper = lookupProperty(helpers,"itemDateWeekdayDayMonth") || (depth0 != null ? lookupProperty(depth0,"itemDateWeekdayDayMonth") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemDateWeekdayDayMonth","hash":{},"data":data,"loc":{"start":{"line":8,"column":12},"end":{"line":8,"column":39}}}) : helper)))
+    + alias4(((helper = (helper = lookupProperty(helpers,"itemddMMMMyyyy") || (depth0 != null ? lookupProperty(depth0,"itemddMMMMyyyy") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemddMMMMyyyy","hash":{},"data":data,"loc":{"start":{"line":8,"column":12},"end":{"line":8,"column":30}}}) : helper)))
     + "\r\n            </div>\r\n        </div>\r\n";
 },"compiler":[8,">= 4.3.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {

@@ -1,0 +1,11 @@
+                    <div class="event-list">
+            {{#each this}}
+                        <div class="event-item">
+                            <div class="event-date-wrapper">
+                                <span class="event-date">{{itemDateComplete}}</span>
+                                <span class="event-time">{{itemStartTime}}{{#if enddate}} - {{itemEndTime}}{{/if}}</span>
+                            </div>
+                            <div class="event-title">{{title}}</div>
+                        </div>
+            {{/each}}
+                    </div>

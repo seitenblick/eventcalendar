@@ -1,70 +1,45 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
-require("core-js/modules/es.array.join.js");
-
-require("core-js/modules/es.array.find.js");
-
-require("core-js/modules/es.object.to-string.js");
-
-require("core-js/modules/es.array.sort.js");
-
-require("core-js/modules/es.array.slice.js");
-
-require("core-js/modules/web.dom-collections.for-each.js");
-
-require("core-js/modules/es.array.filter.js");
-
-require("core-js/modules/es.array.map.js");
-
-require("core-js/modules/es.regexp.exec.js");
-
-require("core-js/modules/es.string.split.js");
-
-require("core-js/modules/es.number.constructor.js");
-
-require("core-js/modules/es.array.includes.js");
-
-require("core-js/modules/es.string.includes.js");
-
-require("core-js/modules/es.array.from.js");
-
-require("core-js/modules/es.string.iterator.js");
-
 require("core-js/modules/es.array.concat.js");
-
+require("core-js/modules/es.array.filter.js");
+require("core-js/modules/es.array.find.js");
+require("core-js/modules/es.array.from.js");
+require("core-js/modules/es.array.includes.js");
 require("core-js/modules/es.array.iterator.js");
-
+require("core-js/modules/es.array.join.js");
+require("core-js/modules/es.array.map.js");
+require("core-js/modules/es.array.slice.js");
+require("core-js/modules/es.array.sort.js");
+require("core-js/modules/es.number.constructor.js");
+require("core-js/modules/es.object.to-string.js");
+require("core-js/modules/es.string.includes.js");
+require("core-js/modules/es.string.iterator.js");
+require("core-js/modules/web.dom-collections.for-each.js");
 require("core-js/modules/web.dom-collections.iterator.js");
-
 require("core-js/modules/web.url.js");
-
+require("core-js/modules/web.url.to-json.js");
 require("core-js/modules/web.url-search-params.js");
-
 var _jquery = _interopRequireDefault(require("./lib/jquery"));
-
 var _luxon = require("luxon");
-
 var _rrule = require("rrule");
-
 var _flatpickr = _interopRequireDefault(require("flatpickr"));
-
 var _de = require("flatpickr/dist/l10n/de");
-
 var _tests = require("nunjucks/src/tests");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 /* Imports */
+
 // import handlebars from 'handlebars';
 // require ("./public/assets/js/handlebarsTemplates");
-//Variablen
-var apiurl = 'https://www.aalen.de/api/EventApiRules.php'; //can be overwritten by data-url of .rruleset
+// import "../../public/assets/js/handlebarsTemplates/hbstemplates";
 
+//Variablen
+// let apiurl   = 'https://www.aalen.de/api/EventApiRules.php'; //can be overwritten by data-url of .rruleset
+var apiurl = 'https://www.aalen.de/api/EventApiRulesTest.php'; //can be overwritten by data-url of .rruleset
 var showClass = 'showcontent';
 var origin = window.location.origin;
-console.log(origin); // console.log("Window.location.origin:" +origin);
-
+console.log(origin);
+// console.log("Window.location.origin:" +origin);
 if (origin.indexOf("eventcalendar") > -1) {
   var iconpath = '/assets/img/';
 } else if (origin.indexOf("seitenblick") > -1) {
@@ -72,37 +47,24 @@ if (origin.indexOf("eventcalendar") > -1) {
 } else {
   var iconpath = '/assets/global/img/';
 }
-
 var count = ''; //data-count aus ruleelement
-
-var mode = '';
-/*Layout-Mode: list, grid, ...*/
-
+var mode = ''; /*Layout-Mode: list, grid, ...*/
 var allEvents = []; //Array with all rendered events
-
 var allEventsResult = []; //Array with calculated events
-
 var allEventsResultInit = []; //Array with calculated events (inital)
-
 var initalEventsResult = [];
 var eventsResultRangeFiltered = [];
 var restoreArray = [];
 var lang = (0, _jquery.default)('html').attr('lang'); //Language for localization
-
 var defaultDates = []; //Alle Events für flatpickr z.B. ["2021-08-04", "2021-08-06", "2021-08-07"]
-
 var events = []; //Events with rules (AJAX-JSON)
-
 var sliceStart = ''; //Kalenderstart für Darstellung
-
 var sliceEnd = ''; //Kalenderende für Darstellung
-
-var ruleelement; // let districtSelect      = $('.event-filters .district-group select');
+var ruleelement;
+// let districtSelect      = $('.event-filters .district-group select');
 
 var data; //Data-Attribute des Ruleelements
-
 var url; //final-url with get-parameters
-
 var eventId;
 var seriesId;
 var pagecount;
@@ -110,36 +72,30 @@ var noduplicates;
 var mandatorId;
 var eventobj;
 var rruleEvents; //erzeugte Termine nach Terminregeln
-//Helper-Funktionen
 
+//Helper-Funktionen
 function stringToDate(value) {
   // Convert string '2014-02-11T11:30:30' to date:
   var dt = _luxon.DateTime.fromISO(value); //=> Tue Feb 11 2014 11:30:30
-
-
   return new Date(Date.UTC(dt.year, dt.month - 1, dt.day, dt.hour, dt.minute, dt.second));
 }
-
 function truncate(input, count) {
   if (input.length > count) {
     return input.substring(0, count) + '...';
   }
-
   return input;
 }
+
 /* Get JSON*/
-
-
 function loadJSON(url) {
   return _jquery.default.ajax({
     dataType: 'text',
     url: url
   });
-} //Check for execution only once
+}
 
-
+//Check for execution only once
 var executedOnce;
-
 var onlyonce = function () {
   executedOnce = false;
   return function () {
@@ -147,11 +103,9 @@ var onlyonce = function () {
       executedOnce = true;
     }
   };
-}(); //Check for execution only once
-
-
+}();
+//Check for execution only once
 var initialexecutedOnce;
-
 var initalonlyonce = function () {
   initialexecutedOnce = false;
   return function () {
@@ -159,75 +113,70 @@ var initalonlyonce = function () {
       initialexecutedOnce = true;
     }
   };
-}(); //Format Date
+}();
 
-
+//Format Date
 function formatDate(date) {
   var d = new Date(date),
-      month = '' + (d.getMonth() + 1),
-      day = '' + d.getDate(),
-      year = d.getFullYear();
+    month = '' + (d.getMonth() + 1),
+    day = '' + d.getDate(),
+    year = d.getFullYear();
   if (month.length < 2) month = '0' + month;
   if (day.length < 2) day = '0' + day;
   return [year, month, day].join('-');
 }
+
 /* FUNKTIONEN */
+
 //RRuleSet-Instanz unter Berücksichtiung eines Start-/Endzeitraums und ggf die gewünschte Anzahl an Terminen erzeugen
-
-
 function buildrruleset(thisobj) {
   //clear vars
   allEvents = [];
   allEventsResult = [];
   console.log("1. buildrruleset()");
-  thisobj.find('#event-table').remove(); //Get data-attributes
-
-  ruleelement = thisobj; // alert("RuleElement" + ruleelement);
+  thisobj.find('#event-table').remove();
+  //Get data-attributes
+  ruleelement = thisobj;
+  // alert("RuleElement" + ruleelement);
   // alert("SliceStart:" + ruleelement.data("slice-start"));
-
   if (ruleelement.data('slice-start')) {
-    sliceStart = stringToDate(ruleelement.data("slice-start")); // alert("SliceStart" + sliceStart);
-
+    sliceStart = stringToDate(ruleelement.data("slice-start"));
+    // alert("SliceStart" + sliceStart);
     console.log("SliceStart: " + sliceStart);
   }
-
   if (ruleelement.data('slice-end')) {
-    sliceEnd = stringToDate(ruleelement.data("slice-end")); // alert("SliceEnd" + sliceEnd);
-
+    sliceEnd = stringToDate(ruleelement.data("slice-end"));
+    // alert("SliceEnd" + sliceEnd);
     console.log("SliceEnd: " + sliceEnd);
   }
-
   if (ruleelement.data('count')) {
     count = parseInt(ruleelement.data("count"));
     console.log("count: " + count);
   }
-
   if (ruleelement.data('pagecount')) {
     pagecount = parseInt(ruleelement.data("pagecount"));
     console.log("pagecount: " + pagecount);
   }
-
   if (ruleelement.data('mode')) {
     mode = ruleelement.data("mode");
     console.log("mode: " + mode);
   }
-
   if (ruleelement.data('noduplicates')) {
     noduplicates = ruleelement.data("noduplicates");
     console.log("noduplicates: " + noduplicates);
   }
-
   if (ruleelement.data('mandator')) {
     mandatorId = (0, _jquery.default)('.rruleset').data('mandator');
     console.log("mandatorId: " + mandatorId);
-  } //Termine erzeugen
+  }
 
-
-  recurrency(sliceStart, sliceEnd); //Sortierung
-
+  //Termine erzeugen
+  recurrency(sliceStart, sliceEnd);
+  //Sortierung
   allEvents.sort(function (a, b) {
     return a.eventdate - b.eventdate;
-  }); //How many to show - if data-count = empty --> show all within slice?
+  });
+  //How many to show - if data-count = empty --> show all within slice?
   //Anzahl der Treffer ggf. einschränken
 
   if (count) {
@@ -235,19 +184,18 @@ function buildrruleset(thisobj) {
   } else {
     allEventsResult = allEvents;
   }
-
   if (!executedOnce) {
     // alert("RESET within executeOnce");
     allEventsResultInit = allEventsResult;
-    eventsResultRangeFiltered = allEventsResultInit; // alert("eRRF: " + eventsResultRangeFiltered.length);
+    eventsResultRangeFiltered = allEventsResultInit;
+    // alert("eRRF: " + eventsResultRangeFiltered.length);
   }
-
   console.log("buildrruleset: allEventsResult");
   console.log(allEventsResult);
   return allEventsResult;
-} //Recurrency-Funktion - alle Termine gemäß der Wiederholungsregeln im angegebenen Zeitraum (sliceStart, sliceEnd) erzeugen
+}
 
-
+//Recurrency-Funktion - alle Termine gemäß der Wiederholungsregeln im angegebenen Zeitraum (sliceStart, sliceEnd) erzeugen
 function recurrency(sliceStart, sliceEnd) {
   console.log("2. recurrency()");
   console.log("sliceStart: " + sliceStart);
@@ -267,6 +215,7 @@ function recurrency(sliceStart, sliceEnd) {
     var timeValid = item.timeValid;
     var ticketurl = item.ticketUrl;
     var location = item.location;
+    var mandators = item.mandators;
     var highlight = item.highlight;
     var topevent = item.topevent;
     var status = item.status;
@@ -276,21 +225,18 @@ function recurrency(sliceStart, sliceEnd) {
     sliceEndNextDay.setDate(sliceEndNextDay.getDate() + 1);
     var rruleSet = new _rrule.RRuleSet();
     rruleSet.rrule(new _rrule.RRule.fromString(rule));
-
     var startdate = _rrule.RRule.parseString(rule).dtstart;
+    var enddate = _rrule.RRule.parseString(rule).until;
 
-    var enddate = _rrule.RRule.parseString(rule).until; // Add a exclusion date to rruleSet
-
-
+    // Add a exclusion date to rruleSet
     if (exdates !== '') {
       var removeExdate = function removeExdate(value) {
         rruleSet.exdate(stringToDate(value));
       };
-
       exdates.forEach(removeExdate);
-    } // Slice or all events?
+    }
 
-
+    // Slice or all events?
     if (sliceStart === '' && sliceEnd !== '') {
       rrulesetEvents[index] = rruleSet.between(today, sliceEndNextDay);
     } else if (sliceStart !== '' && sliceEnd === '') {
@@ -300,7 +246,6 @@ function recurrency(sliceStart, sliceEnd) {
     } else {
       rrulesetEvents[index] = rruleSet.between(today, new Date(Date.UTC(2030, 1, 1)));
     }
-
     for (var i = 0; i < rrulesetEvents[index].length; i++) {
       var eventdate = rrulesetEvents[index][i];
       allEvents.push({
@@ -321,11 +266,15 @@ function recurrency(sliceStart, sliceEnd) {
         enddate: enddate,
         ticketurl: ticketurl,
         location: location,
+        mandators: mandators,
         highlight: highlight,
         topevent: topevent,
         itemDate: eventdate,
         //Wed Jul 21 2021 17:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+        itemddMMMMyyyy: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMMM yyyy'),
+        itemDateComplete: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM yyyy'),
         itemDateLong: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM ´yy'),
+        itemDateShort: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MM.'),
         itemDateWeekdayDayMonth: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc. dd.MM.'),
         itemHour: eventdate.getUTCHours(),
         itemMinutes: _luxon.DateTime.fromJSDate(eventdate).toFormat('mm'),
@@ -348,15 +297,21 @@ function recurrency(sliceStart, sliceEnd) {
         }).toFormat('DD T'),
         itemEndDate: _luxon.DateTime.fromJSDate(enddate, {
           zone: 'UTC'
-        }).toFormat(' - DD HH:mm')
+        }).toFormat(' - DD HH:mm'),
+        itemStartTime: _luxon.DateTime.fromJSDate(startdate, {
+          zone: 'UTC'
+        }).toFormat('HH:mm'),
+        itemEndTime: _luxon.DateTime.fromJSDate(enddate, {
+          zone: 'UTC'
+        }).toFormat('HH:mm')
       });
     }
-  }); // console.log("allEventsWithinRecurrency: " + allEvents);
-
+  });
+  // console.log("allEventsWithinRecurrency: " + allEvents);
   return allEvents;
-} //Contentfilter
+}
 
-
+//Contentfilter
 function contentfiltervalue(filterValue) {
   console.log("cfv: " + filterValue);
   console.log(filterValue);
@@ -364,7 +319,6 @@ function contentfiltervalue(filterValue) {
   console.log("veranstaltungsArray: ");
   console.log(veranstaltungsArray);
   var gesuchteKategorien = filterValue;
-
   if (gesuchteKategorien != '') {
     var gefiltertesArray = veranstaltungsArray.filter(function (element) {
       if (!element.categories) return false; // Filtere Elemente ohne Kategorien
@@ -383,11 +337,41 @@ function contentfiltervalue(filterValue) {
   } else {
     allEventsResult = eventsResultRangeFiltered;
   }
-
   console.log("Wert für allEventsResult nach contentfiltervalue: " + allEventsResult.length);
-} //Angeklickten eventfilter ausführen
+}
+function mandatorfiltervalue(filterValue) {
+  console.log("mfv: " + filterValue);
+  console.log(filterValue);
+  var veranstaltungsArray = allEventsResult;
+  console.log("veranstaltungsArray: ");
+  console.log(veranstaltungsArray);
+  var mandators = filterValue;
+  console.log("Mandator: ");
+  console.log(mandators);
+  if (mandators != '') {
+    // Konvertiere mandators in ein Array von Zahlen
+    var mandatorArray = mandators.split(',').map(Number);
+    var gefiltertesArray = veranstaltungsArray.filter(function (element) {
+      if (!element.mandators) return false; // Filtere Elemente ohne Kategorien
 
+      var mandatorIds = element.mandators.split(',').map(Number); // Konvertiere Kategorie-Strings in Arrays von Zahlen
+      console.log(mandatorIds);
 
+      // Prüfe, ob eine der IDs in mandatorArray in mandatorIds enthalten ist
+      return mandatorArray.some(function (id) {
+        return mandatorIds.includes(id);
+      });
+    });
+    console.log("Länge des gefilterten Arrays: " + gefiltertesArray.length);
+    allEventsResult = gefiltertesArray;
+    /**/
+  } else {
+    allEventsResult = eventsResultRangeFiltered;
+  }
+  console.log("Wert für allEventsResult nach contentfiltervalue: " + allEventsResult.length);
+}
+
+//Angeklickten eventfilter ausführen
 function eventfilter() {
   console.log("4. eventfilter()");
   var filterValueArray = (0, _jquery.default)('.category.active').map(function () {
@@ -397,52 +381,61 @@ function eventfilter() {
   }).get();
   console.log("filtervalueArray:" + filterValueArray);
   contentfiltervalue(filterValueArray);
-} //Ausgabe
 
+  /* Mandator-Filter */
+  console.log("4a. mandatorfilter");
+  var mandatorfilter = (0, _jquery.default)('#districtval').val();
+  console.log(mandatorfilter);
+  if (mandatorfilter) {
+    mandatorfiltervalue(mandatorfilter);
+  }
+}
 
+//Ausgabe
 function printEventsHandlebars() {
-  console.log("5. printEventsHandlebars()"); //Keine Treffer
-
+  console.log("5. printEventsHandlebars()");
+  //Keine Treffer
   if (allEventsResult == '') {
     console.log("pEH: keine Treffer");
-    (0, _jquery.default)('.rruleset').empty(); // $('#data-container').hide();
-
+    (0, _jquery.default)('.rruleset').empty();
+    // $('#data-container').hide();
     (0, _jquery.default)('.service-messages').html("Keine Treffer");
   } else {
-    console.log("pEH: Treffer"); // alert(allEventsResult.length);
-
+    console.log("pEH: Treffer");
+    // alert(allEventsResult.length);
     (0, _jquery.default)('#data-container').show();
     (0, _jquery.default)('#pagination').show();
-    (0, _jquery.default)('.service-messages').html(""); //HBS-Template abhängig vom gewählten Modus (mode Parameter) auswählen
+    (0, _jquery.default)('.service-messages').html("");
+    //HBS-Template abhängig vom gewählten Modus (mode Parameter) auswählen
 
+    // Definiere den Helper
+    Handlebars.registerHelper('eq', function (arg1, arg2, options) {
+      return arg1 == arg2 ? options.fn(this) : options.inverse(this);
+    });
     var template = Hbs[mode]; //Example: let template = Hbs['flexTable'];
-
-    var quoteData = template(allEventsResult); // alert(quoteData);
+    var quoteData = template(allEventsResult);
+    // alert(quoteData);
     // alert("STOP");
-
     ruleelement.empty();
     ruleelement.append(quoteData);
   }
 }
-
 function flatpickerhelper() {
   //Ersten und letzten Termin ermitteln zur Einschränkung von flatpickr (minDate, maxDate)
   var firstItemMonth = _luxon.DateTime.fromJSDate(allEvents[0].eventdate).toFormat('yyyy-MM');
-
   var lastItemMonth = _luxon.DateTime.fromJSDate(allEvents[allEvents.length - 1].eventdate).plus({
     month: 1
-  }).toFormat('yyyy-MM-0'); //Alle Termine in flatpickr eintragen
+  }).toFormat('yyyy-MM-0');
 
-
+  //Alle Termine in flatpickr eintragen
   _jquery.default.each(allEvents, function (key, item) {
     var element = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : ruleelement;
     var itemDate = item.eventdate; //Wed Jul 21 2021 17:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
-
     var defaultDate = '"' + _luxon.DateTime.fromJSDate(itemDate).toFormat('yyyy-MM-dd') + '"';
     defaultDates.push(defaultDate);
-  }); //Flatpickr
+  });
 
-
+  //Flatpickr
   if ((0, _jquery.default)(".flatpickr").length) {
     (0, _jquery.default)(".flatpickr").flatpickr({
       inline: true,
@@ -451,9 +444,8 @@ function flatpickerhelper() {
       minDate: firstItemMonth,
       maxDate: lastItemMonth
     });
-  } // Flatpickr für Reihen-Detail-Seite
-
-
+  }
+  // Flatpickr für Reihen-Detail-Seite
   if ((0, _jquery.default)(".flatpickr-series").length) {
     if (executedOnce == false) {
       (0, _jquery.default)(".flatpickr-series").flatpickr({
@@ -468,18 +460,19 @@ function flatpickerhelper() {
           // $('.rruleset').attr('data-slice-end',selectedDates[1]);
           // alert("onchange");
           if (selectedDates != '') {
-            (0, _jquery.default)('.rruleset').attr('data-slice-start', formatDate(selectedDates[0])); // $('.rruleset').attr('data-slice-end', formatDate(selectedDates[0]));
-
-            (0, _jquery.default)('.rruleset').data('slice-start', formatDate(selectedDates[0])); // $('.rruleset').data('slice-end', formatDate(selectedDates[0]));
+            (0, _jquery.default)('.rruleset').attr('data-slice-start', formatDate(selectedDates[0]));
+            // $('.rruleset').attr('data-slice-end', formatDate(selectedDates[0]));
+            (0, _jquery.default)('.rruleset').data('slice-start', formatDate(selectedDates[0]));
+            // $('.rruleset').data('slice-end', formatDate(selectedDates[0]));
           } else {
             (0, _jquery.default)('.rruleset').attr('data-slice-start', '');
             (0, _jquery.default)('.rruleset').attr('data-slice-end', '');
             (0, _jquery.default)('.rruleset').data('slice-start', '');
             (0, _jquery.default)('.rruleset').data('slice-end', '');
-          } //Termine erzeugen und darstellen
-
-
-          buildrruleset((0, _jquery.default)('.rruleset')); //Filter berücksichtigen
+          }
+          //Termine erzeugen und darstellen
+          buildrruleset((0, _jquery.default)('.rruleset'));
+          //Filter berücksichtigen
 
           eventfilter();
         },
@@ -488,25 +481,26 @@ function flatpickerhelper() {
             (0, _jquery.default)('.rruleset').attr('data-slice-start', '');
             (0, _jquery.default)('.rruleset').attr('data-slice-end', '');
             (0, _jquery.default)('.rruleset').data('slice-start', '');
-            (0, _jquery.default)('.rruleset').data('slice-end', ''); //Termine erzeugen und darstellen
-
-            buildrruleset((0, _jquery.default)('.rruleset')); //Filter berücksichtigen
-
+            (0, _jquery.default)('.rruleset').data('slice-end', '');
+            //Termine erzeugen und darstellen
+            buildrruleset((0, _jquery.default)('.rruleset'));
+            //Filter berücksichtigen
             eventfilter();
           }
         }
       });
     }
-  } //Period for Series
-
-
+  }
+  //Period for Series
   if ((0, _jquery.default)(".event-period").length) {
     if (executedOnce == false) {
       (0, _jquery.default)('.event-period-start').html(_luxon.DateTime.fromJSDate(allEvents[0].eventdate).toFormat('DD') + ' - ');
       (0, _jquery.default)('.event-period-end').html(_luxon.DateTime.fromJSDate(allEvents[allEvents.length - 1].eventdate).toFormat('DD'));
     }
   }
-} //Pagination-Limitter
+}
+
+//Pagination-Limitter
 //https://stackoverflow.com/questions/46382109/limit-the-number-of-visible-pages-in-pagination/46385144
 // Returns an array of maxLength (or less) page numbers
 // where a 0 in the returned array denotes a gap in the series.
@@ -514,21 +508,17 @@ function flatpickerhelper() {
 //   totalPages:     total number of pages
 //   page:           current page
 //   maxLength:      maximum size of returned array
-
-
 function getPageList(totalPages, page, maxLength) {
   if (maxLength < 5) throw "maxLength must be at least 5";
-
   function range(start, end) {
     return Array.from(Array(end - start + 1), function (_, i) {
       return i + start;
     });
   }
-
   if (totalPages > 1) {
     (0, _jquery.default)("#previous-page").remove();
-    (0, _jquery.default)("#next-page").remove(); // Include the prev/next buttons:
-
+    (0, _jquery.default)("#next-page").remove();
+    // Include the prev/next buttons:
     (0, _jquery.default)(".pagination").append((0, _jquery.default)("<li>").addClass("page-item").attr({
       id: "previous-page"
     }).append((0, _jquery.default)("<a>").addClass("page-link").attr({
@@ -539,62 +529,56 @@ function getPageList(totalPages, page, maxLength) {
       href: "javascript:void(0)"
     }).text("»")));
   }
-
   var sideWidth = maxLength < 9 ? 1 : 2;
   var leftWidth = maxLength - sideWidth * 2 - 3 >> 1;
   var rightWidth = maxLength - sideWidth * 2 - 2 >> 1;
-
   if (totalPages <= maxLength) {
     // no breaks in list
     return range(1, totalPages);
   }
-
   if (page <= maxLength - sideWidth - 1 - rightWidth) {
     // no break on left of page
     return range(1, maxLength - sideWidth - 1).concat(0, range(totalPages - sideWidth + 1, totalPages));
   }
-
   if (page >= totalPages - sideWidth - 1 - rightWidth) {
     // no break on right of page
     return range(1, sideWidth).concat(0, range(totalPages - sideWidth - 1 - rightWidth - leftWidth, totalPages));
-  } // Breaks on both sides
-
-
+  }
+  // Breaks on both sides
   return range(1, sideWidth).concat(0, range(page - leftWidth, page + rightWidth), 0, range(totalPages - sideWidth + 1, totalPages));
-} // Below is an example use of the above function.
+}
 
-
+// Below is an example use of the above function.
 function initPagination() {
   (0, _jquery.default)(".pagination").empty();
-  console.log("initPagination"); // $("#event-table tr.showcontent").removeClass('showme');
-
-  (0, _jquery.default)("#event-table .event-item.showcontent").removeClass('showme'); // Number of items and limits the number of items per page
+  console.log("initPagination");
+  // $("#event-table tr.showcontent").removeClass('showme');
+  (0, _jquery.default)("#event-table .event-item.showcontent").removeClass('showme');
+  // Number of items and limits the number of items per page
   // var numberOfItems = $("#event-table tr.showcontent").length;
-
-  var numberOfItems = (0, _jquery.default)("#event-table .event-item.showcontent").length; // alert(numberOfItems);
-
-  var limitPerPage = 10; // Total pages rounded upwards
-
-  var totalPages = Math.ceil(numberOfItems / limitPerPage); // Number of buttons at the top, not counting prev/next,
+  var numberOfItems = (0, _jquery.default)("#event-table .event-item.showcontent").length;
+  // alert(numberOfItems);
+  var limitPerPage = 10;
+  // Total pages rounded upwards
+  var totalPages = Math.ceil(numberOfItems / limitPerPage);
+  // Number of buttons at the top, not counting prev/next,
   // but including the dotted buttons.
   // Must be at least 5:
-
   var paginationSize = 7;
   var currentPage;
-
   function showPage(whichPage) {
     if (whichPage < 1 || whichPage > totalPages) return false;
-    currentPage = whichPage; // $("#event-table tr.showcontent").removeClass('showme')
-
-    (0, _jquery.default)("#event-table .event-item.showcontent").removeClass('showme').slice((currentPage - 1) * limitPerPage, currentPage * limitPerPage).addClass('showme'); // Replace the navigation items (not prev/next):
-
+    currentPage = whichPage;
+    // $("#event-table tr.showcontent").removeClass('showme')
+    (0, _jquery.default)("#event-table .event-item.showcontent").removeClass('showme').slice((currentPage - 1) * limitPerPage, currentPage * limitPerPage).addClass('showme');
+    // Replace the navigation items (not prev/next):
     (0, _jquery.default)(".pagination li").slice(1, -1).remove();
     getPageList(totalPages, currentPage, paginationSize).forEach(function (item) {
       (0, _jquery.default)("<li>").addClass("page-item").addClass(item ? "current-page" : "disabled").toggleClass("active", item === currentPage).append((0, _jquery.default)("<a>").addClass("page-link").attr({
         href: "javascript:void(0)"
       }).text(item || "...")).insertBefore("#next-page");
-    }); // Disable prev/next when at first/last page:
-
+    });
+    // Disable prev/next when at first/last page:
     (0, _jquery.default)("#previous-page").toggleClass("disabled", currentPage === 1);
     (0, _jquery.default)("#next-page").toggleClass("disabled", currentPage === totalPages);
     (0, _jquery.default)("#next-page").on("click", function () {
@@ -604,72 +588,69 @@ function initPagination() {
       return showPage(currentPage - 1);
     });
     return true;
-  } // Show the page links
+  }
 
-
+  // Show the page links
   (0, _jquery.default)("#event-table").show();
-  showPage(1); // Use event delegation, as these items are recreated later
+  showPage(1);
 
+  // Use event delegation, as these items are recreated later
   (0, _jquery.default)(document).on("click", ".pagination li.current-page:not(.active)", function () {
     return showPage(+(0, _jquery.default)(this).text());
   });
-} //Anfang der Tabelle in den sichtbaren Bereich schieben nach dem Blättern über die Pagination
+}
 
-
+//Anfang der Tabelle in den sichtbaren Bereich schieben nach dem Blättern über die Pagination
 (0, _jquery.default)(".pagination").on("click", function () {
   var tablepos = (0, _jquery.default)('#event-table').offset().top;
   tablepos = tablepos - 300;
   (0, _jquery.default)('html, body').animate({
     scrollTop: tablepos
   }, 'slow');
-}); //Initialize Calendar
+});
 
+//Initialize Calendar
 function initCalendar(url, thisobj) {
   console.log("initCalendar()");
-
   _jquery.default.when(loadJSON(url)).done(function (response) {
     events = _jquery.default.parseJSON(response);
     buildrruleset(thisobj); //liefert "alleventsresult" zurück
+
     //****************************************************************************
     // 3. Filter Events
     //****************************************************************************
     //Termine abhängig von den ausgewählten Kategorien-Filtern filtern
-
     console.log("Call eventfilter()");
-    eventfilter(); //****************************************************************************
+    eventfilter();
+
+    //****************************************************************************
     // 4. Ausgabe
     //****************************************************************************
-
     printEventsHandlebars();
-
     if (allEventsResult.length > 0) {
       flatpickerhelper();
       initPagination();
     }
-
     if (!executedOnce) {
       eventsResultRangeFiltered = allEventsResultInit;
       console.log("eRRF: " + eventsResultRangeFiltered.length);
       initalEventsResult = allEventsResultInit;
       console.log("iER: " + initalEventsResult.length);
     }
-
     onlyonce();
-
     if (!initialexecutedOnce) {
-      restoreArray = allEventsResult; // alert(restoreArray.length);
+      restoreArray = allEventsResult;
+      // alert(restoreArray.length);
     }
-
     initalonlyonce();
   });
 }
+
 /* EVENTS */
-
-
 (0, _jquery.default)(document).ready(function () {
   (0, _jquery.default)('.rruleset').each(function () {
-    ruleelement = (0, _jquery.default)(this); //Get data-Attributes of ruleelement
-
+    ruleelement = (0, _jquery.default)(this);
+    //Get data-Attributes of ruleelement
     data = ruleelement.data();
     url = data.url;
     count = parseInt(data.count);
@@ -681,56 +662,57 @@ function initCalendar(url, thisobj) {
     pagecount = parseInt(data.pagecount);
     noduplicates = data.noduplicates;
     mandatorId = data.mandator;
-
     if (sliceStart) {
       sliceStart = stringToDate(sliceStart);
     }
-
     if (sliceEnd) {
       sliceEnd = stringToDate(sliceEnd);
-    } //Overwrite apiurl if data-url exists for .rrulest - else use default api-url (see variables)
+    }
 
-
+    //Overwrite apiurl if data-url exists for .rrulest - else use default api-url (see variables)
     if (url) {
       apiurl = ruleelement.data("url");
-    } //****************************************************************************
+    }
+
+    //****************************************************************************
     // 1. Check if special url is needed (eventId, seriesId, highlightevents, ...)
     // + get DATA-Attributes
     //****************************************************************************
+    apiurl = new URL(apiurl);
 
-
-    apiurl = new URL(apiurl); //for mandatorId
-
+    //for mandatorId
     if (mandatorId) {
       // url      = apiurl + '?id=' + eventId;
       apiurl.searchParams.set('md', mandatorId);
-    } //for event-detail page use only events for special id
-
-
+    }
+    //for event-detail page use only events for special id
     if (eventId) {
       // url      = apiurl + '?id=' + eventId;
       apiurl.searchParams.set('id', eventId);
-    } //for series-events use only events with relation to series-id
+    }
+    //for series-events use only events with relation to series-id
     else if (seriesId) {
       // url      = apiurl + '?ser=' + seriesId;
       apiurl.searchParams.set('ser', seriesId);
-    } //for highlight-widget,highlight-teaser,event-slider use only highlight-events
+    }
+    //for highlight-widget,highlight-teaser,event-slider use only highlight-events
     else if (mode === 'widget' || mode === 'highlights' || mode === 'event-slider') {
       // url      = apiurl + '?hl=1';
       apiurl.searchParams.set('hl', 1);
-    } //for topevent-teaser use only topevents
+    }
+    //for topevent-teaser use only topevents
     else if (mode === 'topevent') {
       // url      = apiurl + '?te=1';
       apiurl.searchParams.set('te', 1);
-    } // //all events - no restriction
+    }
+    // //all events - no restriction
     // else{
+    url = apiurl;
+    // }
 
-
-    url = apiurl; // }
     //****************************************************************************
     // 2. Initialize Calender
     //****************************************************************************
-
     initCalendar(url, (0, _jquery.default)(this));
   });
 });
@@ -749,12 +731,13 @@ function initCalendar(url, thisobj) {
     console.log("eventsResultRangeFiltered: ");
     console.log(eventsResultRangeFiltered);
     allEventsResult = eventsResultRangeFiltered;
-    eventfilter(); // alert("Filter");
-
+    eventfilter();
+    // alert("Filter");
     printEventsHandlebars();
     initPagination();
-  }); //Category-Filters: More-Button only,if more buttons than one line
+  });
 
+  //Category-Filters: More-Button only,if more buttons than one line
   function categoryMoreButton() {
     console.log("categoryMoreButton()");
     var firstElementPos;
@@ -764,29 +747,25 @@ function initCalendar(url, thisobj) {
       if (index === 0) {
         firstElementPos = obj.getBoundingClientRect().top;
       }
-
       if (index === categoriebuttons - 1) {
         lastElementPos = obj.getBoundingClientRect().top;
       }
     });
-
     if (firstElementPos === lastElementPos) {
       (0, _jquery.default)('.more-filters').hide();
     }
   }
-
   categoryMoreButton();
-
   window.onresize = function () {
     if (showallcategories == false) {
       (0, _jquery.default)('.more-filters').show();
       categoryMoreButton();
     }
-  }; //Close-Button for flatpickr-range
+  };
 
-
-  (0, _jquery.default)(".flatpickr-range").after('<span class="clearspace"><img src=" ' + iconpath + 'icon_event_close.svg" class="clear" title="clear" /></span>'); //Flatpickr for date-range-field
-
+  //Close-Button for flatpickr-range
+  (0, _jquery.default)(".flatpickr-range").after('<span class="clearspace"><img src=" ' + iconpath + 'icon_event_close.svg" class="clear" title="clear" /></span>');
+  //Flatpickr for date-range-field
   var flatpickrRange = (0, _jquery.default)(".flatpickr-range").flatpickr({
     mode: "range",
     locale: "de",
@@ -795,15 +774,15 @@ function initCalendar(url, thisobj) {
     altFormat: "d.m.Y",
     onClose: function onClose(selectedDates, dateStr, instance, events, allEvents) {
       console.log("flatpickr onClose()");
-
       if (selectedDates.length !== 0) {
         (0, _jquery.default)('.rruleset').attr('data-slice-start', formatDate(selectedDates[0]));
         (0, _jquery.default)('.rruleset').attr('data-slice-end', formatDate(selectedDates[1]));
         (0, _jquery.default)('.rruleset').data('slice-start', formatDate(selectedDates[0]));
         (0, _jquery.default)('.rruleset').data('slice-end', formatDate(selectedDates[1]));
         console.log("new slice start: " + formatDate(selectedDates[0]));
-        console.log("new slice end: " + formatDate(selectedDates[1])); //show/hide Close-Button for flatpickr-range
+        console.log("new slice end: " + formatDate(selectedDates[1]));
 
+        //show/hide Close-Button for flatpickr-range
         (0, _jquery.default)(".flatpickr-range").on('keyup input', function () {
           if ((0, _jquery.default)(this).val()) {
             (0, _jquery.default)(".flatpickr-group .clear").addClass("show");
@@ -816,21 +795,21 @@ function initCalendar(url, thisobj) {
         (0, _jquery.default)('.rruleset').attr('data-slice-end', '');
         (0, _jquery.default)('.rruleset').data('slice-start', '');
         (0, _jquery.default)('.rruleset').data('slice-end', '');
-      } //Termine erzeugen und darstellen
-
-
+      }
+      //Termine erzeugen und darstellen
       buildrruleset((0, _jquery.default)('.rruleset'));
-      eventsResultRangeFiltered = allEventsResult; // alert("fpr: " + eventsResultRangeFiltered.length);
-      //Filter berücksichtigen
+      eventsResultRangeFiltered = allEventsResult;
+      // alert("fpr: " + eventsResultRangeFiltered.length);
 
+      //Filter berücksichtigen
       eventfilter();
       console.log("Array-Lenght: " + allEventsResult.length);
       printEventsHandlebars();
       initPagination();
       console.log("fp: allEventsResult");
       console.log(allEventsResult);
-      /* VA-Export refresh Datatable*/
 
+      /* VA-Export refresh Datatable*/
       if ((0, _jquery.default)('.rruleset').data('mode') === 'datatable') {
         // $('#data-table').DataTable().ajax.reload();
         (0, _jquery.default)('#data-table').DataTable({
@@ -861,8 +840,9 @@ function initCalendar(url, thisobj) {
         initPagination();
       }
     }
-  }); //Reset Event Filter
+  });
 
+  //Reset Event Filter
   (0, _jquery.default)('.event-categories .category-reset').on('click', function () {
     console.log("reset start");
     (0, _jquery.default)('#data-container').show();
@@ -885,8 +865,9 @@ function initCalendar(url, thisobj) {
       executedOnce = false;
       initCalendar(url, (0, _jquery.default)('.rruleset'));
     }, 500);
-  }); //Show ClearButton for Search-Feld if searchval contains characters
+  });
 
+  //Show ClearButton for Search-Feld if searchval contains characters
   (0, _jquery.default)(".event-filters #searchval").after('<span class="clearspace"><img src=" ' + iconpath + 'icon_event_close.svg" class="clear" title="clear" /></span>');
   (0, _jquery.default)(".event-filters #searchval").on('keyup input', function () {
     if ((0, _jquery.default)(this).val()) {
@@ -895,22 +876,20 @@ function initCalendar(url, thisobj) {
       (0, _jquery.default)(".searchval-group .clear").removeClass("show");
     }
   });
-  /*https://stackoverflow.com/questions/1909441/how-to-delay-the-keyup-handler-until-the-user-stops-typing*/
 
+  /*https://stackoverflow.com/questions/1909441/how-to-delay-the-keyup-handler-until-the-user-stops-typing*/
   function delay(fn, ms) {
     var timer = 0;
     return function () {
       clearTimeout(timer);
-
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
-
       timer = setTimeout(fn.bind.apply(fn, [this].concat(args)), ms || 0);
     };
-  } //Searchval-Field: if char>3 in searchfield - get new events from api
+  }
 
-
+  //Searchval-Field: if char>3 in searchfield - get new events from api
   url = apiurl;
   var eventSearchField = (0, _jquery.default)('#searchval');
   eventSearchField.keyup(delay(function () {
@@ -919,21 +898,25 @@ function initCalendar(url, thisobj) {
       url.searchParams.set('search', eventSearchField.val());
     } else if (eventSearchField.val().length == 0) {
       url.searchParams.delete('search');
-    } // alert(url);
-
-
+    }
+    // alert(url);
     executedOnce = false;
     initCalendar(url, (0, _jquery.default)('.rruleset'));
-  }, 500)); //district filter
-  //     districtSelect.on('change', function() {
+  }, 500));
 
+  //district filter
+  //     districtSelect.on('change', function() {
   (0, _jquery.default)('.event-filters .district-group select').on('change', function () {
     // url.searchParams.set('di', this.value );
-    url.searchParams.set('md', this.value);
-    executedOnce = false;
-    initCalendar(url, (0, _jquery.default)('.rruleset'));
-  }); //Clear Searchfield if clear-button is clicked
+    // url.searchParams.set('md', this.value );
+    // executedOnce = false;
+    // initCalendar(url, $('.rruleset'));
+    eventfilter();
+    printEventsHandlebars();
+    initPagination();
+  });
 
+  //Clear Searchfield if clear-button is clicked
   (0, _jquery.default)('.searchval-group .clear').on('click', function () {
     (0, _jquery.default)('.event-filters #searchval').val('');
     (0, _jquery.default)(".searchval-group .clear").removeClass("show");
@@ -941,8 +924,9 @@ function initCalendar(url, thisobj) {
     executedOnce = false;
     initalEventsResult = restoreArray;
     initCalendar(url, (0, _jquery.default)('.rruleset'));
-  }); //Clear Flatpickr if clear-button is clicked
+  });
 
+  //Clear Flatpickr if clear-button is clicked
   (0, _jquery.default)('.flatpickr-group .clear').on('click', function () {
     console.log("flatpickr clear");
     flatpickrRange.clear();
@@ -951,72 +935,56 @@ function initCalendar(url, thisobj) {
   });
 });
 
-},{"./lib/jquery":2,"core-js/modules/es.array.concat.js":133,"core-js/modules/es.array.filter.js":134,"core-js/modules/es.array.find.js":135,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.includes.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.join.js":139,"core-js/modules/es.array.map.js":140,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.array.sort.js":142,"core-js/modules/es.number.constructor.js":143,"core-js/modules/es.object.to-string.js":144,"core-js/modules/es.regexp.exec.js":145,"core-js/modules/es.string.includes.js":146,"core-js/modules/es.string.iterator.js":147,"core-js/modules/es.string.split.js":148,"core-js/modules/web.dom-collections.for-each.js":149,"core-js/modules/web.dom-collections.iterator.js":150,"core-js/modules/web.url-search-params.js":151,"core-js/modules/web.url.js":152,"flatpickr":153,"flatpickr/dist/l10n/de":154,"luxon":156,"nunjucks/src/tests":159,"rrule":160}],2:[function(require,module,exports){
+},{"./lib/jquery":2,"core-js/modules/es.array.concat.js":133,"core-js/modules/es.array.filter.js":134,"core-js/modules/es.array.find.js":135,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.includes.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.join.js":139,"core-js/modules/es.array.map.js":140,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.array.sort.js":142,"core-js/modules/es.number.constructor.js":143,"core-js/modules/es.object.to-string.js":144,"core-js/modules/es.string.includes.js":145,"core-js/modules/es.string.iterator.js":146,"core-js/modules/web.dom-collections.for-each.js":147,"core-js/modules/web.dom-collections.iterator.js":148,"core-js/modules/web.url-search-params.js":150,"core-js/modules/web.url.js":152,"core-js/modules/web.url.to-json.js":153,"flatpickr":154,"flatpickr/dist/l10n/de":155,"luxon":157,"nunjucks/src/tests":160,"rrule":161}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
-
 var _jquery = _interopRequireDefault(require("jquery"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 window.$ = window.jQuery = _jquery.default;
-var _default = _jquery.default;
-exports.default = _default;
+var _default = exports.default = _jquery.default;
 
-},{"jquery":155}],3:[function(require,module,exports){
-var global = require('../internals/global');
+},{"jquery":156}],3:[function(require,module,exports){
+'use strict';
 var isCallable = require('../internals/is-callable');
 var tryToString = require('../internals/try-to-string');
 
-var TypeError = global.TypeError;
+var $TypeError = TypeError;
 
 // `Assert: IsCallable(argument) is true`
 module.exports = function (argument) {
   if (isCallable(argument)) return argument;
-  throw TypeError(tryToString(argument) + ' is not a function');
+  throw new $TypeError(tryToString(argument) + ' is not a function');
 };
 
-},{"../internals/global":56,"../internals/is-callable":67,"../internals/try-to-string":126}],4:[function(require,module,exports){
-var global = require('../internals/global');
-var isConstructor = require('../internals/is-constructor');
-var tryToString = require('../internals/try-to-string');
+},{"../internals/is-callable":69,"../internals/try-to-string":124}],4:[function(require,module,exports){
+'use strict';
+var isPossiblePrototype = require('../internals/is-possible-prototype');
 
-var TypeError = global.TypeError;
-
-// `Assert: IsConstructor(argument) is true`
-module.exports = function (argument) {
-  if (isConstructor(argument)) return argument;
-  throw TypeError(tryToString(argument) + ' is not a constructor');
-};
-
-},{"../internals/global":56,"../internals/is-constructor":68,"../internals/try-to-string":126}],5:[function(require,module,exports){
-var global = require('../internals/global');
-var isCallable = require('../internals/is-callable');
-
-var String = global.String;
-var TypeError = global.TypeError;
+var $String = String;
+var $TypeError = TypeError;
 
 module.exports = function (argument) {
-  if (typeof argument == 'object' || isCallable(argument)) return argument;
-  throw TypeError("Can't set " + String(argument) + ' as a prototype');
+  if (isPossiblePrototype(argument)) return argument;
+  throw new $TypeError("Can't set " + $String(argument) + ' as a prototype');
 };
 
-},{"../internals/global":56,"../internals/is-callable":67}],6:[function(require,module,exports){
+},{"../internals/is-possible-prototype":74}],5:[function(require,module,exports){
+'use strict';
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var create = require('../internals/object-create');
-var definePropertyModule = require('../internals/object-define-property');
+var defineProperty = require('../internals/object-define-property').f;
 
 var UNSCOPABLES = wellKnownSymbol('unscopables');
 var ArrayPrototype = Array.prototype;
 
 // Array.prototype[@@unscopables]
 // https://tc39.es/ecma262/#sec-array.prototype-@@unscopables
-if (ArrayPrototype[UNSCOPABLES] == undefined) {
-  definePropertyModule.f(ArrayPrototype, UNSCOPABLES, {
+if (ArrayPrototype[UNSCOPABLES] === undefined) {
+  defineProperty(ArrayPrototype, UNSCOPABLES, {
     configurable: true,
     value: create(null)
   });
@@ -1027,41 +995,31 @@ module.exports = function (key) {
   ArrayPrototype[UNSCOPABLES][key] = true;
 };
 
-},{"../internals/object-create":83,"../internals/object-define-property":85,"../internals/well-known-symbol":131}],7:[function(require,module,exports){
+},{"../internals/object-create":88,"../internals/object-define-property":90,"../internals/well-known-symbol":131}],6:[function(require,module,exports){
 'use strict';
-var charAt = require('../internals/string-multibyte').charAt;
-
-// `AdvanceStringIndex` abstract operation
-// https://tc39.es/ecma262/#sec-advancestringindex
-module.exports = function (S, index, unicode) {
-  return index + (unicode ? charAt(S, index).length : 1);
-};
-
-},{"../internals/string-multibyte":113}],8:[function(require,module,exports){
-var global = require('../internals/global');
 var isPrototypeOf = require('../internals/object-is-prototype-of');
 
-var TypeError = global.TypeError;
+var $TypeError = TypeError;
 
 module.exports = function (it, Prototype) {
   if (isPrototypeOf(Prototype, it)) return it;
-  throw TypeError('Incorrect invocation');
+  throw new $TypeError('Incorrect invocation');
 };
 
-},{"../internals/global":56,"../internals/object-is-prototype-of":90}],9:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/object-is-prototype-of":95}],7:[function(require,module,exports){
+'use strict';
 var isObject = require('../internals/is-object');
 
-var String = global.String;
-var TypeError = global.TypeError;
+var $String = String;
+var $TypeError = TypeError;
 
 // `Assert: Type(argument) is Object`
 module.exports = function (argument) {
   if (isObject(argument)) return argument;
-  throw TypeError(String(argument) + ' is not an object');
+  throw new $TypeError($String(argument) + ' is not an object');
 };
 
-},{"../internals/global":56,"../internals/is-object":70}],10:[function(require,module,exports){
+},{"../internals/is-object":73}],8:[function(require,module,exports){
 'use strict';
 var $forEach = require('../internals/array-iteration').forEach;
 var arrayMethodIsStrict = require('../internals/array-method-is-strict');
@@ -1075,9 +1033,8 @@ module.exports = !STRICT_METHOD ? function forEach(callbackfn /* , thisArg */) {
 // eslint-disable-next-line es/no-array-prototype-foreach -- safe
 } : [].forEach;
 
-},{"../internals/array-iteration":13,"../internals/array-method-is-strict":15}],11:[function(require,module,exports){
+},{"../internals/array-iteration":11,"../internals/array-method-is-strict":13}],9:[function(require,module,exports){
 'use strict';
-var global = require('../internals/global');
 var bind = require('../internals/function-bind-context');
 var call = require('../internals/function-call');
 var toObject = require('../internals/to-object');
@@ -1089,7 +1046,7 @@ var createProperty = require('../internals/create-property');
 var getIterator = require('../internals/get-iterator');
 var getIteratorMethod = require('../internals/get-iterator-method');
 
-var Array = global.Array;
+var $Array = Array;
 
 // `Array.from` method implementation
 // https://tc39.es/ecma262/#sec-array.from
@@ -1104,17 +1061,17 @@ module.exports = function from(arrayLike /* , mapfn = undefined, thisArg = undef
   var index = 0;
   var length, result, step, iterator, next, value;
   // if the target is not iterable or it's an array with the default iterator - use a simple case
-  if (iteratorMethod && !(this == Array && isArrayIteratorMethod(iteratorMethod))) {
+  if (iteratorMethod && !(this === $Array && isArrayIteratorMethod(iteratorMethod))) {
+    result = IS_CONSTRUCTOR ? new this() : [];
     iterator = getIterator(O, iteratorMethod);
     next = iterator.next;
-    result = IS_CONSTRUCTOR ? new this() : [];
     for (;!(step = call(next, iterator)).done; index++) {
       value = mapping ? callWithSafeIterationClosing(iterator, mapfn, [step.value, index], true) : step.value;
       createProperty(result, index, value);
     }
   } else {
     length = lengthOfArrayLike(O);
-    result = IS_CONSTRUCTOR ? new this(length) : Array(length);
+    result = IS_CONSTRUCTOR ? new this(length) : $Array(length);
     for (;length > index; index++) {
       value = mapping ? mapfn(O[index], index) : O[index];
       createProperty(result, index, value);
@@ -1124,7 +1081,8 @@ module.exports = function from(arrayLike /* , mapfn = undefined, thisArg = undef
   return result;
 };
 
-},{"../internals/call-with-safe-iteration-closing":21,"../internals/create-property":31,"../internals/function-bind-context":47,"../internals/function-call":49,"../internals/get-iterator":54,"../internals/get-iterator-method":53,"../internals/global":56,"../internals/is-array-iterator-method":65,"../internals/is-constructor":68,"../internals/length-of-array-like":77,"../internals/to-object":121}],12:[function(require,module,exports){
+},{"../internals/call-with-safe-iteration-closing":18,"../internals/create-property":28,"../internals/function-bind-context":47,"../internals/function-call":49,"../internals/get-iterator":56,"../internals/get-iterator-method":55,"../internals/is-array-iterator-method":67,"../internals/is-constructor":70,"../internals/length-of-array-like":83,"../internals/to-object":119}],10:[function(require,module,exports){
+'use strict';
 var toIndexedObject = require('../internals/to-indexed-object');
 var toAbsoluteIndex = require('../internals/to-absolute-index');
 var lengthOfArrayLike = require('../internals/length-of-array-like');
@@ -1134,14 +1092,15 @@ var createMethod = function (IS_INCLUDES) {
   return function ($this, el, fromIndex) {
     var O = toIndexedObject($this);
     var length = lengthOfArrayLike(O);
+    if (length === 0) return !IS_INCLUDES && -1;
     var index = toAbsoluteIndex(fromIndex, length);
     var value;
     // Array#includes uses SameValueZero equality algorithm
     // eslint-disable-next-line no-self-compare -- NaN check
-    if (IS_INCLUDES && el != el) while (length > index) {
+    if (IS_INCLUDES && el !== el) while (length > index) {
       value = O[index++];
       // eslint-disable-next-line no-self-compare -- NaN check
-      if (value != value) return true;
+      if (value !== value) return true;
     // Array#indexOf ignores holes, Array#includes - not
     } else for (;length > index; index++) {
       if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
@@ -1158,7 +1117,8 @@ module.exports = {
   indexOf: createMethod(false)
 };
 
-},{"../internals/length-of-array-like":77,"../internals/to-absolute-index":117,"../internals/to-indexed-object":118}],13:[function(require,module,exports){
+},{"../internals/length-of-array-like":83,"../internals/to-absolute-index":115,"../internals/to-indexed-object":116}],11:[function(require,module,exports){
+'use strict';
 var bind = require('../internals/function-bind-context');
 var uncurryThis = require('../internals/function-uncurry-this');
 var IndexedObject = require('../internals/indexed-object');
@@ -1170,18 +1130,18 @@ var push = uncurryThis([].push);
 
 // `Array.prototype.{ forEach, map, filter, some, every, find, findIndex, filterReject }` methods implementation
 var createMethod = function (TYPE) {
-  var IS_MAP = TYPE == 1;
-  var IS_FILTER = TYPE == 2;
-  var IS_SOME = TYPE == 3;
-  var IS_EVERY = TYPE == 4;
-  var IS_FIND_INDEX = TYPE == 6;
-  var IS_FILTER_REJECT = TYPE == 7;
-  var NO_HOLES = TYPE == 5 || IS_FIND_INDEX;
+  var IS_MAP = TYPE === 1;
+  var IS_FILTER = TYPE === 2;
+  var IS_SOME = TYPE === 3;
+  var IS_EVERY = TYPE === 4;
+  var IS_FIND_INDEX = TYPE === 6;
+  var IS_FILTER_REJECT = TYPE === 7;
+  var NO_HOLES = TYPE === 5 || IS_FIND_INDEX;
   return function ($this, callbackfn, that, specificCreate) {
     var O = toObject($this);
     var self = IndexedObject(O);
-    var boundFunction = bind(callbackfn, that);
     var length = lengthOfArrayLike(self);
+    var boundFunction = bind(callbackfn, that);
     var index = 0;
     var create = specificCreate || arraySpeciesCreate;
     var target = IS_MAP ? create($this, length) : IS_FILTER || IS_FILTER_REJECT ? create($this, 0) : undefined;
@@ -1233,10 +1193,11 @@ module.exports = {
   filterReject: createMethod(7)
 };
 
-},{"../internals/array-species-create":20,"../internals/function-bind-context":47,"../internals/function-uncurry-this":51,"../internals/indexed-object":61,"../internals/length-of-array-like":77,"../internals/to-object":121}],14:[function(require,module,exports){
+},{"../internals/array-species-create":17,"../internals/function-bind-context":47,"../internals/function-uncurry-this":53,"../internals/indexed-object":63,"../internals/length-of-array-like":83,"../internals/to-object":119}],12:[function(require,module,exports){
+'use strict';
 var fails = require('../internals/fails');
 var wellKnownSymbol = require('../internals/well-known-symbol');
-var V8_VERSION = require('../internals/engine-v8-version');
+var V8_VERSION = require('../internals/environment-v8-version');
 
 var SPECIES = wellKnownSymbol('species');
 
@@ -1254,7 +1215,7 @@ module.exports = function (METHOD_NAME) {
   });
 };
 
-},{"../internals/engine-v8-version":40,"../internals/fails":44,"../internals/well-known-symbol":131}],15:[function(require,module,exports){
+},{"../internals/environment-v8-version":43,"../internals/fails":46,"../internals/well-known-symbol":131}],13:[function(require,module,exports){
 'use strict';
 var fails = require('../internals/fails');
 
@@ -1266,85 +1227,65 @@ module.exports = function (METHOD_NAME, argument) {
   });
 };
 
-},{"../internals/fails":44}],16:[function(require,module,exports){
-var global = require('../internals/global');
-var toAbsoluteIndex = require('../internals/to-absolute-index');
-var lengthOfArrayLike = require('../internals/length-of-array-like');
-var createProperty = require('../internals/create-property');
-
-var Array = global.Array;
-var max = Math.max;
-
-module.exports = function (O, start, end) {
-  var length = lengthOfArrayLike(O);
-  var k = toAbsoluteIndex(start, length);
-  var fin = toAbsoluteIndex(end === undefined ? length : end, length);
-  var result = Array(max(fin - k, 0));
-  for (var n = 0; k < fin; k++, n++) createProperty(result, n, O[k]);
-  result.length = n;
-  return result;
-};
-
-},{"../internals/create-property":31,"../internals/global":56,"../internals/length-of-array-like":77,"../internals/to-absolute-index":117}],17:[function(require,module,exports){
+},{"../internals/fails":46}],14:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 
 module.exports = uncurryThis([].slice);
 
-},{"../internals/function-uncurry-this":51}],18:[function(require,module,exports){
-var arraySlice = require('../internals/array-slice-simple');
+},{"../internals/function-uncurry-this":53}],15:[function(require,module,exports){
+'use strict';
+var arraySlice = require('../internals/array-slice');
 
 var floor = Math.floor;
 
-var mergeSort = function (array, comparefn) {
+var sort = function (array, comparefn) {
   var length = array.length;
-  var middle = floor(length / 2);
-  return length < 8 ? insertionSort(array, comparefn) : merge(
-    array,
-    mergeSort(arraySlice(array, 0, middle), comparefn),
-    mergeSort(arraySlice(array, middle), comparefn),
-    comparefn
-  );
-};
 
-var insertionSort = function (array, comparefn) {
-  var length = array.length;
-  var i = 1;
-  var element, j;
+  if (length < 8) {
+    // insertion sort
+    var i = 1;
+    var element, j;
 
-  while (i < length) {
-    j = i;
-    element = array[i];
-    while (j && comparefn(array[j - 1], element) > 0) {
-      array[j] = array[--j];
+    while (i < length) {
+      j = i;
+      element = array[i];
+      while (j && comparefn(array[j - 1], element) > 0) {
+        array[j] = array[--j];
+      }
+      if (j !== i++) array[j] = element;
     }
-    if (j !== i++) array[j] = element;
-  } return array;
+  } else {
+    // merge sort
+    var middle = floor(length / 2);
+    var left = sort(arraySlice(array, 0, middle), comparefn);
+    var right = sort(arraySlice(array, middle), comparefn);
+    var llength = left.length;
+    var rlength = right.length;
+    var lindex = 0;
+    var rindex = 0;
+
+    while (lindex < llength || rindex < rlength) {
+      array[lindex + rindex] = (lindex < llength && rindex < rlength)
+        ? comparefn(left[lindex], right[rindex]) <= 0 ? left[lindex++] : right[rindex++]
+        : lindex < llength ? left[lindex++] : right[rindex++];
+    }
+  }
+
+  return array;
 };
 
-var merge = function (array, left, right, comparefn) {
-  var llength = left.length;
-  var rlength = right.length;
-  var lindex = 0;
-  var rindex = 0;
+module.exports = sort;
 
-  while (lindex < llength || rindex < rlength) {
-    array[lindex + rindex] = (lindex < llength && rindex < rlength)
-      ? comparefn(left[lindex], right[rindex]) <= 0 ? left[lindex++] : right[rindex++]
-      : lindex < llength ? left[lindex++] : right[rindex++];
-  } return array;
-};
-
-module.exports = mergeSort;
-
-},{"../internals/array-slice-simple":16}],19:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/array-slice":14}],16:[function(require,module,exports){
+'use strict';
 var isArray = require('../internals/is-array');
 var isConstructor = require('../internals/is-constructor');
 var isObject = require('../internals/is-object');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var SPECIES = wellKnownSymbol('species');
-var Array = global.Array;
+var $Array = Array;
 
 // a part of `ArraySpeciesCreate` abstract operation
 // https://tc39.es/ecma262/#sec-arrayspeciescreate
@@ -1353,15 +1294,16 @@ module.exports = function (originalArray) {
   if (isArray(originalArray)) {
     C = originalArray.constructor;
     // cross-realm fallback
-    if (isConstructor(C) && (C === Array || isArray(C.prototype))) C = undefined;
+    if (isConstructor(C) && (C === $Array || isArray(C.prototype))) C = undefined;
     else if (isObject(C)) {
       C = C[SPECIES];
       if (C === null) C = undefined;
     }
-  } return C === undefined ? Array : C;
+  } return C === undefined ? $Array : C;
 };
 
-},{"../internals/global":56,"../internals/is-array":66,"../internals/is-constructor":68,"../internals/is-object":70,"../internals/well-known-symbol":131}],20:[function(require,module,exports){
+},{"../internals/is-array":68,"../internals/is-constructor":70,"../internals/is-object":73,"../internals/well-known-symbol":131}],17:[function(require,module,exports){
+'use strict';
 var arraySpeciesConstructor = require('../internals/array-species-constructor');
 
 // `ArraySpeciesCreate` abstract operation
@@ -1370,7 +1312,8 @@ module.exports = function (originalArray, length) {
   return new (arraySpeciesConstructor(originalArray))(length === 0 ? 0 : length);
 };
 
-},{"../internals/array-species-constructor":19}],21:[function(require,module,exports){
+},{"../internals/array-species-constructor":16}],18:[function(require,module,exports){
+'use strict';
 var anObject = require('../internals/an-object');
 var iteratorClose = require('../internals/iterator-close');
 
@@ -1383,7 +1326,8 @@ module.exports = function (iterator, fn, value, ENTRIES) {
   }
 };
 
-},{"../internals/an-object":9,"../internals/iterator-close":74}],22:[function(require,module,exports){
+},{"../internals/an-object":7,"../internals/iterator-close":78}],19:[function(require,module,exports){
+'use strict';
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var ITERATOR = wellKnownSymbol('iterator');
@@ -1407,7 +1351,9 @@ try {
 } catch (error) { /* empty */ }
 
 module.exports = function (exec, SKIP_CLOSING) {
-  if (!SKIP_CLOSING && !SAFE_CLOSING) return false;
+  try {
+    if (!SKIP_CLOSING && !SAFE_CLOSING) return false;
+  } catch (error) { return false; } // workaround of old WebKit + `eval` bug
   var ITERATION_SUPPORT = false;
   try {
     var object = {};
@@ -1423,7 +1369,8 @@ module.exports = function (exec, SKIP_CLOSING) {
   return ITERATION_SUPPORT;
 };
 
-},{"../internals/well-known-symbol":131}],23:[function(require,module,exports){
+},{"../internals/well-known-symbol":131}],20:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 
 var toString = uncurryThis({}.toString);
@@ -1433,18 +1380,18 @@ module.exports = function (it) {
   return stringSlice(toString(it), 8, -1);
 };
 
-},{"../internals/function-uncurry-this":51}],24:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/function-uncurry-this":53}],21:[function(require,module,exports){
+'use strict';
 var TO_STRING_TAG_SUPPORT = require('../internals/to-string-tag-support');
 var isCallable = require('../internals/is-callable');
 var classofRaw = require('../internals/classof-raw');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
-var Object = global.Object;
+var $Object = Object;
 
 // ES3 wrong here
-var CORRECT_ARGUMENTS = classofRaw(function () { return arguments; }()) == 'Arguments';
+var CORRECT_ARGUMENTS = classofRaw(function () { return arguments; }()) === 'Arguments';
 
 // fallback for IE11 Script Access Denied error
 var tryGet = function (it, key) {
@@ -1458,14 +1405,15 @@ module.exports = TO_STRING_TAG_SUPPORT ? classofRaw : function (it) {
   var O, tag, result;
   return it === undefined ? 'Undefined' : it === null ? 'Null'
     // @@toStringTag case
-    : typeof (tag = tryGet(O = Object(it), TO_STRING_TAG)) == 'string' ? tag
+    : typeof (tag = tryGet(O = $Object(it), TO_STRING_TAG)) == 'string' ? tag
     // builtinTag case
     : CORRECT_ARGUMENTS ? classofRaw(O)
     // ES3 arguments fallback
-    : (result = classofRaw(O)) == 'Object' && isCallable(O.callee) ? 'Arguments' : result;
+    : (result = classofRaw(O)) === 'Object' && isCallable(O.callee) ? 'Arguments' : result;
 };
 
-},{"../internals/classof-raw":23,"../internals/global":56,"../internals/is-callable":67,"../internals/to-string-tag-support":124,"../internals/well-known-symbol":131}],25:[function(require,module,exports){
+},{"../internals/classof-raw":20,"../internals/is-callable":69,"../internals/to-string-tag-support":122,"../internals/well-known-symbol":131}],22:[function(require,module,exports){
+'use strict';
 var hasOwn = require('../internals/has-own-property');
 var ownKeys = require('../internals/own-keys');
 var getOwnPropertyDescriptorModule = require('../internals/object-get-own-property-descriptor');
@@ -1483,7 +1431,8 @@ module.exports = function (target, source, exceptions) {
   }
 };
 
-},{"../internals/has-own-property":57,"../internals/object-define-property":85,"../internals/object-get-own-property-descriptor":86,"../internals/own-keys":97}],26:[function(require,module,exports){
+},{"../internals/has-own-property":59,"../internals/object-define-property":90,"../internals/object-get-own-property-descriptor":91,"../internals/own-keys":102}],23:[function(require,module,exports){
+'use strict';
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var MATCH = wellKnownSymbol('match');
@@ -1500,7 +1449,8 @@ module.exports = function (METHOD_NAME) {
   } return false;
 };
 
-},{"../internals/well-known-symbol":131}],27:[function(require,module,exports){
+},{"../internals/well-known-symbol":131}],24:[function(require,module,exports){
+'use strict';
 var fails = require('../internals/fails');
 
 module.exports = !fails(function () {
@@ -1510,25 +1460,16 @@ module.exports = !fails(function () {
   return Object.getPrototypeOf(new F()) !== F.prototype;
 });
 
-},{"../internals/fails":44}],28:[function(require,module,exports){
+},{"../internals/fails":46}],25:[function(require,module,exports){
 'use strict';
-var IteratorPrototype = require('../internals/iterators-core').IteratorPrototype;
-var create = require('../internals/object-create');
-var createPropertyDescriptor = require('../internals/create-property-descriptor');
-var setToStringTag = require('../internals/set-to-string-tag');
-var Iterators = require('../internals/iterators');
-
-var returnThis = function () { return this; };
-
-module.exports = function (IteratorConstructor, NAME, next, ENUMERABLE_NEXT) {
-  var TO_STRING_TAG = NAME + ' Iterator';
-  IteratorConstructor.prototype = create(IteratorPrototype, { next: createPropertyDescriptor(+!ENUMERABLE_NEXT, next) });
-  setToStringTag(IteratorConstructor, TO_STRING_TAG, false, true);
-  Iterators[TO_STRING_TAG] = returnThis;
-  return IteratorConstructor;
+// `CreateIterResultObject` abstract operation
+// https://tc39.es/ecma262/#sec-createiterresultobject
+module.exports = function (value, done) {
+  return { value: value, done: done };
 };
 
-},{"../internals/create-property-descriptor":30,"../internals/iterators":76,"../internals/iterators-core":75,"../internals/object-create":83,"../internals/set-to-string-tag":108}],29:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
+'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var definePropertyModule = require('../internals/object-define-property');
 var createPropertyDescriptor = require('../internals/create-property-descriptor');
@@ -1540,7 +1481,8 @@ module.exports = DESCRIPTORS ? function (object, key, value) {
   return object;
 };
 
-},{"../internals/create-property-descriptor":30,"../internals/descriptors":33,"../internals/object-define-property":85}],30:[function(require,module,exports){
+},{"../internals/create-property-descriptor":27,"../internals/descriptors":34,"../internals/object-define-property":90}],27:[function(require,module,exports){
+'use strict';
 module.exports = function (bitmap, value) {
   return {
     enumerable: !(bitmap & 1),
@@ -1550,133 +1492,108 @@ module.exports = function (bitmap, value) {
   };
 };
 
-},{}],31:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
-var toPropertyKey = require('../internals/to-property-key');
+var DESCRIPTORS = require('../internals/descriptors');
 var definePropertyModule = require('../internals/object-define-property');
 var createPropertyDescriptor = require('../internals/create-property-descriptor');
 
 module.exports = function (object, key, value) {
-  var propertyKey = toPropertyKey(key);
-  if (propertyKey in object) definePropertyModule.f(object, propertyKey, createPropertyDescriptor(0, value));
-  else object[propertyKey] = value;
+  if (DESCRIPTORS) definePropertyModule.f(object, key, createPropertyDescriptor(0, value));
+  else object[key] = value;
 };
 
-},{"../internals/create-property-descriptor":30,"../internals/object-define-property":85,"../internals/to-property-key":123}],32:[function(require,module,exports){
+},{"../internals/create-property-descriptor":27,"../internals/descriptors":34,"../internals/object-define-property":90}],29:[function(require,module,exports){
 'use strict';
-var $ = require('../internals/export');
-var call = require('../internals/function-call');
-var IS_PURE = require('../internals/is-pure');
-var FunctionName = require('../internals/function-name');
-var isCallable = require('../internals/is-callable');
-var createIteratorConstructor = require('../internals/create-iterator-constructor');
-var getPrototypeOf = require('../internals/object-get-prototype-of');
-var setPrototypeOf = require('../internals/object-set-prototype-of');
-var setToStringTag = require('../internals/set-to-string-tag');
-var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
-var redefine = require('../internals/redefine');
-var wellKnownSymbol = require('../internals/well-known-symbol');
-var Iterators = require('../internals/iterators');
-var IteratorsCore = require('../internals/iterators-core');
+var makeBuiltIn = require('../internals/make-built-in');
+var defineProperty = require('../internals/object-define-property');
 
-var PROPER_FUNCTION_NAME = FunctionName.PROPER;
-var CONFIGURABLE_FUNCTION_NAME = FunctionName.CONFIGURABLE;
-var IteratorPrototype = IteratorsCore.IteratorPrototype;
-var BUGGY_SAFARI_ITERATORS = IteratorsCore.BUGGY_SAFARI_ITERATORS;
-var ITERATOR = wellKnownSymbol('iterator');
-var KEYS = 'keys';
-var VALUES = 'values';
-var ENTRIES = 'entries';
-
-var returnThis = function () { return this; };
-
-module.exports = function (Iterable, NAME, IteratorConstructor, next, DEFAULT, IS_SET, FORCED) {
-  createIteratorConstructor(IteratorConstructor, NAME, next);
-
-  var getIterationMethod = function (KIND) {
-    if (KIND === DEFAULT && defaultIterator) return defaultIterator;
-    if (!BUGGY_SAFARI_ITERATORS && KIND in IterablePrototype) return IterablePrototype[KIND];
-    switch (KIND) {
-      case KEYS: return function keys() { return new IteratorConstructor(this, KIND); };
-      case VALUES: return function values() { return new IteratorConstructor(this, KIND); };
-      case ENTRIES: return function entries() { return new IteratorConstructor(this, KIND); };
-    } return function () { return new IteratorConstructor(this); };
-  };
-
-  var TO_STRING_TAG = NAME + ' Iterator';
-  var INCORRECT_VALUES_NAME = false;
-  var IterablePrototype = Iterable.prototype;
-  var nativeIterator = IterablePrototype[ITERATOR]
-    || IterablePrototype['@@iterator']
-    || DEFAULT && IterablePrototype[DEFAULT];
-  var defaultIterator = !BUGGY_SAFARI_ITERATORS && nativeIterator || getIterationMethod(DEFAULT);
-  var anyNativeIterator = NAME == 'Array' ? IterablePrototype.entries || nativeIterator : nativeIterator;
-  var CurrentIteratorPrototype, methods, KEY;
-
-  // fix native
-  if (anyNativeIterator) {
-    CurrentIteratorPrototype = getPrototypeOf(anyNativeIterator.call(new Iterable()));
-    if (CurrentIteratorPrototype !== Object.prototype && CurrentIteratorPrototype.next) {
-      if (!IS_PURE && getPrototypeOf(CurrentIteratorPrototype) !== IteratorPrototype) {
-        if (setPrototypeOf) {
-          setPrototypeOf(CurrentIteratorPrototype, IteratorPrototype);
-        } else if (!isCallable(CurrentIteratorPrototype[ITERATOR])) {
-          redefine(CurrentIteratorPrototype, ITERATOR, returnThis);
-        }
-      }
-      // Set @@toStringTag to native iterators
-      setToStringTag(CurrentIteratorPrototype, TO_STRING_TAG, true, true);
-      if (IS_PURE) Iterators[TO_STRING_TAG] = returnThis;
-    }
-  }
-
-  // fix Array.prototype.{ values, @@iterator }.name in V8 / FF
-  if (PROPER_FUNCTION_NAME && DEFAULT == VALUES && nativeIterator && nativeIterator.name !== VALUES) {
-    if (!IS_PURE && CONFIGURABLE_FUNCTION_NAME) {
-      createNonEnumerableProperty(IterablePrototype, 'name', VALUES);
-    } else {
-      INCORRECT_VALUES_NAME = true;
-      defaultIterator = function values() { return call(nativeIterator, this); };
-    }
-  }
-
-  // export additional methods
-  if (DEFAULT) {
-    methods = {
-      values: getIterationMethod(VALUES),
-      keys: IS_SET ? defaultIterator : getIterationMethod(KEYS),
-      entries: getIterationMethod(ENTRIES)
-    };
-    if (FORCED) for (KEY in methods) {
-      if (BUGGY_SAFARI_ITERATORS || INCORRECT_VALUES_NAME || !(KEY in IterablePrototype)) {
-        redefine(IterablePrototype, KEY, methods[KEY]);
-      }
-    } else $({ target: NAME, proto: true, forced: BUGGY_SAFARI_ITERATORS || INCORRECT_VALUES_NAME }, methods);
-  }
-
-  // define iterator
-  if ((!IS_PURE || FORCED) && IterablePrototype[ITERATOR] !== defaultIterator) {
-    redefine(IterablePrototype, ITERATOR, defaultIterator, { name: DEFAULT });
-  }
-  Iterators[NAME] = defaultIterator;
-
-  return methods;
+module.exports = function (target, name, descriptor) {
+  if (descriptor.get) makeBuiltIn(descriptor.get, name, { getter: true });
+  if (descriptor.set) makeBuiltIn(descriptor.set, name, { setter: true });
+  return defineProperty.f(target, name, descriptor);
 };
 
-},{"../internals/create-iterator-constructor":28,"../internals/create-non-enumerable-property":29,"../internals/export":43,"../internals/function-call":49,"../internals/function-name":50,"../internals/is-callable":67,"../internals/is-pure":71,"../internals/iterators":76,"../internals/iterators-core":75,"../internals/object-get-prototype-of":89,"../internals/object-set-prototype-of":94,"../internals/redefine":99,"../internals/set-to-string-tag":108,"../internals/well-known-symbol":131}],33:[function(require,module,exports){
+},{"../internals/make-built-in":84,"../internals/object-define-property":90}],30:[function(require,module,exports){
+'use strict';
+var isCallable = require('../internals/is-callable');
+var definePropertyModule = require('../internals/object-define-property');
+var makeBuiltIn = require('../internals/make-built-in');
+var defineGlobalProperty = require('../internals/define-global-property');
+
+module.exports = function (O, key, value, options) {
+  if (!options) options = {};
+  var simple = options.enumerable;
+  var name = options.name !== undefined ? options.name : key;
+  if (isCallable(value)) makeBuiltIn(value, name, options);
+  if (options.global) {
+    if (simple) O[key] = value;
+    else defineGlobalProperty(key, value);
+  } else {
+    try {
+      if (!options.unsafe) delete O[key];
+      else if (O[key]) simple = true;
+    } catch (error) { /* empty */ }
+    if (simple) O[key] = value;
+    else definePropertyModule.f(O, key, {
+      value: value,
+      enumerable: false,
+      configurable: !options.nonConfigurable,
+      writable: !options.nonWritable
+    });
+  } return O;
+};
+
+},{"../internals/define-global-property":32,"../internals/is-callable":69,"../internals/make-built-in":84,"../internals/object-define-property":90}],31:[function(require,module,exports){
+'use strict';
+var defineBuiltIn = require('../internals/define-built-in');
+
+module.exports = function (target, src, options) {
+  for (var key in src) defineBuiltIn(target, key, src[key], options);
+  return target;
+};
+
+},{"../internals/define-built-in":30}],32:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
+
+// eslint-disable-next-line es/no-object-defineproperty -- safe
+var defineProperty = Object.defineProperty;
+
+module.exports = function (key, value) {
+  try {
+    defineProperty(globalThis, key, { value: value, configurable: true, writable: true });
+  } catch (error) {
+    globalThis[key] = value;
+  } return value;
+};
+
+},{"../internals/global-this":58}],33:[function(require,module,exports){
+'use strict';
+var tryToString = require('../internals/try-to-string');
+
+var $TypeError = TypeError;
+
+module.exports = function (O, P) {
+  if (!delete O[P]) throw new $TypeError('Cannot delete property ' + tryToString(P) + ' of ' + tryToString(O));
+};
+
+},{"../internals/try-to-string":124}],34:[function(require,module,exports){
+'use strict';
 var fails = require('../internals/fails');
 
 // Detect IE8's incomplete defineProperty implementation
 module.exports = !fails(function () {
   // eslint-disable-next-line es/no-object-defineproperty -- required for testing
-  return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
+  return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] !== 7;
 });
 
-},{"../internals/fails":44}],34:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/fails":46}],35:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
 var isObject = require('../internals/is-object');
 
-var document = global.document;
+var document = globalThis.document;
 // typeof document.createElement is 'object' in old IE
 var EXISTS = isObject(document) && isObject(document.createElement);
 
@@ -1684,7 +1601,18 @@ module.exports = function (it) {
   return EXISTS ? document.createElement(it) : {};
 };
 
-},{"../internals/global":56,"../internals/is-object":70}],35:[function(require,module,exports){
+},{"../internals/global-this":58,"../internals/is-object":73}],36:[function(require,module,exports){
+'use strict';
+var $TypeError = TypeError;
+var MAX_SAFE_INTEGER = 0x1FFFFFFFFFFFFF; // 2 ** 53 - 1 == 9007199254740991
+
+module.exports = function (it) {
+  if (it > MAX_SAFE_INTEGER) throw $TypeError('Maximum allowed index exceeded');
+  return it;
+};
+
+},{}],37:[function(require,module,exports){
+'use strict';
 // iterable DOM collections
 // flag - `iterable` interface - 'entries', 'keys', 'values', 'forEach' methods
 module.exports = {
@@ -1721,7 +1649,8 @@ module.exports = {
   TouchList: 0
 };
 
-},{}],36:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
+'use strict';
 // in old WebKit versions, `element.classList` is not an instance of global `DOMTokenList`
 var documentCreateElement = require('../internals/document-create-element');
 
@@ -1730,29 +1659,49 @@ var DOMTokenListPrototype = classList && classList.constructor && classList.cons
 
 module.exports = DOMTokenListPrototype === Object.prototype ? undefined : DOMTokenListPrototype;
 
-},{"../internals/document-create-element":34}],37:[function(require,module,exports){
-var userAgent = require('../internals/engine-user-agent');
+},{"../internals/document-create-element":35}],39:[function(require,module,exports){
+'use strict';
+// IE8- don't enum bug keys
+module.exports = [
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'toLocaleString',
+  'toString',
+  'valueOf'
+];
+
+},{}],40:[function(require,module,exports){
+'use strict';
+var userAgent = require('../internals/environment-user-agent');
 
 var firefox = userAgent.match(/firefox\/(\d+)/i);
 
 module.exports = !!firefox && +firefox[1];
 
-},{"../internals/engine-user-agent":39}],38:[function(require,module,exports){
-var UA = require('../internals/engine-user-agent');
+},{"../internals/environment-user-agent":42}],41:[function(require,module,exports){
+'use strict';
+var UA = require('../internals/environment-user-agent');
 
 module.exports = /MSIE|Trident/.test(UA);
 
-},{"../internals/engine-user-agent":39}],39:[function(require,module,exports){
-var getBuiltIn = require('../internals/get-built-in');
+},{"../internals/environment-user-agent":42}],42:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
 
-module.exports = getBuiltIn('navigator', 'userAgent') || '';
+var navigator = globalThis.navigator;
+var userAgent = navigator && navigator.userAgent;
 
-},{"../internals/get-built-in":52}],40:[function(require,module,exports){
-var global = require('../internals/global');
-var userAgent = require('../internals/engine-user-agent');
+module.exports = userAgent ? String(userAgent) : '';
 
-var process = global.process;
-var Deno = global.Deno;
+},{"../internals/global-this":58}],43:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
+var userAgent = require('../internals/environment-user-agent');
+
+var process = globalThis.process;
+var Deno = globalThis.Deno;
 var versions = process && process.versions || Deno && Deno.version;
 var v8 = versions && versions.v8;
 var match, version;
@@ -1776,48 +1725,38 @@ if (!version && userAgent) {
 
 module.exports = version;
 
-},{"../internals/engine-user-agent":39,"../internals/global":56}],41:[function(require,module,exports){
-var userAgent = require('../internals/engine-user-agent');
+},{"../internals/environment-user-agent":42,"../internals/global-this":58}],44:[function(require,module,exports){
+'use strict';
+var userAgent = require('../internals/environment-user-agent');
 
 var webkit = userAgent.match(/AppleWebKit\/(\d+)\./);
 
 module.exports = !!webkit && +webkit[1];
 
-},{"../internals/engine-user-agent":39}],42:[function(require,module,exports){
-// IE8- don't enum bug keys
-module.exports = [
-  'constructor',
-  'hasOwnProperty',
-  'isPrototypeOf',
-  'propertyIsEnumerable',
-  'toLocaleString',
-  'toString',
-  'valueOf'
-];
-
-},{}],43:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/environment-user-agent":42}],45:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
 var getOwnPropertyDescriptor = require('../internals/object-get-own-property-descriptor').f;
 var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
-var redefine = require('../internals/redefine');
-var setGlobal = require('../internals/set-global');
+var defineBuiltIn = require('../internals/define-built-in');
+var defineGlobalProperty = require('../internals/define-global-property');
 var copyConstructorProperties = require('../internals/copy-constructor-properties');
 var isForced = require('../internals/is-forced');
 
 /*
-  options.target      - name of the target object
-  options.global      - target is the global object
-  options.stat        - export as static methods of target
-  options.proto       - export as prototype methods of target
-  options.real        - real prototype method for the `pure` version
-  options.forced      - export even if the native feature is available
-  options.bind        - bind methods to the target, required for the `pure` version
-  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
-  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
-  options.sham        - add a flag to not completely full polyfills
-  options.enumerable  - export as enumerable property
-  options.noTargetGet - prevent calling a getter on target
-  options.name        - the .name of the function if it does not match the key
+  options.target         - name of the target object
+  options.global         - target is the global object
+  options.stat           - export as static methods of target
+  options.proto          - export as prototype methods of target
+  options.real           - real prototype method for the `pure` version
+  options.forced         - export even if the native feature is available
+  options.bind           - bind methods to the target, required for the `pure` version
+  options.wrap           - wrap constructors to preventing global pollution, required for the `pure` version
+  options.unsafe         - use the simple assignment of property instead of delete + defineProperty
+  options.sham           - add a flag to not completely full polyfills
+  options.enumerable     - export as enumerable property
+  options.dontCallGetSet - prevent calling a getter on target
+  options.name           - the .name of the function if it does not match the key
 */
 module.exports = function (options, source) {
   var TARGET = options.target;
@@ -1825,15 +1764,15 @@ module.exports = function (options, source) {
   var STATIC = options.stat;
   var FORCED, target, key, targetProperty, sourceProperty, descriptor;
   if (GLOBAL) {
-    target = global;
+    target = globalThis;
   } else if (STATIC) {
-    target = global[TARGET] || setGlobal(TARGET, {});
+    target = globalThis[TARGET] || defineGlobalProperty(TARGET, {});
   } else {
-    target = (global[TARGET] || {}).prototype;
+    target = globalThis[TARGET] && globalThis[TARGET].prototype;
   }
   if (target) for (key in source) {
     sourceProperty = source[key];
-    if (options.noTargetGet) {
+    if (options.dontCallGetSet) {
       descriptor = getOwnPropertyDescriptor(target, key);
       targetProperty = descriptor && descriptor.value;
     } else targetProperty = target[key];
@@ -1847,12 +1786,12 @@ module.exports = function (options, source) {
     if (options.sham || (targetProperty && targetProperty.sham)) {
       createNonEnumerableProperty(sourceProperty, 'sham', true);
     }
-    // extend global
-    redefine(target, key, sourceProperty, options);
+    defineBuiltIn(target, key, sourceProperty, options);
   }
 };
 
-},{"../internals/copy-constructor-properties":25,"../internals/create-non-enumerable-property":29,"../internals/global":56,"../internals/is-forced":69,"../internals/object-get-own-property-descriptor":86,"../internals/redefine":99,"../internals/set-global":107}],44:[function(require,module,exports){
+},{"../internals/copy-constructor-properties":22,"../internals/create-non-enumerable-property":26,"../internals/define-built-in":30,"../internals/define-global-property":32,"../internals/global-this":58,"../internals/is-forced":71,"../internals/object-get-own-property-descriptor":91}],46:[function(require,module,exports){
+'use strict';
 module.exports = function (exec) {
   try {
     return !!exec();
@@ -1861,96 +1800,9 @@ module.exports = function (exec) {
   }
 };
 
-},{}],45:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 'use strict';
-// TODO: Remove from `core-js@4` since it's moved to entry points
-require('../modules/es.regexp.exec');
-var uncurryThis = require('../internals/function-uncurry-this');
-var redefine = require('../internals/redefine');
-var regexpExec = require('../internals/regexp-exec');
-var fails = require('../internals/fails');
-var wellKnownSymbol = require('../internals/well-known-symbol');
-var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
-
-var SPECIES = wellKnownSymbol('species');
-var RegExpPrototype = RegExp.prototype;
-
-module.exports = function (KEY, exec, FORCED, SHAM) {
-  var SYMBOL = wellKnownSymbol(KEY);
-
-  var DELEGATES_TO_SYMBOL = !fails(function () {
-    // String methods call symbol-named RegEp methods
-    var O = {};
-    O[SYMBOL] = function () { return 7; };
-    return ''[KEY](O) != 7;
-  });
-
-  var DELEGATES_TO_EXEC = DELEGATES_TO_SYMBOL && !fails(function () {
-    // Symbol-named RegExp methods call .exec
-    var execCalled = false;
-    var re = /a/;
-
-    if (KEY === 'split') {
-      // We can't use real regex here since it causes deoptimization
-      // and serious performance degradation in V8
-      // https://github.com/zloirock/core-js/issues/306
-      re = {};
-      // RegExp[@@split] doesn't call the regex's exec method, but first creates
-      // a new one. We need to return the patched regex when creating the new one.
-      re.constructor = {};
-      re.constructor[SPECIES] = function () { return re; };
-      re.flags = '';
-      re[SYMBOL] = /./[SYMBOL];
-    }
-
-    re.exec = function () { execCalled = true; return null; };
-
-    re[SYMBOL]('');
-    return !execCalled;
-  });
-
-  if (
-    !DELEGATES_TO_SYMBOL ||
-    !DELEGATES_TO_EXEC ||
-    FORCED
-  ) {
-    var uncurriedNativeRegExpMethod = uncurryThis(/./[SYMBOL]);
-    var methods = exec(SYMBOL, ''[KEY], function (nativeMethod, regexp, str, arg2, forceStringMethod) {
-      var uncurriedNativeMethod = uncurryThis(nativeMethod);
-      var $exec = regexp.exec;
-      if ($exec === regexpExec || $exec === RegExpPrototype.exec) {
-        if (DELEGATES_TO_SYMBOL && !forceStringMethod) {
-          // The native String method already delegates to @@method (this
-          // polyfilled function), leasing to infinite recursion.
-          // We avoid it by directly calling the native @@method method.
-          return { done: true, value: uncurriedNativeRegExpMethod(regexp, str, arg2) };
-        }
-        return { done: true, value: uncurriedNativeMethod(str, regexp, arg2) };
-      }
-      return { done: false };
-    });
-
-    redefine(String.prototype, KEY, methods[0]);
-    redefine(RegExpPrototype, SYMBOL, methods[1]);
-  }
-
-  if (SHAM) createNonEnumerableProperty(RegExpPrototype[SYMBOL], 'sham', true);
-};
-
-},{"../internals/create-non-enumerable-property":29,"../internals/fails":44,"../internals/function-uncurry-this":51,"../internals/redefine":99,"../internals/regexp-exec":101,"../internals/well-known-symbol":131,"../modules/es.regexp.exec":145}],46:[function(require,module,exports){
-var NATIVE_BIND = require('../internals/function-bind-native');
-
-var FunctionPrototype = Function.prototype;
-var apply = FunctionPrototype.apply;
-var call = FunctionPrototype.call;
-
-// eslint-disable-next-line es/no-reflect -- safe
-module.exports = typeof Reflect == 'object' && Reflect.apply || (NATIVE_BIND ? call.bind(apply) : function () {
-  return call.apply(apply, arguments);
-});
-
-},{"../internals/function-bind-native":48}],47:[function(require,module,exports){
-var uncurryThis = require('../internals/function-uncurry-this');
+var uncurryThis = require('../internals/function-uncurry-this-clause');
 var aCallable = require('../internals/a-callable');
 var NATIVE_BIND = require('../internals/function-bind-native');
 
@@ -1964,16 +1816,19 @@ module.exports = function (fn, that) {
   };
 };
 
-},{"../internals/a-callable":3,"../internals/function-bind-native":48,"../internals/function-uncurry-this":51}],48:[function(require,module,exports){
+},{"../internals/a-callable":3,"../internals/function-bind-native":48,"../internals/function-uncurry-this-clause":52}],48:[function(require,module,exports){
+'use strict';
 var fails = require('../internals/fails');
 
 module.exports = !fails(function () {
+  // eslint-disable-next-line es/no-function-prototype-bind -- safe
   var test = (function () { /* empty */ }).bind();
   // eslint-disable-next-line no-prototype-builtins -- safe
   return typeof test != 'function' || test.hasOwnProperty('prototype');
 });
 
-},{"../internals/fails":44}],49:[function(require,module,exports){
+},{"../internals/fails":46}],49:[function(require,module,exports){
+'use strict';
 var NATIVE_BIND = require('../internals/function-bind-native');
 
 var call = Function.prototype.call;
@@ -1983,6 +1838,7 @@ module.exports = NATIVE_BIND ? call.bind(call) : function () {
 };
 
 },{"../internals/function-bind-native":48}],50:[function(require,module,exports){
+'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var hasOwn = require('../internals/has-own-property');
 
@@ -2001,24 +1857,47 @@ module.exports = {
   CONFIGURABLE: CONFIGURABLE
 };
 
-},{"../internals/descriptors":33,"../internals/has-own-property":57}],51:[function(require,module,exports){
+},{"../internals/descriptors":34,"../internals/has-own-property":59}],51:[function(require,module,exports){
+'use strict';
+var uncurryThis = require('../internals/function-uncurry-this');
+var aCallable = require('../internals/a-callable');
+
+module.exports = function (object, key, method) {
+  try {
+    // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+    return uncurryThis(aCallable(Object.getOwnPropertyDescriptor(object, key)[method]));
+  } catch (error) { /* empty */ }
+};
+
+},{"../internals/a-callable":3,"../internals/function-uncurry-this":53}],52:[function(require,module,exports){
+'use strict';
+var classofRaw = require('../internals/classof-raw');
+var uncurryThis = require('../internals/function-uncurry-this');
+
+module.exports = function (fn) {
+  // Nashorn bug:
+  //   https://github.com/zloirock/core-js/issues/1128
+  //   https://github.com/zloirock/core-js/issues/1130
+  if (classofRaw(fn) === 'Function') return uncurryThis(fn);
+};
+
+},{"../internals/classof-raw":20,"../internals/function-uncurry-this":53}],53:[function(require,module,exports){
+'use strict';
 var NATIVE_BIND = require('../internals/function-bind-native');
 
 var FunctionPrototype = Function.prototype;
-var bind = FunctionPrototype.bind;
 var call = FunctionPrototype.call;
-var uncurryThis = NATIVE_BIND && bind.bind(call, call);
+var uncurryThisWithBind = NATIVE_BIND && FunctionPrototype.bind.bind(call, call);
 
-module.exports = NATIVE_BIND ? function (fn) {
-  return fn && uncurryThis(fn);
-} : function (fn) {
-  return fn && function () {
+module.exports = NATIVE_BIND ? uncurryThisWithBind : function (fn) {
+  return function () {
     return call.apply(fn, arguments);
   };
 };
 
-},{"../internals/function-bind-native":48}],52:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/function-bind-native":48}],54:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
 var isCallable = require('../internals/is-callable');
 
 var aFunction = function (argument) {
@@ -2026,53 +1905,58 @@ var aFunction = function (argument) {
 };
 
 module.exports = function (namespace, method) {
-  return arguments.length < 2 ? aFunction(global[namespace]) : global[namespace] && global[namespace][method];
+  return arguments.length < 2 ? aFunction(globalThis[namespace]) : globalThis[namespace] && globalThis[namespace][method];
 };
 
-},{"../internals/global":56,"../internals/is-callable":67}],53:[function(require,module,exports){
+},{"../internals/global-this":58,"../internals/is-callable":69}],55:[function(require,module,exports){
+'use strict';
 var classof = require('../internals/classof');
 var getMethod = require('../internals/get-method');
+var isNullOrUndefined = require('../internals/is-null-or-undefined');
 var Iterators = require('../internals/iterators');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var ITERATOR = wellKnownSymbol('iterator');
 
 module.exports = function (it) {
-  if (it != undefined) return getMethod(it, ITERATOR)
+  if (!isNullOrUndefined(it)) return getMethod(it, ITERATOR)
     || getMethod(it, '@@iterator')
     || Iterators[classof(it)];
 };
 
-},{"../internals/classof":24,"../internals/get-method":55,"../internals/iterators":76,"../internals/well-known-symbol":131}],54:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/classof":21,"../internals/get-method":57,"../internals/is-null-or-undefined":72,"../internals/iterators":82,"../internals/well-known-symbol":131}],56:[function(require,module,exports){
+'use strict';
 var call = require('../internals/function-call');
 var aCallable = require('../internals/a-callable');
 var anObject = require('../internals/an-object');
 var tryToString = require('../internals/try-to-string');
 var getIteratorMethod = require('../internals/get-iterator-method');
 
-var TypeError = global.TypeError;
+var $TypeError = TypeError;
 
 module.exports = function (argument, usingIterator) {
   var iteratorMethod = arguments.length < 2 ? getIteratorMethod(argument) : usingIterator;
   if (aCallable(iteratorMethod)) return anObject(call(iteratorMethod, argument));
-  throw TypeError(tryToString(argument) + ' is not iterable');
+  throw new $TypeError(tryToString(argument) + ' is not iterable');
 };
 
-},{"../internals/a-callable":3,"../internals/an-object":9,"../internals/function-call":49,"../internals/get-iterator-method":53,"../internals/global":56,"../internals/try-to-string":126}],55:[function(require,module,exports){
+},{"../internals/a-callable":3,"../internals/an-object":7,"../internals/function-call":49,"../internals/get-iterator-method":55,"../internals/try-to-string":124}],57:[function(require,module,exports){
+'use strict';
 var aCallable = require('../internals/a-callable');
+var isNullOrUndefined = require('../internals/is-null-or-undefined');
 
 // `GetMethod` abstract operation
 // https://tc39.es/ecma262/#sec-getmethod
 module.exports = function (V, P) {
   var func = V[P];
-  return func == null ? undefined : aCallable(func);
+  return isNullOrUndefined(func) ? undefined : aCallable(func);
 };
 
-},{"../internals/a-callable":3}],56:[function(require,module,exports){
+},{"../internals/a-callable":3,"../internals/is-null-or-undefined":72}],58:[function(require,module,exports){
 (function (global){(function (){
+'use strict';
 var check = function (it) {
-  return it && it.Math == Math && it;
+  return it && it.Math === Math && it;
 };
 
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
@@ -2083,12 +1967,14 @@ module.exports =
   // eslint-disable-next-line no-restricted-globals -- safe
   check(typeof self == 'object' && self) ||
   check(typeof global == 'object' && global) ||
+  check(typeof this == 'object' && this) ||
   // eslint-disable-next-line no-new-func -- fallback
   (function () { return this; })() || Function('return this')();
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],57:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 var toObject = require('../internals/to-object');
 
@@ -2096,19 +1982,23 @@ var hasOwnProperty = uncurryThis({}.hasOwnProperty);
 
 // `HasOwnProperty` abstract operation
 // https://tc39.es/ecma262/#sec-hasownproperty
+// eslint-disable-next-line es/no-object-hasown -- safe
 module.exports = Object.hasOwn || function hasOwn(it, key) {
   return hasOwnProperty(toObject(it), key);
 };
 
-},{"../internals/function-uncurry-this":51,"../internals/to-object":121}],58:[function(require,module,exports){
+},{"../internals/function-uncurry-this":53,"../internals/to-object":119}],60:[function(require,module,exports){
+'use strict';
 module.exports = {};
 
-},{}],59:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
+'use strict';
 var getBuiltIn = require('../internals/get-built-in');
 
 module.exports = getBuiltIn('document', 'documentElement');
 
-},{"../internals/get-built-in":52}],60:[function(require,module,exports){
+},{"../internals/get-built-in":54}],62:[function(require,module,exports){
+'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var fails = require('../internals/fails');
 var createElement = require('../internals/document-create-element');
@@ -2118,28 +2008,29 @@ module.exports = !DESCRIPTORS && !fails(function () {
   // eslint-disable-next-line es/no-object-defineproperty -- required for testing
   return Object.defineProperty(createElement('div'), 'a', {
     get: function () { return 7; }
-  }).a != 7;
+  }).a !== 7;
 });
 
-},{"../internals/descriptors":33,"../internals/document-create-element":34,"../internals/fails":44}],61:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/descriptors":34,"../internals/document-create-element":35,"../internals/fails":46}],63:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 var fails = require('../internals/fails');
 var classof = require('../internals/classof-raw');
 
-var Object = global.Object;
+var $Object = Object;
 var split = uncurryThis(''.split);
 
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
 module.exports = fails(function () {
   // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
   // eslint-disable-next-line no-prototype-builtins -- safe
-  return !Object('z').propertyIsEnumerable(0);
+  return !$Object('z').propertyIsEnumerable(0);
 }) ? function (it) {
-  return classof(it) == 'String' ? split(it, '') : Object(it);
-} : Object;
+  return classof(it) === 'String' ? split(it, '') : $Object(it);
+} : $Object;
 
-},{"../internals/classof-raw":23,"../internals/fails":44,"../internals/function-uncurry-this":51,"../internals/global":56}],62:[function(require,module,exports){
+},{"../internals/classof-raw":20,"../internals/fails":46,"../internals/function-uncurry-this":53}],64:[function(require,module,exports){
+'use strict';
 var isCallable = require('../internals/is-callable');
 var isObject = require('../internals/is-object');
 var setPrototypeOf = require('../internals/object-set-prototype-of');
@@ -2159,7 +2050,8 @@ module.exports = function ($this, dummy, Wrapper) {
   return $this;
 };
 
-},{"../internals/is-callable":67,"../internals/is-object":70,"../internals/object-set-prototype-of":94}],63:[function(require,module,exports){
+},{"../internals/is-callable":69,"../internals/is-object":73,"../internals/object-set-prototype-of":99}],65:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 var isCallable = require('../internals/is-callable');
 var store = require('../internals/shared-store');
@@ -2175,10 +2067,10 @@ if (!isCallable(store.inspectSource)) {
 
 module.exports = store.inspectSource;
 
-},{"../internals/function-uncurry-this":51,"../internals/is-callable":67,"../internals/shared-store":110}],64:[function(require,module,exports){
-var NATIVE_WEAK_MAP = require('../internals/native-weak-map');
-var global = require('../internals/global');
-var uncurryThis = require('../internals/function-uncurry-this');
+},{"../internals/function-uncurry-this":53,"../internals/is-callable":69,"../internals/shared-store":108}],66:[function(require,module,exports){
+'use strict';
+var NATIVE_WEAK_MAP = require('../internals/weak-map-basic-detection');
+var globalThis = require('../internals/global-this');
 var isObject = require('../internals/is-object');
 var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
 var hasOwn = require('../internals/has-own-property');
@@ -2187,8 +2079,8 @@ var sharedKey = require('../internals/shared-key');
 var hiddenKeys = require('../internals/hidden-keys');
 
 var OBJECT_ALREADY_INITIALIZED = 'Object already initialized';
-var TypeError = global.TypeError;
-var WeakMap = global.WeakMap;
+var TypeError = globalThis.TypeError;
+var WeakMap = globalThis.WeakMap;
 var set, get, has;
 
 var enforce = function (it) {
@@ -2199,27 +2091,29 @@ var getterFor = function (TYPE) {
   return function (it) {
     var state;
     if (!isObject(it) || (state = get(it)).type !== TYPE) {
-      throw TypeError('Incompatible receiver, ' + TYPE + ' required');
+      throw new TypeError('Incompatible receiver, ' + TYPE + ' required');
     } return state;
   };
 };
 
 if (NATIVE_WEAK_MAP || shared.state) {
   var store = shared.state || (shared.state = new WeakMap());
-  var wmget = uncurryThis(store.get);
-  var wmhas = uncurryThis(store.has);
-  var wmset = uncurryThis(store.set);
+  /* eslint-disable no-self-assign -- prototype methods protection */
+  store.get = store.get;
+  store.has = store.has;
+  store.set = store.set;
+  /* eslint-enable no-self-assign -- prototype methods protection */
   set = function (it, metadata) {
-    if (wmhas(store, it)) throw new TypeError(OBJECT_ALREADY_INITIALIZED);
+    if (store.has(it)) throw new TypeError(OBJECT_ALREADY_INITIALIZED);
     metadata.facade = it;
-    wmset(store, it, metadata);
+    store.set(it, metadata);
     return metadata;
   };
   get = function (it) {
-    return wmget(store, it) || {};
+    return store.get(it) || {};
   };
   has = function (it) {
-    return wmhas(store, it);
+    return store.has(it);
   };
 } else {
   var STATE = sharedKey('state');
@@ -2246,7 +2140,8 @@ module.exports = {
   getterFor: getterFor
 };
 
-},{"../internals/create-non-enumerable-property":29,"../internals/function-uncurry-this":51,"../internals/global":56,"../internals/has-own-property":57,"../internals/hidden-keys":58,"../internals/is-object":70,"../internals/native-weak-map":80,"../internals/shared-key":109,"../internals/shared-store":110}],65:[function(require,module,exports){
+},{"../internals/create-non-enumerable-property":26,"../internals/global-this":58,"../internals/has-own-property":59,"../internals/hidden-keys":60,"../internals/is-object":73,"../internals/shared-key":107,"../internals/shared-store":108,"../internals/weak-map-basic-detection":130}],67:[function(require,module,exports){
+'use strict';
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var Iterators = require('../internals/iterators');
 
@@ -2258,24 +2153,33 @@ module.exports = function (it) {
   return it !== undefined && (Iterators.Array === it || ArrayPrototype[ITERATOR] === it);
 };
 
-},{"../internals/iterators":76,"../internals/well-known-symbol":131}],66:[function(require,module,exports){
+},{"../internals/iterators":82,"../internals/well-known-symbol":131}],68:[function(require,module,exports){
+'use strict';
 var classof = require('../internals/classof-raw');
 
 // `IsArray` abstract operation
 // https://tc39.es/ecma262/#sec-isarray
 // eslint-disable-next-line es/no-array-isarray -- safe
 module.exports = Array.isArray || function isArray(argument) {
-  return classof(argument) == 'Array';
+  return classof(argument) === 'Array';
 };
 
-},{"../internals/classof-raw":23}],67:[function(require,module,exports){
+},{"../internals/classof-raw":20}],69:[function(require,module,exports){
+'use strict';
+// https://tc39.es/ecma262/#sec-IsHTMLDDA-internal-slot
+var documentAll = typeof document == 'object' && document.all;
+
 // `IsCallable` abstract operation
 // https://tc39.es/ecma262/#sec-iscallable
-module.exports = function (argument) {
+// eslint-disable-next-line unicorn/no-typeof-undefined -- required for testing
+module.exports = typeof documentAll == 'undefined' && documentAll !== undefined ? function (argument) {
+  return typeof argument == 'function' || argument === documentAll;
+} : function (argument) {
   return typeof argument == 'function';
 };
 
-},{}],68:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 var fails = require('../internals/fails');
 var isCallable = require('../internals/is-callable');
@@ -2284,16 +2188,15 @@ var getBuiltIn = require('../internals/get-built-in');
 var inspectSource = require('../internals/inspect-source');
 
 var noop = function () { /* empty */ };
-var empty = [];
 var construct = getBuiltIn('Reflect', 'construct');
 var constructorRegExp = /^\s*(?:class|function)\b/;
 var exec = uncurryThis(constructorRegExp.exec);
-var INCORRECT_TO_STRING = !constructorRegExp.exec(noop);
+var INCORRECT_TO_STRING = !constructorRegExp.test(noop);
 
 var isConstructorModern = function isConstructor(argument) {
   if (!isCallable(argument)) return false;
   try {
-    construct(noop, empty, argument);
+    construct(noop, [], argument);
     return true;
   } catch (error) {
     return false;
@@ -2329,7 +2232,8 @@ module.exports = !construct || fails(function () {
     || called;
 }) ? isConstructorLegacy : isConstructorModern;
 
-},{"../internals/classof":24,"../internals/fails":44,"../internals/function-uncurry-this":51,"../internals/get-built-in":52,"../internals/inspect-source":63,"../internals/is-callable":67}],69:[function(require,module,exports){
+},{"../internals/classof":21,"../internals/fails":46,"../internals/function-uncurry-this":53,"../internals/get-built-in":54,"../internals/inspect-source":65,"../internals/is-callable":69}],71:[function(require,module,exports){
+'use strict';
 var fails = require('../internals/fails');
 var isCallable = require('../internals/is-callable');
 
@@ -2337,8 +2241,8 @@ var replacement = /#|\.prototype\./;
 
 var isForced = function (feature, detection) {
   var value = data[normalize(feature)];
-  return value == POLYFILL ? true
-    : value == NATIVE ? false
+  return value === POLYFILL ? true
+    : value === NATIVE ? false
     : isCallable(detection) ? fails(detection)
     : !!detection;
 };
@@ -2353,17 +2257,36 @@ var POLYFILL = isForced.POLYFILL = 'P';
 
 module.exports = isForced;
 
-},{"../internals/fails":44,"../internals/is-callable":67}],70:[function(require,module,exports){
+},{"../internals/fails":46,"../internals/is-callable":69}],72:[function(require,module,exports){
+'use strict';
+// we can't use just `it == null` since of `document.all` special case
+// https://tc39.es/ecma262/#sec-IsHTMLDDA-internal-slot-aec
+module.exports = function (it) {
+  return it === null || it === undefined;
+};
+
+},{}],73:[function(require,module,exports){
+'use strict';
 var isCallable = require('../internals/is-callable');
 
 module.exports = function (it) {
   return typeof it == 'object' ? it !== null : isCallable(it);
 };
 
-},{"../internals/is-callable":67}],71:[function(require,module,exports){
+},{"../internals/is-callable":69}],74:[function(require,module,exports){
+'use strict';
+var isObject = require('../internals/is-object');
+
+module.exports = function (argument) {
+  return isObject(argument) || argument === null;
+};
+
+},{"../internals/is-object":73}],75:[function(require,module,exports){
+'use strict';
 module.exports = false;
 
-},{}],72:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
+'use strict';
 var isObject = require('../internals/is-object');
 var classof = require('../internals/classof-raw');
 var wellKnownSymbol = require('../internals/well-known-symbol');
@@ -2374,26 +2297,27 @@ var MATCH = wellKnownSymbol('match');
 // https://tc39.es/ecma262/#sec-isregexp
 module.exports = function (it) {
   var isRegExp;
-  return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : classof(it) == 'RegExp');
+  return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : classof(it) === 'RegExp');
 };
 
-},{"../internals/classof-raw":23,"../internals/is-object":70,"../internals/well-known-symbol":131}],73:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/classof-raw":20,"../internals/is-object":73,"../internals/well-known-symbol":131}],77:[function(require,module,exports){
+'use strict';
 var getBuiltIn = require('../internals/get-built-in');
 var isCallable = require('../internals/is-callable');
 var isPrototypeOf = require('../internals/object-is-prototype-of');
 var USE_SYMBOL_AS_UID = require('../internals/use-symbol-as-uid');
 
-var Object = global.Object;
+var $Object = Object;
 
 module.exports = USE_SYMBOL_AS_UID ? function (it) {
   return typeof it == 'symbol';
 } : function (it) {
   var $Symbol = getBuiltIn('Symbol');
-  return isCallable($Symbol) && isPrototypeOf($Symbol.prototype, Object(it));
+  return isCallable($Symbol) && isPrototypeOf($Symbol.prototype, $Object(it));
 };
 
-},{"../internals/get-built-in":52,"../internals/global":56,"../internals/is-callable":67,"../internals/object-is-prototype-of":90,"../internals/use-symbol-as-uid":128}],74:[function(require,module,exports){
+},{"../internals/get-built-in":54,"../internals/is-callable":69,"../internals/object-is-prototype-of":95,"../internals/use-symbol-as-uid":127}],78:[function(require,module,exports){
+'use strict';
 var call = require('../internals/function-call');
 var anObject = require('../internals/an-object');
 var getMethod = require('../internals/get-method');
@@ -2418,13 +2342,136 @@ module.exports = function (iterator, kind, value) {
   return value;
 };
 
-},{"../internals/an-object":9,"../internals/function-call":49,"../internals/get-method":55}],75:[function(require,module,exports){
+},{"../internals/an-object":7,"../internals/function-call":49,"../internals/get-method":57}],79:[function(require,module,exports){
+'use strict';
+var IteratorPrototype = require('../internals/iterators-core').IteratorPrototype;
+var create = require('../internals/object-create');
+var createPropertyDescriptor = require('../internals/create-property-descriptor');
+var setToStringTag = require('../internals/set-to-string-tag');
+var Iterators = require('../internals/iterators');
+
+var returnThis = function () { return this; };
+
+module.exports = function (IteratorConstructor, NAME, next, ENUMERABLE_NEXT) {
+  var TO_STRING_TAG = NAME + ' Iterator';
+  IteratorConstructor.prototype = create(IteratorPrototype, { next: createPropertyDescriptor(+!ENUMERABLE_NEXT, next) });
+  setToStringTag(IteratorConstructor, TO_STRING_TAG, false, true);
+  Iterators[TO_STRING_TAG] = returnThis;
+  return IteratorConstructor;
+};
+
+},{"../internals/create-property-descriptor":27,"../internals/iterators":82,"../internals/iterators-core":81,"../internals/object-create":88,"../internals/set-to-string-tag":106}],80:[function(require,module,exports){
+'use strict';
+var $ = require('../internals/export');
+var call = require('../internals/function-call');
+var IS_PURE = require('../internals/is-pure');
+var FunctionName = require('../internals/function-name');
+var isCallable = require('../internals/is-callable');
+var createIteratorConstructor = require('../internals/iterator-create-constructor');
+var getPrototypeOf = require('../internals/object-get-prototype-of');
+var setPrototypeOf = require('../internals/object-set-prototype-of');
+var setToStringTag = require('../internals/set-to-string-tag');
+var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
+var defineBuiltIn = require('../internals/define-built-in');
+var wellKnownSymbol = require('../internals/well-known-symbol');
+var Iterators = require('../internals/iterators');
+var IteratorsCore = require('../internals/iterators-core');
+
+var PROPER_FUNCTION_NAME = FunctionName.PROPER;
+var CONFIGURABLE_FUNCTION_NAME = FunctionName.CONFIGURABLE;
+var IteratorPrototype = IteratorsCore.IteratorPrototype;
+var BUGGY_SAFARI_ITERATORS = IteratorsCore.BUGGY_SAFARI_ITERATORS;
+var ITERATOR = wellKnownSymbol('iterator');
+var KEYS = 'keys';
+var VALUES = 'values';
+var ENTRIES = 'entries';
+
+var returnThis = function () { return this; };
+
+module.exports = function (Iterable, NAME, IteratorConstructor, next, DEFAULT, IS_SET, FORCED) {
+  createIteratorConstructor(IteratorConstructor, NAME, next);
+
+  var getIterationMethod = function (KIND) {
+    if (KIND === DEFAULT && defaultIterator) return defaultIterator;
+    if (!BUGGY_SAFARI_ITERATORS && KIND && KIND in IterablePrototype) return IterablePrototype[KIND];
+
+    switch (KIND) {
+      case KEYS: return function keys() { return new IteratorConstructor(this, KIND); };
+      case VALUES: return function values() { return new IteratorConstructor(this, KIND); };
+      case ENTRIES: return function entries() { return new IteratorConstructor(this, KIND); };
+    }
+
+    return function () { return new IteratorConstructor(this); };
+  };
+
+  var TO_STRING_TAG = NAME + ' Iterator';
+  var INCORRECT_VALUES_NAME = false;
+  var IterablePrototype = Iterable.prototype;
+  var nativeIterator = IterablePrototype[ITERATOR]
+    || IterablePrototype['@@iterator']
+    || DEFAULT && IterablePrototype[DEFAULT];
+  var defaultIterator = !BUGGY_SAFARI_ITERATORS && nativeIterator || getIterationMethod(DEFAULT);
+  var anyNativeIterator = NAME === 'Array' ? IterablePrototype.entries || nativeIterator : nativeIterator;
+  var CurrentIteratorPrototype, methods, KEY;
+
+  // fix native
+  if (anyNativeIterator) {
+    CurrentIteratorPrototype = getPrototypeOf(anyNativeIterator.call(new Iterable()));
+    if (CurrentIteratorPrototype !== Object.prototype && CurrentIteratorPrototype.next) {
+      if (!IS_PURE && getPrototypeOf(CurrentIteratorPrototype) !== IteratorPrototype) {
+        if (setPrototypeOf) {
+          setPrototypeOf(CurrentIteratorPrototype, IteratorPrototype);
+        } else if (!isCallable(CurrentIteratorPrototype[ITERATOR])) {
+          defineBuiltIn(CurrentIteratorPrototype, ITERATOR, returnThis);
+        }
+      }
+      // Set @@toStringTag to native iterators
+      setToStringTag(CurrentIteratorPrototype, TO_STRING_TAG, true, true);
+      if (IS_PURE) Iterators[TO_STRING_TAG] = returnThis;
+    }
+  }
+
+  // fix Array.prototype.{ values, @@iterator }.name in V8 / FF
+  if (PROPER_FUNCTION_NAME && DEFAULT === VALUES && nativeIterator && nativeIterator.name !== VALUES) {
+    if (!IS_PURE && CONFIGURABLE_FUNCTION_NAME) {
+      createNonEnumerableProperty(IterablePrototype, 'name', VALUES);
+    } else {
+      INCORRECT_VALUES_NAME = true;
+      defaultIterator = function values() { return call(nativeIterator, this); };
+    }
+  }
+
+  // export additional methods
+  if (DEFAULT) {
+    methods = {
+      values: getIterationMethod(VALUES),
+      keys: IS_SET ? defaultIterator : getIterationMethod(KEYS),
+      entries: getIterationMethod(ENTRIES)
+    };
+    if (FORCED) for (KEY in methods) {
+      if (BUGGY_SAFARI_ITERATORS || INCORRECT_VALUES_NAME || !(KEY in IterablePrototype)) {
+        defineBuiltIn(IterablePrototype, KEY, methods[KEY]);
+      }
+    } else $({ target: NAME, proto: true, forced: BUGGY_SAFARI_ITERATORS || INCORRECT_VALUES_NAME }, methods);
+  }
+
+  // define iterator
+  if ((!IS_PURE || FORCED) && IterablePrototype[ITERATOR] !== defaultIterator) {
+    defineBuiltIn(IterablePrototype, ITERATOR, defaultIterator, { name: DEFAULT });
+  }
+  Iterators[NAME] = defaultIterator;
+
+  return methods;
+};
+
+},{"../internals/create-non-enumerable-property":26,"../internals/define-built-in":30,"../internals/export":45,"../internals/function-call":49,"../internals/function-name":50,"../internals/is-callable":69,"../internals/is-pure":75,"../internals/iterator-create-constructor":79,"../internals/iterators":82,"../internals/iterators-core":81,"../internals/object-get-prototype-of":94,"../internals/object-set-prototype-of":99,"../internals/set-to-string-tag":106,"../internals/well-known-symbol":131}],81:[function(require,module,exports){
 'use strict';
 var fails = require('../internals/fails');
 var isCallable = require('../internals/is-callable');
+var isObject = require('../internals/is-object');
 var create = require('../internals/object-create');
 var getPrototypeOf = require('../internals/object-get-prototype-of');
-var redefine = require('../internals/redefine');
+var defineBuiltIn = require('../internals/define-built-in');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var IS_PURE = require('../internals/is-pure');
 
@@ -2446,7 +2493,7 @@ if ([].keys) {
   }
 }
 
-var NEW_ITERATOR_PROTOTYPE = IteratorPrototype == undefined || fails(function () {
+var NEW_ITERATOR_PROTOTYPE = !isObject(IteratorPrototype) || fails(function () {
   var test = {};
   // FF44- legacy iterators case
   return IteratorPrototype[ITERATOR].call(test) !== test;
@@ -2458,7 +2505,7 @@ else if (IS_PURE) IteratorPrototype = create(IteratorPrototype);
 // `%IteratorPrototype%[@@iterator]()` method
 // https://tc39.es/ecma262/#sec-%iteratorprototype%-@@iterator
 if (!isCallable(IteratorPrototype[ITERATOR])) {
-  redefine(IteratorPrototype, ITERATOR, function () {
+  defineBuiltIn(IteratorPrototype, ITERATOR, function () {
     return this;
   });
 }
@@ -2468,9 +2515,10 @@ module.exports = {
   BUGGY_SAFARI_ITERATORS: BUGGY_SAFARI_ITERATORS
 };
 
-},{"../internals/fails":44,"../internals/is-callable":67,"../internals/is-pure":71,"../internals/object-create":83,"../internals/object-get-prototype-of":89,"../internals/redefine":99,"../internals/well-known-symbol":131}],76:[function(require,module,exports){
-arguments[4][58][0].apply(exports,arguments)
-},{"dup":58}],77:[function(require,module,exports){
+},{"../internals/define-built-in":30,"../internals/fails":46,"../internals/is-callable":69,"../internals/is-object":73,"../internals/is-pure":75,"../internals/object-create":88,"../internals/object-get-prototype-of":94,"../internals/well-known-symbol":131}],82:[function(require,module,exports){
+arguments[4][60][0].apply(exports,arguments)
+},{"dup":60}],83:[function(require,module,exports){
+'use strict';
 var toLength = require('../internals/to-length');
 
 // `LengthOfArrayLike` abstract operation
@@ -2479,79 +2527,89 @@ module.exports = function (obj) {
   return toLength(obj.length);
 };
 
-},{"../internals/to-length":120}],78:[function(require,module,exports){
-/* eslint-disable es/no-symbol -- required for testing */
-var V8_VERSION = require('../internals/engine-v8-version');
+},{"../internals/to-length":118}],84:[function(require,module,exports){
+'use strict';
+var uncurryThis = require('../internals/function-uncurry-this');
 var fails = require('../internals/fails');
-
-// eslint-disable-next-line es/no-object-getownpropertysymbols -- required for testing
-module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
-  var symbol = Symbol();
-  // Chrome 38 Symbol has incorrect toString conversion
-  // `get-own-property-symbols` polyfill symbols converted to object are not Symbol instances
-  return !String(symbol) || !(Object(symbol) instanceof Symbol) ||
-    // Chrome 38-40 symbols are not inherited from DOM collections prototypes to instances
-    !Symbol.sham && V8_VERSION && V8_VERSION < 41;
-});
-
-},{"../internals/engine-v8-version":40,"../internals/fails":44}],79:[function(require,module,exports){
-var fails = require('../internals/fails');
-var wellKnownSymbol = require('../internals/well-known-symbol');
-var IS_PURE = require('../internals/is-pure');
-
-var ITERATOR = wellKnownSymbol('iterator');
-
-module.exports = !fails(function () {
-  // eslint-disable-next-line unicorn/relative-url-style -- required for testing
-  var url = new URL('b?a=1&b=2&c=3', 'http://a');
-  var searchParams = url.searchParams;
-  var result = '';
-  url.pathname = 'c%20d';
-  searchParams.forEach(function (value, key) {
-    searchParams['delete']('b');
-    result += key + value;
-  });
-  return (IS_PURE && !url.toJSON)
-    || !searchParams.sort
-    || url.href !== 'http://a/c%20d?a=1&c=3'
-    || searchParams.get('c') !== '3'
-    || String(new URLSearchParams('?a=1')) !== 'a=1'
-    || !searchParams[ITERATOR]
-    // throws in Edge
-    || new URL('https://a@b').username !== 'a'
-    || new URLSearchParams(new URLSearchParams('a=b')).get('a') !== 'b'
-    // not punycoded in Edge
-    || new URL('http://тест').host !== 'xn--e1aybc'
-    // not escaped in Chrome 62-
-    || new URL('http://a#б').hash !== '#%D0%B1'
-    // fails in Chrome 66-
-    || result !== 'a1c3'
-    // throws in Safari
-    || new URL('http://x', undefined).host !== 'x';
-});
-
-},{"../internals/fails":44,"../internals/is-pure":71,"../internals/well-known-symbol":131}],80:[function(require,module,exports){
-var global = require('../internals/global');
 var isCallable = require('../internals/is-callable');
+var hasOwn = require('../internals/has-own-property');
+var DESCRIPTORS = require('../internals/descriptors');
+var CONFIGURABLE_FUNCTION_NAME = require('../internals/function-name').CONFIGURABLE;
 var inspectSource = require('../internals/inspect-source');
+var InternalStateModule = require('../internals/internal-state');
 
-var WeakMap = global.WeakMap;
+var enforceInternalState = InternalStateModule.enforce;
+var getInternalState = InternalStateModule.get;
+var $String = String;
+// eslint-disable-next-line es/no-object-defineproperty -- safe
+var defineProperty = Object.defineProperty;
+var stringSlice = uncurryThis(''.slice);
+var replace = uncurryThis(''.replace);
+var join = uncurryThis([].join);
 
-module.exports = isCallable(WeakMap) && /native code/.test(inspectSource(WeakMap));
+var CONFIGURABLE_LENGTH = DESCRIPTORS && !fails(function () {
+  return defineProperty(function () { /* empty */ }, 'length', { value: 8 }).length !== 8;
+});
 
-},{"../internals/global":56,"../internals/inspect-source":63,"../internals/is-callable":67}],81:[function(require,module,exports){
-var global = require('../internals/global');
+var TEMPLATE = String(String).split('String');
+
+var makeBuiltIn = module.exports = function (value, name, options) {
+  if (stringSlice($String(name), 0, 7) === 'Symbol(') {
+    name = '[' + replace($String(name), /^Symbol\(([^)]*)\).*$/, '$1') + ']';
+  }
+  if (options && options.getter) name = 'get ' + name;
+  if (options && options.setter) name = 'set ' + name;
+  if (!hasOwn(value, 'name') || (CONFIGURABLE_FUNCTION_NAME && value.name !== name)) {
+    if (DESCRIPTORS) defineProperty(value, 'name', { value: name, configurable: true });
+    else value.name = name;
+  }
+  if (CONFIGURABLE_LENGTH && options && hasOwn(options, 'arity') && value.length !== options.arity) {
+    defineProperty(value, 'length', { value: options.arity });
+  }
+  try {
+    if (options && hasOwn(options, 'constructor') && options.constructor) {
+      if (DESCRIPTORS) defineProperty(value, 'prototype', { writable: false });
+    // in V8 ~ Chrome 53, prototypes of some methods, like `Array.prototype.values`, are non-writable
+    } else if (value.prototype) value.prototype = undefined;
+  } catch (error) { /* empty */ }
+  var state = enforceInternalState(value);
+  if (!hasOwn(state, 'source')) {
+    state.source = join(TEMPLATE, typeof name == 'string' ? name : '');
+  } return value;
+};
+
+// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
+// eslint-disable-next-line no-extend-native -- required
+Function.prototype.toString = makeBuiltIn(function toString() {
+  return isCallable(this) && getInternalState(this).source || inspectSource(this);
+}, 'toString');
+
+},{"../internals/descriptors":34,"../internals/fails":46,"../internals/function-name":50,"../internals/function-uncurry-this":53,"../internals/has-own-property":59,"../internals/inspect-source":65,"../internals/internal-state":66,"../internals/is-callable":69}],85:[function(require,module,exports){
+'use strict';
+var ceil = Math.ceil;
+var floor = Math.floor;
+
+// `Math.trunc` method
+// https://tc39.es/ecma262/#sec-math.trunc
+// eslint-disable-next-line es/no-math-trunc -- safe
+module.exports = Math.trunc || function trunc(x) {
+  var n = +x;
+  return (n > 0 ? floor : ceil)(n);
+};
+
+},{}],86:[function(require,module,exports){
+'use strict';
 var isRegExp = require('../internals/is-regexp');
 
-var TypeError = global.TypeError;
+var $TypeError = TypeError;
 
 module.exports = function (it) {
   if (isRegExp(it)) {
-    throw TypeError("The method doesn't accept regular expressions");
+    throw new $TypeError("The method doesn't accept regular expressions");
   } return it;
 };
 
-},{"../internals/global":56,"../internals/is-regexp":72}],82:[function(require,module,exports){
+},{"../internals/is-regexp":76}],87:[function(require,module,exports){
 'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var uncurryThis = require('../internals/function-uncurry-this');
@@ -2586,11 +2644,11 @@ module.exports = !$assign || fails(function () {
   var A = {};
   var B = {};
   // eslint-disable-next-line es/no-symbol -- safe
-  var symbol = Symbol();
+  var symbol = Symbol('assign detection');
   var alphabet = 'abcdefghijklmnopqrst';
   A[symbol] = 7;
   alphabet.split('').forEach(function (chr) { B[chr] = chr; });
-  return $assign({}, A)[symbol] != 7 || objectKeys($assign({}, B)).join('') != alphabet;
+  return $assign({}, A)[symbol] !== 7 || objectKeys($assign({}, B)).join('') !== alphabet;
 }) ? function assign(target, source) { // eslint-disable-line no-unused-vars -- required for `.length`
   var T = toObject(target);
   var argumentsLength = arguments.length;
@@ -2610,7 +2668,8 @@ module.exports = !$assign || fails(function () {
   } return T;
 } : $assign;
 
-},{"../internals/descriptors":33,"../internals/fails":44,"../internals/function-call":49,"../internals/function-uncurry-this":51,"../internals/indexed-object":61,"../internals/object-get-own-property-symbols":88,"../internals/object-keys":92,"../internals/object-property-is-enumerable":93,"../internals/to-object":121}],83:[function(require,module,exports){
+},{"../internals/descriptors":34,"../internals/fails":46,"../internals/function-call":49,"../internals/function-uncurry-this":53,"../internals/indexed-object":63,"../internals/object-get-own-property-symbols":93,"../internals/object-keys":97,"../internals/object-property-is-enumerable":98,"../internals/to-object":119}],88:[function(require,module,exports){
+'use strict';
 /* global ActiveXObject -- old IE, WSH */
 var anObject = require('../internals/an-object');
 var definePropertiesModule = require('../internals/object-define-properties');
@@ -2637,7 +2696,8 @@ var NullProtoObjectViaActiveX = function (activeXDocument) {
   activeXDocument.write(scriptTag(''));
   activeXDocument.close();
   var temp = activeXDocument.parentWindow.Object;
-  activeXDocument = null; // avoid memory leak
+  // eslint-disable-next-line no-useless-assignment -- avoid memory leak
+  activeXDocument = null;
   return temp;
 };
 
@@ -2682,6 +2742,7 @@ hiddenKeys[IE_PROTO] = true;
 
 // `Object.create` method
 // https://tc39.es/ecma262/#sec-object.create
+// eslint-disable-next-line es/no-object-create -- safe
 module.exports = Object.create || function create(O, Properties) {
   var result;
   if (O !== null) {
@@ -2694,7 +2755,8 @@ module.exports = Object.create || function create(O, Properties) {
   return Properties === undefined ? result : definePropertiesModule.f(result, Properties);
 };
 
-},{"../internals/an-object":9,"../internals/document-create-element":34,"../internals/enum-bug-keys":42,"../internals/hidden-keys":58,"../internals/html":59,"../internals/object-define-properties":84,"../internals/shared-key":109}],84:[function(require,module,exports){
+},{"../internals/an-object":7,"../internals/document-create-element":35,"../internals/enum-bug-keys":39,"../internals/hidden-keys":60,"../internals/html":61,"../internals/object-define-properties":89,"../internals/shared-key":107}],89:[function(require,module,exports){
+'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var V8_PROTOTYPE_DEFINE_BUG = require('../internals/v8-prototype-define-bug');
 var definePropertyModule = require('../internals/object-define-property');
@@ -2716,15 +2778,15 @@ exports.f = DESCRIPTORS && !V8_PROTOTYPE_DEFINE_BUG ? Object.defineProperties : 
   return O;
 };
 
-},{"../internals/an-object":9,"../internals/descriptors":33,"../internals/object-define-property":85,"../internals/object-keys":92,"../internals/to-indexed-object":118,"../internals/v8-prototype-define-bug":129}],85:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/an-object":7,"../internals/descriptors":34,"../internals/object-define-property":90,"../internals/object-keys":97,"../internals/to-indexed-object":116,"../internals/v8-prototype-define-bug":128}],90:[function(require,module,exports){
+'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var IE8_DOM_DEFINE = require('../internals/ie8-dom-define');
 var V8_PROTOTYPE_DEFINE_BUG = require('../internals/v8-prototype-define-bug');
 var anObject = require('../internals/an-object');
 var toPropertyKey = require('../internals/to-property-key');
 
-var TypeError = global.TypeError;
+var $TypeError = TypeError;
 // eslint-disable-next-line es/no-object-defineproperty -- safe
 var $defineProperty = Object.defineProperty;
 // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
@@ -2757,12 +2819,13 @@ exports.f = DESCRIPTORS ? V8_PROTOTYPE_DEFINE_BUG ? function defineProperty(O, P
   if (IE8_DOM_DEFINE) try {
     return $defineProperty(O, P, Attributes);
   } catch (error) { /* empty */ }
-  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
+  if ('get' in Attributes || 'set' in Attributes) throw new $TypeError('Accessors not supported');
   if ('value' in Attributes) O[P] = Attributes.value;
   return O;
 };
 
-},{"../internals/an-object":9,"../internals/descriptors":33,"../internals/global":56,"../internals/ie8-dom-define":60,"../internals/to-property-key":123,"../internals/v8-prototype-define-bug":129}],86:[function(require,module,exports){
+},{"../internals/an-object":7,"../internals/descriptors":34,"../internals/ie8-dom-define":62,"../internals/to-property-key":121,"../internals/v8-prototype-define-bug":128}],91:[function(require,module,exports){
+'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var call = require('../internals/function-call');
 var propertyIsEnumerableModule = require('../internals/object-property-is-enumerable');
@@ -2786,7 +2849,8 @@ exports.f = DESCRIPTORS ? $getOwnPropertyDescriptor : function getOwnPropertyDes
   if (hasOwn(O, P)) return createPropertyDescriptor(!call(propertyIsEnumerableModule.f, O, P), O[P]);
 };
 
-},{"../internals/create-property-descriptor":30,"../internals/descriptors":33,"../internals/function-call":49,"../internals/has-own-property":57,"../internals/ie8-dom-define":60,"../internals/object-property-is-enumerable":93,"../internals/to-indexed-object":118,"../internals/to-property-key":123}],87:[function(require,module,exports){
+},{"../internals/create-property-descriptor":27,"../internals/descriptors":34,"../internals/function-call":49,"../internals/has-own-property":59,"../internals/ie8-dom-define":62,"../internals/object-property-is-enumerable":98,"../internals/to-indexed-object":116,"../internals/to-property-key":121}],92:[function(require,module,exports){
+'use strict';
 var internalObjectKeys = require('../internals/object-keys-internal');
 var enumBugKeys = require('../internals/enum-bug-keys');
 
@@ -2799,12 +2863,13 @@ exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return internalObjectKeys(O, hiddenKeys);
 };
 
-},{"../internals/enum-bug-keys":42,"../internals/object-keys-internal":91}],88:[function(require,module,exports){
+},{"../internals/enum-bug-keys":39,"../internals/object-keys-internal":96}],93:[function(require,module,exports){
+'use strict';
 // eslint-disable-next-line es/no-object-getownpropertysymbols -- safe
 exports.f = Object.getOwnPropertySymbols;
 
-},{}],89:[function(require,module,exports){
-var global = require('../internals/global');
+},{}],94:[function(require,module,exports){
+'use strict';
 var hasOwn = require('../internals/has-own-property');
 var isCallable = require('../internals/is-callable');
 var toObject = require('../internals/to-object');
@@ -2812,26 +2877,29 @@ var sharedKey = require('../internals/shared-key');
 var CORRECT_PROTOTYPE_GETTER = require('../internals/correct-prototype-getter');
 
 var IE_PROTO = sharedKey('IE_PROTO');
-var Object = global.Object;
-var ObjectPrototype = Object.prototype;
+var $Object = Object;
+var ObjectPrototype = $Object.prototype;
 
 // `Object.getPrototypeOf` method
 // https://tc39.es/ecma262/#sec-object.getprototypeof
-module.exports = CORRECT_PROTOTYPE_GETTER ? Object.getPrototypeOf : function (O) {
+// eslint-disable-next-line es/no-object-getprototypeof -- safe
+module.exports = CORRECT_PROTOTYPE_GETTER ? $Object.getPrototypeOf : function (O) {
   var object = toObject(O);
   if (hasOwn(object, IE_PROTO)) return object[IE_PROTO];
   var constructor = object.constructor;
   if (isCallable(constructor) && object instanceof constructor) {
     return constructor.prototype;
-  } return object instanceof Object ? ObjectPrototype : null;
+  } return object instanceof $Object ? ObjectPrototype : null;
 };
 
-},{"../internals/correct-prototype-getter":27,"../internals/global":56,"../internals/has-own-property":57,"../internals/is-callable":67,"../internals/shared-key":109,"../internals/to-object":121}],90:[function(require,module,exports){
+},{"../internals/correct-prototype-getter":24,"../internals/has-own-property":59,"../internals/is-callable":69,"../internals/shared-key":107,"../internals/to-object":119}],95:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 
 module.exports = uncurryThis({}.isPrototypeOf);
 
-},{"../internals/function-uncurry-this":51}],91:[function(require,module,exports){
+},{"../internals/function-uncurry-this":53}],96:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 var hasOwn = require('../internals/has-own-property');
 var toIndexedObject = require('../internals/to-indexed-object');
@@ -2853,7 +2921,8 @@ module.exports = function (object, names) {
   return result;
 };
 
-},{"../internals/array-includes":12,"../internals/function-uncurry-this":51,"../internals/has-own-property":57,"../internals/hidden-keys":58,"../internals/to-indexed-object":118}],92:[function(require,module,exports){
+},{"../internals/array-includes":10,"../internals/function-uncurry-this":53,"../internals/has-own-property":59,"../internals/hidden-keys":60,"../internals/to-indexed-object":116}],97:[function(require,module,exports){
+'use strict';
 var internalObjectKeys = require('../internals/object-keys-internal');
 var enumBugKeys = require('../internals/enum-bug-keys');
 
@@ -2864,7 +2933,7 @@ module.exports = Object.keys || function keys(O) {
   return internalObjectKeys(O, enumBugKeys);
 };
 
-},{"../internals/enum-bug-keys":42,"../internals/object-keys-internal":91}],93:[function(require,module,exports){
+},{"../internals/enum-bug-keys":39,"../internals/object-keys-internal":96}],98:[function(require,module,exports){
 'use strict';
 var $propertyIsEnumerable = {}.propertyIsEnumerable;
 // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
@@ -2880,10 +2949,12 @@ exports.f = NASHORN_BUG ? function propertyIsEnumerable(V) {
   return !!descriptor && descriptor.enumerable;
 } : $propertyIsEnumerable;
 
-},{}],94:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
+'use strict';
 /* eslint-disable no-proto -- safe */
-var uncurryThis = require('../internals/function-uncurry-this');
-var anObject = require('../internals/an-object');
+var uncurryThisAccessor = require('../internals/function-uncurry-this-accessor');
+var isObject = require('../internals/is-object');
+var requireObjectCoercible = require('../internals/require-object-coercible');
 var aPossiblePrototype = require('../internals/a-possible-prototype');
 
 // `Object.setPrototypeOf` method
@@ -2895,21 +2966,21 @@ module.exports = Object.setPrototypeOf || ('__proto__' in {} ? function () {
   var test = {};
   var setter;
   try {
-    // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
-    setter = uncurryThis(Object.getOwnPropertyDescriptor(Object.prototype, '__proto__').set);
+    setter = uncurryThisAccessor(Object.prototype, '__proto__', 'set');
     setter(test, []);
     CORRECT_SETTER = test instanceof Array;
   } catch (error) { /* empty */ }
   return function setPrototypeOf(O, proto) {
-    anObject(O);
+    requireObjectCoercible(O);
     aPossiblePrototype(proto);
+    if (!isObject(O)) return O;
     if (CORRECT_SETTER) setter(O, proto);
     else O.__proto__ = proto;
     return O;
   };
 }() : undefined);
 
-},{"../internals/a-possible-prototype":5,"../internals/an-object":9,"../internals/function-uncurry-this":51}],95:[function(require,module,exports){
+},{"../internals/a-possible-prototype":4,"../internals/function-uncurry-this-accessor":51,"../internals/is-object":73,"../internals/require-object-coercible":104}],100:[function(require,module,exports){
 'use strict';
 var TO_STRING_TAG_SUPPORT = require('../internals/to-string-tag-support');
 var classof = require('../internals/classof');
@@ -2920,13 +2991,13 @@ module.exports = TO_STRING_TAG_SUPPORT ? {}.toString : function toString() {
   return '[object ' + classof(this) + ']';
 };
 
-},{"../internals/classof":24,"../internals/to-string-tag-support":124}],96:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/classof":21,"../internals/to-string-tag-support":122}],101:[function(require,module,exports){
+'use strict';
 var call = require('../internals/function-call');
 var isCallable = require('../internals/is-callable');
 var isObject = require('../internals/is-object');
 
-var TypeError = global.TypeError;
+var $TypeError = TypeError;
 
 // `OrdinaryToPrimitive` abstract operation
 // https://tc39.es/ecma262/#sec-ordinarytoprimitive
@@ -2935,10 +3006,11 @@ module.exports = function (input, pref) {
   if (pref === 'string' && isCallable(fn = input.toString) && !isObject(val = call(fn, input))) return val;
   if (isCallable(fn = input.valueOf) && !isObject(val = call(fn, input))) return val;
   if (pref !== 'string' && isCallable(fn = input.toString) && !isObject(val = call(fn, input))) return val;
-  throw TypeError("Can't convert object to primitive value");
+  throw new $TypeError("Can't convert object to primitive value");
 };
 
-},{"../internals/function-call":49,"../internals/global":56,"../internals/is-callable":67,"../internals/is-object":70}],97:[function(require,module,exports){
+},{"../internals/function-call":49,"../internals/is-callable":69,"../internals/is-object":73}],102:[function(require,module,exports){
+'use strict';
 var getBuiltIn = require('../internals/get-built-in');
 var uncurryThis = require('../internals/function-uncurry-this');
 var getOwnPropertyNamesModule = require('../internals/object-get-own-property-names');
@@ -2954,306 +3026,42 @@ module.exports = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
   return getOwnPropertySymbols ? concat(keys, getOwnPropertySymbols(it)) : keys;
 };
 
-},{"../internals/an-object":9,"../internals/function-uncurry-this":51,"../internals/get-built-in":52,"../internals/object-get-own-property-names":87,"../internals/object-get-own-property-symbols":88}],98:[function(require,module,exports){
-var redefine = require('../internals/redefine');
-
-module.exports = function (target, src, options) {
-  for (var key in src) redefine(target, key, src[key], options);
-  return target;
-};
-
-},{"../internals/redefine":99}],99:[function(require,module,exports){
-var global = require('../internals/global');
-var isCallable = require('../internals/is-callable');
-var hasOwn = require('../internals/has-own-property');
-var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
-var setGlobal = require('../internals/set-global');
-var inspectSource = require('../internals/inspect-source');
-var InternalStateModule = require('../internals/internal-state');
-var CONFIGURABLE_FUNCTION_NAME = require('../internals/function-name').CONFIGURABLE;
-
-var getInternalState = InternalStateModule.get;
-var enforceInternalState = InternalStateModule.enforce;
-var TEMPLATE = String(String).split('String');
-
-(module.exports = function (O, key, value, options) {
-  var unsafe = options ? !!options.unsafe : false;
-  var simple = options ? !!options.enumerable : false;
-  var noTargetGet = options ? !!options.noTargetGet : false;
-  var name = options && options.name !== undefined ? options.name : key;
-  var state;
-  if (isCallable(value)) {
-    if (String(name).slice(0, 7) === 'Symbol(') {
-      name = '[' + String(name).replace(/^Symbol\(([^)]*)\)/, '$1') + ']';
-    }
-    if (!hasOwn(value, 'name') || (CONFIGURABLE_FUNCTION_NAME && value.name !== name)) {
-      createNonEnumerableProperty(value, 'name', name);
-    }
-    state = enforceInternalState(value);
-    if (!state.source) {
-      state.source = TEMPLATE.join(typeof name == 'string' ? name : '');
-    }
-  }
-  if (O === global) {
-    if (simple) O[key] = value;
-    else setGlobal(key, value);
-    return;
-  } else if (!unsafe) {
-    delete O[key];
-  } else if (!noTargetGet && O[key]) {
-    simple = true;
-  }
-  if (simple) O[key] = value;
-  else createNonEnumerableProperty(O, key, value);
-// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
-})(Function.prototype, 'toString', function toString() {
-  return isCallable(this) && getInternalState(this).source || inspectSource(this);
-});
-
-},{"../internals/create-non-enumerable-property":29,"../internals/function-name":50,"../internals/global":56,"../internals/has-own-property":57,"../internals/inspect-source":63,"../internals/internal-state":64,"../internals/is-callable":67,"../internals/set-global":107}],100:[function(require,module,exports){
-var global = require('../internals/global');
-var call = require('../internals/function-call');
-var anObject = require('../internals/an-object');
-var isCallable = require('../internals/is-callable');
-var classof = require('../internals/classof-raw');
-var regexpExec = require('../internals/regexp-exec');
-
-var TypeError = global.TypeError;
-
-// `RegExpExec` abstract operation
-// https://tc39.es/ecma262/#sec-regexpexec
-module.exports = function (R, S) {
-  var exec = R.exec;
-  if (isCallable(exec)) {
-    var result = call(exec, R, S);
-    if (result !== null) anObject(result);
-    return result;
-  }
-  if (classof(R) === 'RegExp') return call(regexpExec, R, S);
-  throw TypeError('RegExp#exec called on incompatible receiver');
-};
-
-},{"../internals/an-object":9,"../internals/classof-raw":23,"../internals/function-call":49,"../internals/global":56,"../internals/is-callable":67,"../internals/regexp-exec":101}],101:[function(require,module,exports){
+},{"../internals/an-object":7,"../internals/function-uncurry-this":53,"../internals/get-built-in":54,"../internals/object-get-own-property-names":92,"../internals/object-get-own-property-symbols":93}],103:[function(require,module,exports){
 'use strict';
-/* eslint-disable regexp/no-empty-capturing-group, regexp/no-empty-group, regexp/no-lazy-ends -- testing */
-/* eslint-disable regexp/no-useless-quantifier -- testing */
-var call = require('../internals/function-call');
-var uncurryThis = require('../internals/function-uncurry-this');
-var toString = require('../internals/to-string');
-var regexpFlags = require('../internals/regexp-flags');
-var stickyHelpers = require('../internals/regexp-sticky-helpers');
-var shared = require('../internals/shared');
-var create = require('../internals/object-create');
-var getInternalState = require('../internals/internal-state').get;
-var UNSUPPORTED_DOT_ALL = require('../internals/regexp-unsupported-dot-all');
-var UNSUPPORTED_NCG = require('../internals/regexp-unsupported-ncg');
+var globalThis = require('../internals/global-this');
 
-var nativeReplace = shared('native-string-replace', String.prototype.replace);
-var nativeExec = RegExp.prototype.exec;
-var patchedExec = nativeExec;
-var charAt = uncurryThis(''.charAt);
-var indexOf = uncurryThis(''.indexOf);
-var replace = uncurryThis(''.replace);
-var stringSlice = uncurryThis(''.slice);
+module.exports = globalThis;
 
-var UPDATES_LAST_INDEX_WRONG = (function () {
-  var re1 = /a/;
-  var re2 = /b*/g;
-  call(nativeExec, re1, 'a');
-  call(nativeExec, re2, 'a');
-  return re1.lastIndex !== 0 || re2.lastIndex !== 0;
-})();
-
-var UNSUPPORTED_Y = stickyHelpers.BROKEN_CARET;
-
-// nonparticipating capturing group, copied from es5-shim's String#split patch.
-var NPCG_INCLUDED = /()??/.exec('')[1] !== undefined;
-
-var PATCH = UPDATES_LAST_INDEX_WRONG || NPCG_INCLUDED || UNSUPPORTED_Y || UNSUPPORTED_DOT_ALL || UNSUPPORTED_NCG;
-
-if (PATCH) {
-  patchedExec = function exec(string) {
-    var re = this;
-    var state = getInternalState(re);
-    var str = toString(string);
-    var raw = state.raw;
-    var result, reCopy, lastIndex, match, i, object, group;
-
-    if (raw) {
-      raw.lastIndex = re.lastIndex;
-      result = call(patchedExec, raw, str);
-      re.lastIndex = raw.lastIndex;
-      return result;
-    }
-
-    var groups = state.groups;
-    var sticky = UNSUPPORTED_Y && re.sticky;
-    var flags = call(regexpFlags, re);
-    var source = re.source;
-    var charsAdded = 0;
-    var strCopy = str;
-
-    if (sticky) {
-      flags = replace(flags, 'y', '');
-      if (indexOf(flags, 'g') === -1) {
-        flags += 'g';
-      }
-
-      strCopy = stringSlice(str, re.lastIndex);
-      // Support anchored sticky behavior.
-      if (re.lastIndex > 0 && (!re.multiline || re.multiline && charAt(str, re.lastIndex - 1) !== '\n')) {
-        source = '(?: ' + source + ')';
-        strCopy = ' ' + strCopy;
-        charsAdded++;
-      }
-      // ^(? + rx + ) is needed, in combination with some str slicing, to
-      // simulate the 'y' flag.
-      reCopy = new RegExp('^(?:' + source + ')', flags);
-    }
-
-    if (NPCG_INCLUDED) {
-      reCopy = new RegExp('^' + source + '$(?!\\s)', flags);
-    }
-    if (UPDATES_LAST_INDEX_WRONG) lastIndex = re.lastIndex;
-
-    match = call(nativeExec, sticky ? reCopy : re, strCopy);
-
-    if (sticky) {
-      if (match) {
-        match.input = stringSlice(match.input, charsAdded);
-        match[0] = stringSlice(match[0], charsAdded);
-        match.index = re.lastIndex;
-        re.lastIndex += match[0].length;
-      } else re.lastIndex = 0;
-    } else if (UPDATES_LAST_INDEX_WRONG && match) {
-      re.lastIndex = re.global ? match.index + match[0].length : lastIndex;
-    }
-    if (NPCG_INCLUDED && match && match.length > 1) {
-      // Fix browsers whose `exec` methods don't consistently return `undefined`
-      // for NPCG, like IE8. NOTE: This doesn' work for /(.?)?/
-      call(nativeReplace, match[0], reCopy, function () {
-        for (i = 1; i < arguments.length - 2; i++) {
-          if (arguments[i] === undefined) match[i] = undefined;
-        }
-      });
-    }
-
-    if (match && groups) {
-      match.groups = object = create(null);
-      for (i = 0; i < groups.length; i++) {
-        group = groups[i];
-        object[group[0]] = match[group[1]];
-      }
-    }
-
-    return match;
-  };
-}
-
-module.exports = patchedExec;
-
-},{"../internals/function-call":49,"../internals/function-uncurry-this":51,"../internals/internal-state":64,"../internals/object-create":83,"../internals/regexp-flags":102,"../internals/regexp-sticky-helpers":103,"../internals/regexp-unsupported-dot-all":104,"../internals/regexp-unsupported-ncg":105,"../internals/shared":111,"../internals/to-string":125}],102:[function(require,module,exports){
+},{"../internals/global-this":58}],104:[function(require,module,exports){
 'use strict';
-var anObject = require('../internals/an-object');
+var isNullOrUndefined = require('../internals/is-null-or-undefined');
 
-// `RegExp.prototype.flags` getter implementation
-// https://tc39.es/ecma262/#sec-get-regexp.prototype.flags
-module.exports = function () {
-  var that = anObject(this);
-  var result = '';
-  if (that.global) result += 'g';
-  if (that.ignoreCase) result += 'i';
-  if (that.multiline) result += 'm';
-  if (that.dotAll) result += 's';
-  if (that.unicode) result += 'u';
-  if (that.sticky) result += 'y';
-  return result;
-};
-
-},{"../internals/an-object":9}],103:[function(require,module,exports){
-var fails = require('../internals/fails');
-var global = require('../internals/global');
-
-// babel-minify and Closure Compiler transpiles RegExp('a', 'y') -> /a/y and it causes SyntaxError
-var $RegExp = global.RegExp;
-
-var UNSUPPORTED_Y = fails(function () {
-  var re = $RegExp('a', 'y');
-  re.lastIndex = 2;
-  return re.exec('abcd') != null;
-});
-
-// UC Browser bug
-// https://github.com/zloirock/core-js/issues/1008
-var MISSED_STICKY = UNSUPPORTED_Y || fails(function () {
-  return !$RegExp('a', 'y').sticky;
-});
-
-var BROKEN_CARET = UNSUPPORTED_Y || fails(function () {
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=773687
-  var re = $RegExp('^r', 'gy');
-  re.lastIndex = 2;
-  return re.exec('str') != null;
-});
-
-module.exports = {
-  BROKEN_CARET: BROKEN_CARET,
-  MISSED_STICKY: MISSED_STICKY,
-  UNSUPPORTED_Y: UNSUPPORTED_Y
-};
-
-},{"../internals/fails":44,"../internals/global":56}],104:[function(require,module,exports){
-var fails = require('../internals/fails');
-var global = require('../internals/global');
-
-// babel-minify and Closure Compiler transpiles RegExp('.', 's') -> /./s and it causes SyntaxError
-var $RegExp = global.RegExp;
-
-module.exports = fails(function () {
-  var re = $RegExp('.', 's');
-  return !(re.dotAll && re.exec('\n') && re.flags === 's');
-});
-
-},{"../internals/fails":44,"../internals/global":56}],105:[function(require,module,exports){
-var fails = require('../internals/fails');
-var global = require('../internals/global');
-
-// babel-minify and Closure Compiler transpiles RegExp('(?<a>b)', 'g') -> /(?<a>b)/g and it causes SyntaxError
-var $RegExp = global.RegExp;
-
-module.exports = fails(function () {
-  var re = $RegExp('(?<a>b)', 'g');
-  return re.exec('b').groups.a !== 'b' ||
-    'b'.replace(re, '$<a>c') !== 'bc';
-});
-
-},{"../internals/fails":44,"../internals/global":56}],106:[function(require,module,exports){
-var global = require('../internals/global');
-
-var TypeError = global.TypeError;
+var $TypeError = TypeError;
 
 // `RequireObjectCoercible` abstract operation
 // https://tc39.es/ecma262/#sec-requireobjectcoercible
 module.exports = function (it) {
-  if (it == undefined) throw TypeError("Can't call method on " + it);
+  if (isNullOrUndefined(it)) throw new $TypeError("Can't call method on " + it);
   return it;
 };
 
-},{"../internals/global":56}],107:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/is-null-or-undefined":72}],105:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
+var DESCRIPTORS = require('../internals/descriptors');
 
-// eslint-disable-next-line es/no-object-defineproperty -- safe
-var defineProperty = Object.defineProperty;
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 
-module.exports = function (key, value) {
-  try {
-    defineProperty(global, key, { value: value, configurable: true, writable: true });
-  } catch (error) {
-    global[key] = value;
-  } return value;
+// Avoid NodeJS experimental warning
+module.exports = function (name) {
+  if (!DESCRIPTORS) return globalThis[name];
+  var descriptor = getOwnPropertyDescriptor(globalThis, name);
+  return descriptor && descriptor.value;
 };
 
-},{"../internals/global":56}],108:[function(require,module,exports){
+},{"../internals/descriptors":34,"../internals/global-this":58}],106:[function(require,module,exports){
+'use strict';
 var defineProperty = require('../internals/object-define-property').f;
 var hasOwn = require('../internals/has-own-property');
 var wellKnownSymbol = require('../internals/well-known-symbol');
@@ -3267,7 +3075,8 @@ module.exports = function (target, TAG, STATIC) {
   }
 };
 
-},{"../internals/has-own-property":57,"../internals/object-define-property":85,"../internals/well-known-symbol":131}],109:[function(require,module,exports){
+},{"../internals/has-own-property":59,"../internals/object-define-property":90,"../internals/well-known-symbol":131}],107:[function(require,module,exports){
+'use strict';
 var shared = require('../internals/shared');
 var uid = require('../internals/uid');
 
@@ -3277,45 +3086,33 @@ module.exports = function (key) {
   return keys[key] || (keys[key] = uid(key));
 };
 
-},{"../internals/shared":111,"../internals/uid":127}],110:[function(require,module,exports){
-var global = require('../internals/global');
-var setGlobal = require('../internals/set-global');
+},{"../internals/shared":109,"../internals/uid":125}],108:[function(require,module,exports){
+'use strict';
+var IS_PURE = require('../internals/is-pure');
+var globalThis = require('../internals/global-this');
+var defineGlobalProperty = require('../internals/define-global-property');
 
 var SHARED = '__core-js_shared__';
-var store = global[SHARED] || setGlobal(SHARED, {});
+var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
-module.exports = store;
-
-},{"../internals/global":56,"../internals/set-global":107}],111:[function(require,module,exports){
-var IS_PURE = require('../internals/is-pure');
-var store = require('../internals/shared-store');
-
-(module.exports = function (key, value) {
-  return store[key] || (store[key] = value !== undefined ? value : {});
-})('versions', []).push({
-  version: '3.21.1',
+(store.versions || (store.versions = [])).push({
+  version: '3.38.0',
   mode: IS_PURE ? 'pure' : 'global',
-  copyright: '© 2014-2022 Denis Pushkarev (zloirock.ru)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.21.1/LICENSE',
+  copyright: '© 2014-2024 Denis Pushkarev (zloirock.ru)',
+  license: 'https://github.com/zloirock/core-js/blob/v3.38.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
-},{"../internals/is-pure":71,"../internals/shared-store":110}],112:[function(require,module,exports){
-var anObject = require('../internals/an-object');
-var aConstructor = require('../internals/a-constructor');
-var wellKnownSymbol = require('../internals/well-known-symbol');
+},{"../internals/define-global-property":32,"../internals/global-this":58,"../internals/is-pure":75}],109:[function(require,module,exports){
+'use strict';
+var store = require('../internals/shared-store');
 
-var SPECIES = wellKnownSymbol('species');
-
-// `SpeciesConstructor` abstract operation
-// https://tc39.es/ecma262/#sec-speciesconstructor
-module.exports = function (O, defaultConstructor) {
-  var C = anObject(O).constructor;
-  var S;
-  return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? defaultConstructor : aConstructor(S);
+module.exports = function (key, value) {
+  return store[key] || (store[key] = value || {});
 };
 
-},{"../internals/a-constructor":4,"../internals/an-object":9,"../internals/well-known-symbol":131}],113:[function(require,module,exports){
+},{"../internals/shared-store":108}],110:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 var toIntegerOrInfinity = require('../internals/to-integer-or-infinity');
 var toString = require('../internals/to-string');
@@ -3353,10 +3150,9 @@ module.exports = {
   charAt: createMethod(true)
 };
 
-},{"../internals/function-uncurry-this":51,"../internals/require-object-coercible":106,"../internals/to-integer-or-infinity":119,"../internals/to-string":125}],114:[function(require,module,exports){
+},{"../internals/function-uncurry-this":53,"../internals/require-object-coercible":104,"../internals/to-integer-or-infinity":117,"../internals/to-string":123}],111:[function(require,module,exports){
 'use strict';
 // based on https://github.com/bestiejs/punycode.js/blob/master/punycode.js
-var global = require('../internals/global');
 var uncurryThis = require('../internals/function-uncurry-this');
 
 var maxInt = 2147483647; // aka. 0x7FFFFFFF or 2^31-1
@@ -3373,7 +3169,7 @@ var regexSeparators = /[.\u3002\uFF0E\uFF61]/g; // RFC 3490 separators
 var OVERFLOW_ERROR = 'Overflow: input needs wider integers to process';
 var baseMinusTMin = base - tMin;
 
-var RangeError = global.RangeError;
+var $RangeError = RangeError;
 var exec = uncurryThis(regexSeparators.exec);
 var floor = Math.floor;
 var fromCharCode = String.fromCharCode;
@@ -3400,7 +3196,7 @@ var ucs2decode = function (string) {
     if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
       // It's a high surrogate, and there is a next character.
       var extra = charCodeAt(string, counter++);
-      if ((extra & 0xFC00) == 0xDC00) { // Low surrogate.
+      if ((extra & 0xFC00) === 0xDC00) { // Low surrogate.
         push(output, ((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
       } else {
         // It's an unmatched surrogate; only append this code unit, in case the
@@ -3488,7 +3284,7 @@ var encode = function (input) {
     // Increase `delta` enough to advance the decoder's <n,i> state to <m,0>, but guard against overflow.
     var handledCPCountPlusOne = handledCPCount + 1;
     if (m - n > floor((maxInt - delta) / handledCPCountPlusOne)) {
-      throw RangeError(OVERFLOW_ERROR);
+      throw new $RangeError(OVERFLOW_ERROR);
     }
 
     delta += (m - n) * handledCPCountPlusOne;
@@ -3497,14 +3293,14 @@ var encode = function (input) {
     for (i = 0; i < input.length; i++) {
       currentValue = input[i];
       if (currentValue < n && ++delta > maxInt) {
-        throw RangeError(OVERFLOW_ERROR);
+        throw new $RangeError(OVERFLOW_ERROR);
       }
-      if (currentValue == n) {
+      if (currentValue === n) {
         // Represent delta as a generalized variable-length integer.
         var q = delta;
         var k = base;
         while (true) {
-          var t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
+          var t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
           if (q < t) break;
           var qMinusT = q - t;
           var baseMinusT = base - t;
@@ -3514,7 +3310,7 @@ var encode = function (input) {
         }
 
         push(output, fromCharCode(digitToBasic(q)));
-        bias = adapt(delta, handledCPCountPlusOne, handledCPCount == basicLength);
+        bias = adapt(delta, handledCPCountPlusOne, handledCPCount === basicLength);
         delta = 0;
         handledCPCount++;
       }
@@ -3537,23 +3333,23 @@ module.exports = function (input) {
   return join(encoded, '.');
 };
 
-},{"../internals/function-uncurry-this":51,"../internals/global":56}],115:[function(require,module,exports){
+},{"../internals/function-uncurry-this":53}],112:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 var requireObjectCoercible = require('../internals/require-object-coercible');
 var toString = require('../internals/to-string');
 var whitespaces = require('../internals/whitespaces');
 
 var replace = uncurryThis(''.replace);
-var whitespace = '[' + whitespaces + ']';
-var ltrim = RegExp('^' + whitespace + whitespace + '*');
-var rtrim = RegExp(whitespace + whitespace + '*$');
+var ltrim = RegExp('^[' + whitespaces + ']+');
+var rtrim = RegExp('(^|[^' + whitespaces + '])[' + whitespaces + ']+$');
 
 // `String.prototype.{ trim, trimStart, trimEnd, trimLeft, trimRight }` methods implementation
 var createMethod = function (TYPE) {
   return function ($this) {
     var string = toString(requireObjectCoercible($this));
     if (TYPE & 1) string = replace(string, ltrim, '');
-    if (TYPE & 2) string = replace(string, rtrim, '');
+    if (TYPE & 2) string = replace(string, rtrim, '$1');
     return string;
   };
 };
@@ -3570,14 +3366,37 @@ module.exports = {
   trim: createMethod(3)
 };
 
-},{"../internals/function-uncurry-this":51,"../internals/require-object-coercible":106,"../internals/to-string":125,"../internals/whitespaces":132}],116:[function(require,module,exports){
+},{"../internals/function-uncurry-this":53,"../internals/require-object-coercible":104,"../internals/to-string":123,"../internals/whitespaces":132}],113:[function(require,module,exports){
+'use strict';
+/* eslint-disable es/no-symbol -- required for testing */
+var V8_VERSION = require('../internals/environment-v8-version');
+var fails = require('../internals/fails');
+var globalThis = require('../internals/global-this');
+
+var $String = globalThis.String;
+
+// eslint-disable-next-line es/no-object-getownpropertysymbols -- required for testing
+module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
+  var symbol = Symbol('symbol detection');
+  // Chrome 38 Symbol has incorrect toString conversion
+  // `get-own-property-symbols` polyfill symbols converted to object are not Symbol instances
+  // nb: Do not call `String` directly to avoid this being optimized out to `symbol+''` which will,
+  // of course, fail.
+  return !$String(symbol) || !(Object(symbol) instanceof Symbol) ||
+    // Chrome 38-40 symbols are not inherited from DOM collections prototypes to instances
+    !Symbol.sham && V8_VERSION && V8_VERSION < 41;
+});
+
+},{"../internals/environment-v8-version":43,"../internals/fails":46,"../internals/global-this":58}],114:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 
 // `thisNumberValue` abstract operation
 // https://tc39.es/ecma262/#sec-thisnumbervalue
 module.exports = uncurryThis(1.0.valueOf);
 
-},{"../internals/function-uncurry-this":51}],117:[function(require,module,exports){
+},{"../internals/function-uncurry-this":53}],115:[function(require,module,exports){
+'use strict';
 var toIntegerOrInfinity = require('../internals/to-integer-or-infinity');
 
 var max = Math.max;
@@ -3591,7 +3410,8 @@ module.exports = function (index, length) {
   return integer < 0 ? max(integer + length, 0) : min(integer, length);
 };
 
-},{"../internals/to-integer-or-infinity":119}],118:[function(require,module,exports){
+},{"../internals/to-integer-or-infinity":117}],116:[function(require,module,exports){
+'use strict';
 // toObject with fallback for non-array-like ES3 strings
 var IndexedObject = require('../internals/indexed-object');
 var requireObjectCoercible = require('../internals/require-object-coercible');
@@ -3600,19 +3420,20 @@ module.exports = function (it) {
   return IndexedObject(requireObjectCoercible(it));
 };
 
-},{"../internals/indexed-object":61,"../internals/require-object-coercible":106}],119:[function(require,module,exports){
-var ceil = Math.ceil;
-var floor = Math.floor;
+},{"../internals/indexed-object":63,"../internals/require-object-coercible":104}],117:[function(require,module,exports){
+'use strict';
+var trunc = require('../internals/math-trunc');
 
 // `ToIntegerOrInfinity` abstract operation
 // https://tc39.es/ecma262/#sec-tointegerorinfinity
 module.exports = function (argument) {
   var number = +argument;
-  // eslint-disable-next-line no-self-compare -- safe
-  return number !== number || number === 0 ? 0 : (number > 0 ? floor : ceil)(number);
+  // eslint-disable-next-line no-self-compare -- NaN check
+  return number !== number || number === 0 ? 0 : trunc(number);
 };
 
-},{}],120:[function(require,module,exports){
+},{"../internals/math-trunc":85}],118:[function(require,module,exports){
+'use strict';
 var toIntegerOrInfinity = require('../internals/to-integer-or-infinity');
 
 var min = Math.min;
@@ -3620,23 +3441,24 @@ var min = Math.min;
 // `ToLength` abstract operation
 // https://tc39.es/ecma262/#sec-tolength
 module.exports = function (argument) {
-  return argument > 0 ? min(toIntegerOrInfinity(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+  var len = toIntegerOrInfinity(argument);
+  return len > 0 ? min(len, 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
 };
 
-},{"../internals/to-integer-or-infinity":119}],121:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/to-integer-or-infinity":117}],119:[function(require,module,exports){
+'use strict';
 var requireObjectCoercible = require('../internals/require-object-coercible');
 
-var Object = global.Object;
+var $Object = Object;
 
 // `ToObject` abstract operation
 // https://tc39.es/ecma262/#sec-toobject
 module.exports = function (argument) {
-  return Object(requireObjectCoercible(argument));
+  return $Object(requireObjectCoercible(argument));
 };
 
-},{"../internals/global":56,"../internals/require-object-coercible":106}],122:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/require-object-coercible":104}],120:[function(require,module,exports){
+'use strict';
 var call = require('../internals/function-call');
 var isObject = require('../internals/is-object');
 var isSymbol = require('../internals/is-symbol');
@@ -3644,7 +3466,7 @@ var getMethod = require('../internals/get-method');
 var ordinaryToPrimitive = require('../internals/ordinary-to-primitive');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
-var TypeError = global.TypeError;
+var $TypeError = TypeError;
 var TO_PRIMITIVE = wellKnownSymbol('toPrimitive');
 
 // `ToPrimitive` abstract operation
@@ -3657,13 +3479,14 @@ module.exports = function (input, pref) {
     if (pref === undefined) pref = 'default';
     result = call(exoticToPrim, input, pref);
     if (!isObject(result) || isSymbol(result)) return result;
-    throw TypeError("Can't convert object to primitive value");
+    throw new $TypeError("Can't convert object to primitive value");
   }
   if (pref === undefined) pref = 'number';
   return ordinaryToPrimitive(input, pref);
 };
 
-},{"../internals/function-call":49,"../internals/get-method":55,"../internals/global":56,"../internals/is-object":70,"../internals/is-symbol":73,"../internals/ordinary-to-primitive":96,"../internals/well-known-symbol":131}],123:[function(require,module,exports){
+},{"../internals/function-call":49,"../internals/get-method":57,"../internals/is-object":73,"../internals/is-symbol":77,"../internals/ordinary-to-primitive":101,"../internals/well-known-symbol":131}],121:[function(require,module,exports){
+'use strict';
 var toPrimitive = require('../internals/to-primitive');
 var isSymbol = require('../internals/is-symbol');
 
@@ -3674,7 +3497,8 @@ module.exports = function (argument) {
   return isSymbol(key) ? key : key + '';
 };
 
-},{"../internals/is-symbol":73,"../internals/to-primitive":122}],124:[function(require,module,exports){
+},{"../internals/is-symbol":77,"../internals/to-primitive":120}],122:[function(require,module,exports){
+'use strict';
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
@@ -3684,31 +3508,31 @@ test[TO_STRING_TAG] = 'z';
 
 module.exports = String(test) === '[object z]';
 
-},{"../internals/well-known-symbol":131}],125:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/well-known-symbol":131}],123:[function(require,module,exports){
+'use strict';
 var classof = require('../internals/classof');
 
-var String = global.String;
+var $String = String;
 
 module.exports = function (argument) {
-  if (classof(argument) === 'Symbol') throw TypeError('Cannot convert a Symbol value to a string');
-  return String(argument);
+  if (classof(argument) === 'Symbol') throw new TypeError('Cannot convert a Symbol value to a string');
+  return $String(argument);
 };
 
-},{"../internals/classof":24,"../internals/global":56}],126:[function(require,module,exports){
-var global = require('../internals/global');
-
-var String = global.String;
+},{"../internals/classof":21}],124:[function(require,module,exports){
+'use strict';
+var $String = String;
 
 module.exports = function (argument) {
   try {
-    return String(argument);
+    return $String(argument);
   } catch (error) {
     return 'Object';
   }
 };
 
-},{"../internals/global":56}],127:[function(require,module,exports){
+},{}],125:[function(require,module,exports){
+'use strict';
 var uncurryThis = require('../internals/function-uncurry-this');
 
 var id = 0;
@@ -3719,15 +3543,61 @@ module.exports = function (key) {
   return 'Symbol(' + (key === undefined ? '' : key) + ')_' + toString(++id + postfix, 36);
 };
 
-},{"../internals/function-uncurry-this":51}],128:[function(require,module,exports){
+},{"../internals/function-uncurry-this":53}],126:[function(require,module,exports){
+'use strict';
+var fails = require('../internals/fails');
+var wellKnownSymbol = require('../internals/well-known-symbol');
+var DESCRIPTORS = require('../internals/descriptors');
+var IS_PURE = require('../internals/is-pure');
+
+var ITERATOR = wellKnownSymbol('iterator');
+
+module.exports = !fails(function () {
+  // eslint-disable-next-line unicorn/relative-url-style -- required for testing
+  var url = new URL('b?a=1&b=2&c=3', 'https://a');
+  var params = url.searchParams;
+  var params2 = new URLSearchParams('a=1&a=2&b=3');
+  var result = '';
+  url.pathname = 'c%20d';
+  params.forEach(function (value, key) {
+    params['delete']('b');
+    result += key + value;
+  });
+  params2['delete']('a', 2);
+  // `undefined` case is a Chromium 117 bug
+  // https://bugs.chromium.org/p/v8/issues/detail?id=14222
+  params2['delete']('b', undefined);
+  return (IS_PURE && (!url.toJSON || !params2.has('a', 1) || params2.has('a', 2) || !params2.has('a', undefined) || params2.has('b')))
+    || (!params.size && (IS_PURE || !DESCRIPTORS))
+    || !params.sort
+    || url.href !== 'https://a/c%20d?a=1&c=3'
+    || params.get('c') !== '3'
+    || String(new URLSearchParams('?a=1')) !== 'a=1'
+    || !params[ITERATOR]
+    // throws in Edge
+    || new URL('https://a@b').username !== 'a'
+    || new URLSearchParams(new URLSearchParams('a=b')).get('a') !== 'b'
+    // not punycoded in Edge
+    || new URL('https://тест').host !== 'xn--e1aybc'
+    // not escaped in Chrome 62-
+    || new URL('https://a#б').hash !== '#%D0%B1'
+    // fails in Chrome 66-
+    || result !== 'a1c3'
+    // throws in Safari
+    || new URL('https://x', undefined).host !== 'x';
+});
+
+},{"../internals/descriptors":34,"../internals/fails":46,"../internals/is-pure":75,"../internals/well-known-symbol":131}],127:[function(require,module,exports){
+'use strict';
 /* eslint-disable es/no-symbol -- required for testing */
-var NATIVE_SYMBOL = require('../internals/native-symbol');
+var NATIVE_SYMBOL = require('../internals/symbol-constructor-detection');
 
 module.exports = NATIVE_SYMBOL
   && !Symbol.sham
   && typeof Symbol.iterator == 'symbol';
 
-},{"../internals/native-symbol":78}],129:[function(require,module,exports){
+},{"../internals/symbol-constructor-detection":113}],128:[function(require,module,exports){
+'use strict';
 var DESCRIPTORS = require('../internals/descriptors');
 var fails = require('../internals/fails');
 
@@ -3738,46 +3608,50 @@ module.exports = DESCRIPTORS && fails(function () {
   return Object.defineProperty(function () { /* empty */ }, 'prototype', {
     value: 42,
     writable: false
-  }).prototype != 42;
+  }).prototype !== 42;
 });
 
-},{"../internals/descriptors":33,"../internals/fails":44}],130:[function(require,module,exports){
-var global = require('../internals/global');
-
-var TypeError = global.TypeError;
+},{"../internals/descriptors":34,"../internals/fails":46}],129:[function(require,module,exports){
+'use strict';
+var $TypeError = TypeError;
 
 module.exports = function (passed, required) {
-  if (passed < required) throw TypeError('Not enough arguments');
+  if (passed < required) throw new $TypeError('Not enough arguments');
   return passed;
 };
 
-},{"../internals/global":56}],131:[function(require,module,exports){
-var global = require('../internals/global');
+},{}],130:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
+var isCallable = require('../internals/is-callable');
+
+var WeakMap = globalThis.WeakMap;
+
+module.exports = isCallable(WeakMap) && /native code/.test(String(WeakMap));
+
+},{"../internals/global-this":58,"../internals/is-callable":69}],131:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
 var shared = require('../internals/shared');
 var hasOwn = require('../internals/has-own-property');
 var uid = require('../internals/uid');
-var NATIVE_SYMBOL = require('../internals/native-symbol');
+var NATIVE_SYMBOL = require('../internals/symbol-constructor-detection');
 var USE_SYMBOL_AS_UID = require('../internals/use-symbol-as-uid');
 
+var Symbol = globalThis.Symbol;
 var WellKnownSymbolsStore = shared('wks');
-var Symbol = global.Symbol;
-var symbolFor = Symbol && Symbol['for'];
-var createWellKnownSymbol = USE_SYMBOL_AS_UID ? Symbol : Symbol && Symbol.withoutSetter || uid;
+var createWellKnownSymbol = USE_SYMBOL_AS_UID ? Symbol['for'] || Symbol : Symbol && Symbol.withoutSetter || uid;
 
 module.exports = function (name) {
-  if (!hasOwn(WellKnownSymbolsStore, name) || !(NATIVE_SYMBOL || typeof WellKnownSymbolsStore[name] == 'string')) {
-    var description = 'Symbol.' + name;
-    if (NATIVE_SYMBOL && hasOwn(Symbol, name)) {
-      WellKnownSymbolsStore[name] = Symbol[name];
-    } else if (USE_SYMBOL_AS_UID && symbolFor) {
-      WellKnownSymbolsStore[name] = symbolFor(description);
-    } else {
-      WellKnownSymbolsStore[name] = createWellKnownSymbol(description);
-    }
+  if (!hasOwn(WellKnownSymbolsStore, name)) {
+    WellKnownSymbolsStore[name] = NATIVE_SYMBOL && hasOwn(Symbol, name)
+      ? Symbol[name]
+      : createWellKnownSymbol('Symbol.' + name);
   } return WellKnownSymbolsStore[name];
 };
 
-},{"../internals/global":56,"../internals/has-own-property":57,"../internals/native-symbol":78,"../internals/shared":111,"../internals/uid":127,"../internals/use-symbol-as-uid":128}],132:[function(require,module,exports){
+},{"../internals/global-this":58,"../internals/has-own-property":59,"../internals/shared":109,"../internals/symbol-constructor-detection":113,"../internals/uid":125,"../internals/use-symbol-as-uid":127}],132:[function(require,module,exports){
+'use strict';
 // a string of all valid unicode whitespaces
 module.exports = '\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u2000\u2001\u2002' +
   '\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF';
@@ -3785,22 +3659,19 @@ module.exports = '\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u2000\u2001\u
 },{}],133:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
-var global = require('../internals/global');
 var fails = require('../internals/fails');
 var isArray = require('../internals/is-array');
 var isObject = require('../internals/is-object');
 var toObject = require('../internals/to-object');
 var lengthOfArrayLike = require('../internals/length-of-array-like');
+var doesNotExceedSafeInteger = require('../internals/does-not-exceed-safe-integer');
 var createProperty = require('../internals/create-property');
 var arraySpeciesCreate = require('../internals/array-species-create');
 var arrayMethodHasSpeciesSupport = require('../internals/array-method-has-species-support');
 var wellKnownSymbol = require('../internals/well-known-symbol');
-var V8_VERSION = require('../internals/engine-v8-version');
+var V8_VERSION = require('../internals/environment-v8-version');
 
 var IS_CONCAT_SPREADABLE = wellKnownSymbol('isConcatSpreadable');
-var MAX_SAFE_INTEGER = 0x1FFFFFFFFFFFFF;
-var MAXIMUM_ALLOWED_INDEX_EXCEEDED = 'Maximum allowed index exceeded';
-var TypeError = global.TypeError;
 
 // We can't use this feature detection in V8 since it causes
 // deoptimization and serious performance degradation
@@ -3811,20 +3682,18 @@ var IS_CONCAT_SPREADABLE_SUPPORT = V8_VERSION >= 51 || !fails(function () {
   return array.concat()[0] !== array;
 });
 
-var SPECIES_SUPPORT = arrayMethodHasSpeciesSupport('concat');
-
 var isConcatSpreadable = function (O) {
   if (!isObject(O)) return false;
   var spreadable = O[IS_CONCAT_SPREADABLE];
   return spreadable !== undefined ? !!spreadable : isArray(O);
 };
 
-var FORCED = !IS_CONCAT_SPREADABLE_SUPPORT || !SPECIES_SUPPORT;
+var FORCED = !IS_CONCAT_SPREADABLE_SUPPORT || !arrayMethodHasSpeciesSupport('concat');
 
 // `Array.prototype.concat` method
 // https://tc39.es/ecma262/#sec-array.prototype.concat
 // with adding support of @@isConcatSpreadable and @@species
-$({ target: 'Array', proto: true, forced: FORCED }, {
+$({ target: 'Array', proto: true, arity: 1, forced: FORCED }, {
   // eslint-disable-next-line no-unused-vars -- required for `.length`
   concat: function concat(arg) {
     var O = toObject(this);
@@ -3835,10 +3704,10 @@ $({ target: 'Array', proto: true, forced: FORCED }, {
       E = i === -1 ? O : arguments[i];
       if (isConcatSpreadable(E)) {
         len = lengthOfArrayLike(E);
-        if (n + len > MAX_SAFE_INTEGER) throw TypeError(MAXIMUM_ALLOWED_INDEX_EXCEEDED);
+        doesNotExceedSafeInteger(n + len);
         for (k = 0; k < len; k++, n++) if (k in E) createProperty(A, n, E[k]);
       } else {
-        if (n >= MAX_SAFE_INTEGER) throw TypeError(MAXIMUM_ALLOWED_INDEX_EXCEEDED);
+        doesNotExceedSafeInteger(n + 1);
         createProperty(A, n++, E);
       }
     }
@@ -3847,7 +3716,7 @@ $({ target: 'Array', proto: true, forced: FORCED }, {
   }
 });
 
-},{"../internals/array-method-has-species-support":14,"../internals/array-species-create":20,"../internals/create-property":31,"../internals/engine-v8-version":40,"../internals/export":43,"../internals/fails":44,"../internals/global":56,"../internals/is-array":66,"../internals/is-object":70,"../internals/length-of-array-like":77,"../internals/to-object":121,"../internals/well-known-symbol":131}],134:[function(require,module,exports){
+},{"../internals/array-method-has-species-support":12,"../internals/array-species-create":17,"../internals/create-property":28,"../internals/does-not-exceed-safe-integer":36,"../internals/environment-v8-version":43,"../internals/export":45,"../internals/fails":46,"../internals/is-array":68,"../internals/is-object":73,"../internals/length-of-array-like":83,"../internals/to-object":119,"../internals/well-known-symbol":131}],134:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var $filter = require('../internals/array-iteration').filter;
@@ -3864,7 +3733,7 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT }, {
   }
 });
 
-},{"../internals/array-iteration":13,"../internals/array-method-has-species-support":14,"../internals/export":43}],135:[function(require,module,exports){
+},{"../internals/array-iteration":11,"../internals/array-method-has-species-support":12,"../internals/export":45}],135:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var $find = require('../internals/array-iteration').find;
@@ -3874,6 +3743,7 @@ var FIND = 'find';
 var SKIPS_HOLES = true;
 
 // Shouldn't skip holes
+// eslint-disable-next-line es/no-array-prototype-find -- testing
 if (FIND in []) Array(1)[FIND](function () { SKIPS_HOLES = false; });
 
 // `Array.prototype.find` method
@@ -3887,7 +3757,8 @@ $({ target: 'Array', proto: true, forced: SKIPS_HOLES }, {
 // https://tc39.es/ecma262/#sec-array.prototype-@@unscopables
 addToUnscopables(FIND);
 
-},{"../internals/add-to-unscopables":6,"../internals/array-iteration":13,"../internals/export":43}],136:[function(require,module,exports){
+},{"../internals/add-to-unscopables":5,"../internals/array-iteration":11,"../internals/export":45}],136:[function(require,module,exports){
+'use strict';
 var $ = require('../internals/export');
 var from = require('../internals/array-from');
 var checkCorrectnessOfIteration = require('../internals/check-correctness-of-iteration');
@@ -3903,15 +3774,22 @@ $({ target: 'Array', stat: true, forced: INCORRECT_ITERATION }, {
   from: from
 });
 
-},{"../internals/array-from":11,"../internals/check-correctness-of-iteration":22,"../internals/export":43}],137:[function(require,module,exports){
+},{"../internals/array-from":9,"../internals/check-correctness-of-iteration":19,"../internals/export":45}],137:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var $includes = require('../internals/array-includes').includes;
+var fails = require('../internals/fails');
 var addToUnscopables = require('../internals/add-to-unscopables');
+
+// FF99+ bug
+var BROKEN_ON_SPARSE = fails(function () {
+  // eslint-disable-next-line es/no-array-prototype-includes -- detection
+  return !Array(1).includes();
+});
 
 // `Array.prototype.includes` method
 // https://tc39.es/ecma262/#sec-array.prototype.includes
-$({ target: 'Array', proto: true }, {
+$({ target: 'Array', proto: true, forced: BROKEN_ON_SPARSE }, {
   includes: function includes(el /* , fromIndex = 0 */) {
     return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
   }
@@ -3920,14 +3798,15 @@ $({ target: 'Array', proto: true }, {
 // https://tc39.es/ecma262/#sec-array.prototype-@@unscopables
 addToUnscopables('includes');
 
-},{"../internals/add-to-unscopables":6,"../internals/array-includes":12,"../internals/export":43}],138:[function(require,module,exports){
+},{"../internals/add-to-unscopables":5,"../internals/array-includes":10,"../internals/export":45,"../internals/fails":46}],138:[function(require,module,exports){
 'use strict';
 var toIndexedObject = require('../internals/to-indexed-object');
 var addToUnscopables = require('../internals/add-to-unscopables');
 var Iterators = require('../internals/iterators');
 var InternalStateModule = require('../internals/internal-state');
 var defineProperty = require('../internals/object-define-property').f;
-var defineIterator = require('../internals/define-iterator');
+var defineIterator = require('../internals/iterator-define');
+var createIterResultObject = require('../internals/create-iter-result-object');
 var IS_PURE = require('../internals/is-pure');
 var DESCRIPTORS = require('../internals/descriptors');
 
@@ -3957,15 +3836,15 @@ module.exports = defineIterator(Array, 'Array', function (iterated, kind) {
 }, function () {
   var state = getInternalState(this);
   var target = state.target;
-  var kind = state.kind;
   var index = state.index++;
   if (!target || index >= target.length) {
     state.target = undefined;
-    return { value: undefined, done: true };
+    return createIterResultObject(undefined, true);
   }
-  if (kind == 'keys') return { value: index, done: false };
-  if (kind == 'values') return { value: target[index], done: false };
-  return { value: [index, target[index]], done: false };
+  switch (state.kind) {
+    case 'keys': return createIterResultObject(index, false);
+    case 'values': return createIterResultObject(target[index], false);
+  } return createIterResultObject([index, target[index]], false);
 }, 'values');
 
 // argumentsList[@@iterator] is %ArrayProto_values%
@@ -3983,7 +3862,7 @@ if (!IS_PURE && DESCRIPTORS && values.name !== 'values') try {
   defineProperty(values, 'name', { value: 'values' });
 } catch (error) { /* empty */ }
 
-},{"../internals/add-to-unscopables":6,"../internals/define-iterator":32,"../internals/descriptors":33,"../internals/internal-state":64,"../internals/is-pure":71,"../internals/iterators":76,"../internals/object-define-property":85,"../internals/to-indexed-object":118}],139:[function(require,module,exports){
+},{"../internals/add-to-unscopables":5,"../internals/create-iter-result-object":25,"../internals/descriptors":34,"../internals/internal-state":66,"../internals/is-pure":75,"../internals/iterator-define":80,"../internals/iterators":82,"../internals/object-define-property":90,"../internals/to-indexed-object":116}],139:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var uncurryThis = require('../internals/function-uncurry-this');
@@ -3991,20 +3870,20 @@ var IndexedObject = require('../internals/indexed-object');
 var toIndexedObject = require('../internals/to-indexed-object');
 var arrayMethodIsStrict = require('../internals/array-method-is-strict');
 
-var un$Join = uncurryThis([].join);
+var nativeJoin = uncurryThis([].join);
 
-var ES3_STRINGS = IndexedObject != Object;
-var STRICT_METHOD = arrayMethodIsStrict('join', ',');
+var ES3_STRINGS = IndexedObject !== Object;
+var FORCED = ES3_STRINGS || !arrayMethodIsStrict('join', ',');
 
 // `Array.prototype.join` method
 // https://tc39.es/ecma262/#sec-array.prototype.join
-$({ target: 'Array', proto: true, forced: ES3_STRINGS || !STRICT_METHOD }, {
+$({ target: 'Array', proto: true, forced: FORCED }, {
   join: function join(separator) {
-    return un$Join(toIndexedObject(this), separator === undefined ? ',' : separator);
+    return nativeJoin(toIndexedObject(this), separator === undefined ? ',' : separator);
   }
 });
 
-},{"../internals/array-method-is-strict":15,"../internals/export":43,"../internals/function-uncurry-this":51,"../internals/indexed-object":61,"../internals/to-indexed-object":118}],140:[function(require,module,exports){
+},{"../internals/array-method-is-strict":13,"../internals/export":45,"../internals/function-uncurry-this":53,"../internals/indexed-object":63,"../internals/to-indexed-object":116}],140:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var $map = require('../internals/array-iteration').map;
@@ -4021,10 +3900,9 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT }, {
   }
 });
 
-},{"../internals/array-iteration":13,"../internals/array-method-has-species-support":14,"../internals/export":43}],141:[function(require,module,exports){
+},{"../internals/array-iteration":11,"../internals/array-method-has-species-support":12,"../internals/export":45}],141:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
-var global = require('../internals/global');
 var isArray = require('../internals/is-array');
 var isConstructor = require('../internals/is-constructor');
 var isObject = require('../internals/is-object');
@@ -4034,12 +3912,12 @@ var toIndexedObject = require('../internals/to-indexed-object');
 var createProperty = require('../internals/create-property');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var arrayMethodHasSpeciesSupport = require('../internals/array-method-has-species-support');
-var un$Slice = require('../internals/array-slice');
+var nativeSlice = require('../internals/array-slice');
 
 var HAS_SPECIES_SUPPORT = arrayMethodHasSpeciesSupport('slice');
 
 var SPECIES = wellKnownSymbol('species');
-var Array = global.Array;
+var $Array = Array;
 var max = Math.max;
 
 // `Array.prototype.slice` method
@@ -4056,41 +3934,42 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT }, {
     if (isArray(O)) {
       Constructor = O.constructor;
       // cross-realm fallback
-      if (isConstructor(Constructor) && (Constructor === Array || isArray(Constructor.prototype))) {
+      if (isConstructor(Constructor) && (Constructor === $Array || isArray(Constructor.prototype))) {
         Constructor = undefined;
       } else if (isObject(Constructor)) {
         Constructor = Constructor[SPECIES];
         if (Constructor === null) Constructor = undefined;
       }
-      if (Constructor === Array || Constructor === undefined) {
-        return un$Slice(O, k, fin);
+      if (Constructor === $Array || Constructor === undefined) {
+        return nativeSlice(O, k, fin);
       }
     }
-    result = new (Constructor === undefined ? Array : Constructor)(max(fin - k, 0));
+    result = new (Constructor === undefined ? $Array : Constructor)(max(fin - k, 0));
     for (n = 0; k < fin; k++, n++) if (k in O) createProperty(result, n, O[k]);
     result.length = n;
     return result;
   }
 });
 
-},{"../internals/array-method-has-species-support":14,"../internals/array-slice":17,"../internals/create-property":31,"../internals/export":43,"../internals/global":56,"../internals/is-array":66,"../internals/is-constructor":68,"../internals/is-object":70,"../internals/length-of-array-like":77,"../internals/to-absolute-index":117,"../internals/to-indexed-object":118,"../internals/well-known-symbol":131}],142:[function(require,module,exports){
+},{"../internals/array-method-has-species-support":12,"../internals/array-slice":14,"../internals/create-property":28,"../internals/export":45,"../internals/is-array":68,"../internals/is-constructor":70,"../internals/is-object":73,"../internals/length-of-array-like":83,"../internals/to-absolute-index":115,"../internals/to-indexed-object":116,"../internals/well-known-symbol":131}],142:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var uncurryThis = require('../internals/function-uncurry-this');
 var aCallable = require('../internals/a-callable');
 var toObject = require('../internals/to-object');
 var lengthOfArrayLike = require('../internals/length-of-array-like');
+var deletePropertyOrThrow = require('../internals/delete-property-or-throw');
 var toString = require('../internals/to-string');
 var fails = require('../internals/fails');
 var internalSort = require('../internals/array-sort');
 var arrayMethodIsStrict = require('../internals/array-method-is-strict');
-var FF = require('../internals/engine-ff-version');
-var IE_OR_EDGE = require('../internals/engine-is-ie-or-edge');
-var V8 = require('../internals/engine-v8-version');
-var WEBKIT = require('../internals/engine-webkit-version');
+var FF = require('../internals/environment-ff-version');
+var IE_OR_EDGE = require('../internals/environment-is-ie-or-edge');
+var V8 = require('../internals/environment-v8-version');
+var WEBKIT = require('../internals/environment-webkit-version');
 
 var test = [];
-var un$Sort = uncurryThis(test.sort);
+var nativeSort = uncurryThis(test.sort);
 var push = uncurryThis(test.push);
 
 // IE8-
@@ -4158,7 +4037,7 @@ $({ target: 'Array', proto: true, forced: FORCED }, {
 
     var array = toObject(this);
 
-    if (STABLE_SORT) return comparefn === undefined ? un$Sort(array) : un$Sort(array, comparefn);
+    if (STABLE_SORT) return comparefn === undefined ? nativeSort(array) : nativeSort(array, comparefn);
 
     var items = [];
     var arrayLength = lengthOfArrayLike(array);
@@ -4170,23 +4049,25 @@ $({ target: 'Array', proto: true, forced: FORCED }, {
 
     internalSort(items, getSortCompare(comparefn));
 
-    itemsLength = items.length;
+    itemsLength = lengthOfArrayLike(items);
     index = 0;
 
     while (index < itemsLength) array[index] = items[index++];
-    while (index < arrayLength) delete array[index++];
+    while (index < arrayLength) deletePropertyOrThrow(array, index++);
 
     return array;
   }
 });
 
-},{"../internals/a-callable":3,"../internals/array-method-is-strict":15,"../internals/array-sort":18,"../internals/engine-ff-version":37,"../internals/engine-is-ie-or-edge":38,"../internals/engine-v8-version":40,"../internals/engine-webkit-version":41,"../internals/export":43,"../internals/fails":44,"../internals/function-uncurry-this":51,"../internals/length-of-array-like":77,"../internals/to-object":121,"../internals/to-string":125}],143:[function(require,module,exports){
+},{"../internals/a-callable":3,"../internals/array-method-is-strict":13,"../internals/array-sort":15,"../internals/delete-property-or-throw":33,"../internals/environment-ff-version":40,"../internals/environment-is-ie-or-edge":41,"../internals/environment-v8-version":43,"../internals/environment-webkit-version":44,"../internals/export":45,"../internals/fails":46,"../internals/function-uncurry-this":53,"../internals/length-of-array-like":83,"../internals/to-object":119,"../internals/to-string":123}],143:[function(require,module,exports){
 'use strict';
+var $ = require('../internals/export');
+var IS_PURE = require('../internals/is-pure');
 var DESCRIPTORS = require('../internals/descriptors');
-var global = require('../internals/global');
+var globalThis = require('../internals/global-this');
+var path = require('../internals/path');
 var uncurryThis = require('../internals/function-uncurry-this');
 var isForced = require('../internals/is-forced');
-var redefine = require('../internals/redefine');
 var hasOwn = require('../internals/has-own-property');
 var inheritIfRequired = require('../internals/inherit-if-required');
 var isPrototypeOf = require('../internals/object-is-prototype-of');
@@ -4200,10 +4081,11 @@ var thisNumberValue = require('../internals/this-number-value');
 var trim = require('../internals/string-trim').trim;
 
 var NUMBER = 'Number';
-var NativeNumber = global[NUMBER];
+var NativeNumber = globalThis[NUMBER];
+var PureNumberNamespace = path[NUMBER];
 var NumberPrototype = NativeNumber.prototype;
-var TypeError = global.TypeError;
-var arraySlice = uncurryThis(''.slice);
+var TypeError = globalThis.TypeError;
+var stringSlice = uncurryThis(''.slice);
 var charCodeAt = uncurryThis(''.charCodeAt);
 
 // `ToNumeric` abstract operation
@@ -4218,7 +4100,7 @@ var toNumeric = function (value) {
 var toNumber = function (argument) {
   var it = toPrimitive(argument, 'number');
   var first, third, radix, maxCode, digits, length, index, code;
-  if (isSymbol(it)) throw TypeError('Cannot convert a Symbol value to a number');
+  if (isSymbol(it)) throw new TypeError('Cannot convert a Symbol value to a number');
   if (typeof it == 'string' && it.length > 2) {
     it = trim(it);
     first = charCodeAt(it, 0);
@@ -4227,11 +4109,22 @@ var toNumber = function (argument) {
       if (third === 88 || third === 120) return NaN; // Number('+0x1') should be NaN, old V8 fix
     } else if (first === 48) {
       switch (charCodeAt(it, 1)) {
-        case 66: case 98: radix = 2; maxCode = 49; break; // fast equal of /^0b[01]+$/i
-        case 79: case 111: radix = 8; maxCode = 55; break; // fast equal of /^0o[0-7]+$/i
-        default: return +it;
+        // fast equal of /^0b[01]+$/i
+        case 66:
+        case 98:
+          radix = 2;
+          maxCode = 49;
+          break;
+        // fast equal of /^0o[0-7]+$/i
+        case 79:
+        case 111:
+          radix = 8;
+          maxCode = 55;
+          break;
+        default:
+          return +it;
       }
-      digits = arraySlice(it, 2);
+      digits = stringSlice(it, 2);
       length = digits.length;
       for (index = 0; index < length; index++) {
         code = charCodeAt(digits, index);
@@ -4243,17 +4136,30 @@ var toNumber = function (argument) {
   } return +it;
 };
 
+var FORCED = isForced(NUMBER, !NativeNumber(' 0o1') || !NativeNumber('0b1') || NativeNumber('+0x1'));
+
+var calledWithNew = function (dummy) {
+  // includes check on 1..constructor(foo) case
+  return isPrototypeOf(NumberPrototype, dummy) && fails(function () { thisNumberValue(dummy); });
+};
+
 // `Number` constructor
 // https://tc39.es/ecma262/#sec-number-constructor
-if (isForced(NUMBER, !NativeNumber(' 0o1') || !NativeNumber('0b1') || NativeNumber('+0x1'))) {
-  var NumberWrapper = function Number(value) {
-    var n = arguments.length < 1 ? 0 : NativeNumber(toNumeric(value));
-    var dummy = this;
-    // check on 1..constructor(foo) case
-    return isPrototypeOf(NumberPrototype, dummy) && fails(function () { thisNumberValue(dummy); })
-      ? inheritIfRequired(Object(n), dummy, NumberWrapper) : n;
-  };
-  for (var keys = DESCRIPTORS ? getOwnPropertyNames(NativeNumber) : (
+var NumberWrapper = function Number(value) {
+  var n = arguments.length < 1 ? 0 : NativeNumber(toNumeric(value));
+  return calledWithNew(this) ? inheritIfRequired(Object(n), this, NumberWrapper) : n;
+};
+
+NumberWrapper.prototype = NumberPrototype;
+if (FORCED && !IS_PURE) NumberPrototype.constructor = NumberWrapper;
+
+$({ global: true, constructor: true, wrap: true, forced: FORCED }, {
+  Number: NumberWrapper
+});
+
+// Use `internal/copy-constructor-properties` helper in `core-js@4`
+var copyConstructorProperties = function (target, source) {
+  for (var keys = DESCRIPTORS ? getOwnPropertyNames(source) : (
     // ES3:
     'MAX_VALUE,MIN_VALUE,NaN,NEGATIVE_INFINITY,POSITIVE_INFINITY,' +
     // ES2015 (in case, if modules with ES2015 Number statics required before):
@@ -4261,38 +4167,28 @@ if (isForced(NUMBER, !NativeNumber(' 0o1') || !NativeNumber('0b1') || NativeNumb
     // ESNext
     'fromString,range'
   ).split(','), j = 0, key; keys.length > j; j++) {
-    if (hasOwn(NativeNumber, key = keys[j]) && !hasOwn(NumberWrapper, key)) {
-      defineProperty(NumberWrapper, key, getOwnPropertyDescriptor(NativeNumber, key));
+    if (hasOwn(source, key = keys[j]) && !hasOwn(target, key)) {
+      defineProperty(target, key, getOwnPropertyDescriptor(source, key));
     }
   }
-  NumberWrapper.prototype = NumberPrototype;
-  NumberPrototype.constructor = NumberWrapper;
-  redefine(global, NUMBER, NumberWrapper);
-}
+};
 
-},{"../internals/descriptors":33,"../internals/fails":44,"../internals/function-uncurry-this":51,"../internals/global":56,"../internals/has-own-property":57,"../internals/inherit-if-required":62,"../internals/is-forced":69,"../internals/is-symbol":73,"../internals/object-define-property":85,"../internals/object-get-own-property-descriptor":86,"../internals/object-get-own-property-names":87,"../internals/object-is-prototype-of":90,"../internals/redefine":99,"../internals/string-trim":115,"../internals/this-number-value":116,"../internals/to-primitive":122}],144:[function(require,module,exports){
+if (IS_PURE && PureNumberNamespace) copyConstructorProperties(path[NUMBER], PureNumberNamespace);
+if (FORCED || IS_PURE) copyConstructorProperties(path[NUMBER], NativeNumber);
+
+},{"../internals/descriptors":34,"../internals/export":45,"../internals/fails":46,"../internals/function-uncurry-this":53,"../internals/global-this":58,"../internals/has-own-property":59,"../internals/inherit-if-required":64,"../internals/is-forced":71,"../internals/is-pure":75,"../internals/is-symbol":77,"../internals/object-define-property":90,"../internals/object-get-own-property-descriptor":91,"../internals/object-get-own-property-names":92,"../internals/object-is-prototype-of":95,"../internals/path":103,"../internals/string-trim":112,"../internals/this-number-value":114,"../internals/to-primitive":120}],144:[function(require,module,exports){
+'use strict';
 var TO_STRING_TAG_SUPPORT = require('../internals/to-string-tag-support');
-var redefine = require('../internals/redefine');
+var defineBuiltIn = require('../internals/define-built-in');
 var toString = require('../internals/object-to-string');
 
 // `Object.prototype.toString` method
 // https://tc39.es/ecma262/#sec-object.prototype.tostring
 if (!TO_STRING_TAG_SUPPORT) {
-  redefine(Object.prototype, 'toString', toString, { unsafe: true });
+  defineBuiltIn(Object.prototype, 'toString', toString, { unsafe: true });
 }
 
-},{"../internals/object-to-string":95,"../internals/redefine":99,"../internals/to-string-tag-support":124}],145:[function(require,module,exports){
-'use strict';
-var $ = require('../internals/export');
-var exec = require('../internals/regexp-exec');
-
-// `RegExp.prototype.exec` method
-// https://tc39.es/ecma262/#sec-regexp.prototype.exec
-$({ target: 'RegExp', proto: true, forced: /./.exec !== exec }, {
-  exec: exec
-});
-
-},{"../internals/export":43,"../internals/regexp-exec":101}],146:[function(require,module,exports){
+},{"../internals/define-built-in":30,"../internals/object-to-string":100,"../internals/to-string-tag-support":122}],145:[function(require,module,exports){
 'use strict';
 var $ = require('../internals/export');
 var uncurryThis = require('../internals/function-uncurry-this');
@@ -4315,12 +4211,13 @@ $({ target: 'String', proto: true, forced: !correctIsRegExpLogic('includes') }, 
   }
 });
 
-},{"../internals/correct-is-regexp-logic":26,"../internals/export":43,"../internals/function-uncurry-this":51,"../internals/not-a-regexp":81,"../internals/require-object-coercible":106,"../internals/to-string":125}],147:[function(require,module,exports){
+},{"../internals/correct-is-regexp-logic":23,"../internals/export":45,"../internals/function-uncurry-this":53,"../internals/not-a-regexp":86,"../internals/require-object-coercible":104,"../internals/to-string":123}],146:[function(require,module,exports){
 'use strict';
 var charAt = require('../internals/string-multibyte').charAt;
 var toString = require('../internals/to-string');
 var InternalStateModule = require('../internals/internal-state');
-var defineIterator = require('../internals/define-iterator');
+var defineIterator = require('../internals/iterator-define');
+var createIterResultObject = require('../internals/create-iter-result-object');
 
 var STRING_ITERATOR = 'String Iterator';
 var setInternalState = InternalStateModule.set;
@@ -4341,172 +4238,15 @@ defineIterator(String, 'String', function (iterated) {
   var string = state.string;
   var index = state.index;
   var point;
-  if (index >= string.length) return { value: undefined, done: true };
+  if (index >= string.length) return createIterResultObject(undefined, true);
   point = charAt(string, index);
   state.index += point.length;
-  return { value: point, done: false };
+  return createIterResultObject(point, false);
 });
 
-},{"../internals/define-iterator":32,"../internals/internal-state":64,"../internals/string-multibyte":113,"../internals/to-string":125}],148:[function(require,module,exports){
+},{"../internals/create-iter-result-object":25,"../internals/internal-state":66,"../internals/iterator-define":80,"../internals/string-multibyte":110,"../internals/to-string":123}],147:[function(require,module,exports){
 'use strict';
-var apply = require('../internals/function-apply');
-var call = require('../internals/function-call');
-var uncurryThis = require('../internals/function-uncurry-this');
-var fixRegExpWellKnownSymbolLogic = require('../internals/fix-regexp-well-known-symbol-logic');
-var isRegExp = require('../internals/is-regexp');
-var anObject = require('../internals/an-object');
-var requireObjectCoercible = require('../internals/require-object-coercible');
-var speciesConstructor = require('../internals/species-constructor');
-var advanceStringIndex = require('../internals/advance-string-index');
-var toLength = require('../internals/to-length');
-var toString = require('../internals/to-string');
-var getMethod = require('../internals/get-method');
-var arraySlice = require('../internals/array-slice-simple');
-var callRegExpExec = require('../internals/regexp-exec-abstract');
-var regexpExec = require('../internals/regexp-exec');
-var stickyHelpers = require('../internals/regexp-sticky-helpers');
-var fails = require('../internals/fails');
-
-var UNSUPPORTED_Y = stickyHelpers.UNSUPPORTED_Y;
-var MAX_UINT32 = 0xFFFFFFFF;
-var min = Math.min;
-var $push = [].push;
-var exec = uncurryThis(/./.exec);
-var push = uncurryThis($push);
-var stringSlice = uncurryThis(''.slice);
-
-// Chrome 51 has a buggy "split" implementation when RegExp#exec !== nativeExec
-// Weex JS has frozen built-in prototypes, so use try / catch wrapper
-var SPLIT_WORKS_WITH_OVERWRITTEN_EXEC = !fails(function () {
-  // eslint-disable-next-line regexp/no-empty-group -- required for testing
-  var re = /(?:)/;
-  var originalExec = re.exec;
-  re.exec = function () { return originalExec.apply(this, arguments); };
-  var result = 'ab'.split(re);
-  return result.length !== 2 || result[0] !== 'a' || result[1] !== 'b';
-});
-
-// @@split logic
-fixRegExpWellKnownSymbolLogic('split', function (SPLIT, nativeSplit, maybeCallNative) {
-  var internalSplit;
-  if (
-    'abbc'.split(/(b)*/)[1] == 'c' ||
-    // eslint-disable-next-line regexp/no-empty-group -- required for testing
-    'test'.split(/(?:)/, -1).length != 4 ||
-    'ab'.split(/(?:ab)*/).length != 2 ||
-    '.'.split(/(.?)(.?)/).length != 4 ||
-    // eslint-disable-next-line regexp/no-empty-capturing-group, regexp/no-empty-group -- required for testing
-    '.'.split(/()()/).length > 1 ||
-    ''.split(/.?/).length
-  ) {
-    // based on es5-shim implementation, need to rework it
-    internalSplit = function (separator, limit) {
-      var string = toString(requireObjectCoercible(this));
-      var lim = limit === undefined ? MAX_UINT32 : limit >>> 0;
-      if (lim === 0) return [];
-      if (separator === undefined) return [string];
-      // If `separator` is not a regex, use native split
-      if (!isRegExp(separator)) {
-        return call(nativeSplit, string, separator, lim);
-      }
-      var output = [];
-      var flags = (separator.ignoreCase ? 'i' : '') +
-                  (separator.multiline ? 'm' : '') +
-                  (separator.unicode ? 'u' : '') +
-                  (separator.sticky ? 'y' : '');
-      var lastLastIndex = 0;
-      // Make `global` and avoid `lastIndex` issues by working with a copy
-      var separatorCopy = new RegExp(separator.source, flags + 'g');
-      var match, lastIndex, lastLength;
-      while (match = call(regexpExec, separatorCopy, string)) {
-        lastIndex = separatorCopy.lastIndex;
-        if (lastIndex > lastLastIndex) {
-          push(output, stringSlice(string, lastLastIndex, match.index));
-          if (match.length > 1 && match.index < string.length) apply($push, output, arraySlice(match, 1));
-          lastLength = match[0].length;
-          lastLastIndex = lastIndex;
-          if (output.length >= lim) break;
-        }
-        if (separatorCopy.lastIndex === match.index) separatorCopy.lastIndex++; // Avoid an infinite loop
-      }
-      if (lastLastIndex === string.length) {
-        if (lastLength || !exec(separatorCopy, '')) push(output, '');
-      } else push(output, stringSlice(string, lastLastIndex));
-      return output.length > lim ? arraySlice(output, 0, lim) : output;
-    };
-  // Chakra, V8
-  } else if ('0'.split(undefined, 0).length) {
-    internalSplit = function (separator, limit) {
-      return separator === undefined && limit === 0 ? [] : call(nativeSplit, this, separator, limit);
-    };
-  } else internalSplit = nativeSplit;
-
-  return [
-    // `String.prototype.split` method
-    // https://tc39.es/ecma262/#sec-string.prototype.split
-    function split(separator, limit) {
-      var O = requireObjectCoercible(this);
-      var splitter = separator == undefined ? undefined : getMethod(separator, SPLIT);
-      return splitter
-        ? call(splitter, separator, O, limit)
-        : call(internalSplit, toString(O), separator, limit);
-    },
-    // `RegExp.prototype[@@split]` method
-    // https://tc39.es/ecma262/#sec-regexp.prototype-@@split
-    //
-    // NOTE: This cannot be properly polyfilled in engines that don't support
-    // the 'y' flag.
-    function (string, limit) {
-      var rx = anObject(this);
-      var S = toString(string);
-      var res = maybeCallNative(internalSplit, rx, S, limit, internalSplit !== nativeSplit);
-
-      if (res.done) return res.value;
-
-      var C = speciesConstructor(rx, RegExp);
-
-      var unicodeMatching = rx.unicode;
-      var flags = (rx.ignoreCase ? 'i' : '') +
-                  (rx.multiline ? 'm' : '') +
-                  (rx.unicode ? 'u' : '') +
-                  (UNSUPPORTED_Y ? 'g' : 'y');
-
-      // ^(? + rx + ) is needed, in combination with some S slicing, to
-      // simulate the 'y' flag.
-      var splitter = new C(UNSUPPORTED_Y ? '^(?:' + rx.source + ')' : rx, flags);
-      var lim = limit === undefined ? MAX_UINT32 : limit >>> 0;
-      if (lim === 0) return [];
-      if (S.length === 0) return callRegExpExec(splitter, S) === null ? [S] : [];
-      var p = 0;
-      var q = 0;
-      var A = [];
-      while (q < S.length) {
-        splitter.lastIndex = UNSUPPORTED_Y ? 0 : q;
-        var z = callRegExpExec(splitter, UNSUPPORTED_Y ? stringSlice(S, q) : S);
-        var e;
-        if (
-          z === null ||
-          (e = min(toLength(splitter.lastIndex + (UNSUPPORTED_Y ? q : 0)), S.length)) === p
-        ) {
-          q = advanceStringIndex(S, q, unicodeMatching);
-        } else {
-          push(A, stringSlice(S, p, q));
-          if (A.length === lim) return A;
-          for (var i = 1; i <= z.length - 1; i++) {
-            push(A, z[i]);
-            if (A.length === lim) return A;
-          }
-          q = p = e;
-        }
-      }
-      push(A, stringSlice(S, p));
-      return A;
-    }
-  ];
-}, !SPLIT_WORKS_WITH_OVERWRITTEN_EXEC, UNSUPPORTED_Y);
-
-},{"../internals/advance-string-index":7,"../internals/an-object":9,"../internals/array-slice-simple":16,"../internals/fails":44,"../internals/fix-regexp-well-known-symbol-logic":45,"../internals/function-apply":46,"../internals/function-call":49,"../internals/function-uncurry-this":51,"../internals/get-method":55,"../internals/is-regexp":72,"../internals/regexp-exec":101,"../internals/regexp-exec-abstract":100,"../internals/regexp-sticky-helpers":103,"../internals/require-object-coercible":106,"../internals/species-constructor":112,"../internals/to-length":120,"../internals/to-string":125}],149:[function(require,module,exports){
-var global = require('../internals/global');
+var globalThis = require('../internals/global-this');
 var DOMIterables = require('../internals/dom-iterables');
 var DOMTokenListPrototype = require('../internals/dom-token-list-prototype');
 var forEach = require('../internals/array-for-each');
@@ -4523,22 +4263,23 @@ var handlePrototype = function (CollectionPrototype) {
 
 for (var COLLECTION_NAME in DOMIterables) {
   if (DOMIterables[COLLECTION_NAME]) {
-    handlePrototype(global[COLLECTION_NAME] && global[COLLECTION_NAME].prototype);
+    handlePrototype(globalThis[COLLECTION_NAME] && globalThis[COLLECTION_NAME].prototype);
   }
 }
 
 handlePrototype(DOMTokenListPrototype);
 
-},{"../internals/array-for-each":10,"../internals/create-non-enumerable-property":29,"../internals/dom-iterables":35,"../internals/dom-token-list-prototype":36,"../internals/global":56}],150:[function(require,module,exports){
-var global = require('../internals/global');
+},{"../internals/array-for-each":8,"../internals/create-non-enumerable-property":26,"../internals/dom-iterables":37,"../internals/dom-token-list-prototype":38,"../internals/global-this":58}],148:[function(require,module,exports){
+'use strict';
+var globalThis = require('../internals/global-this');
 var DOMIterables = require('../internals/dom-iterables');
 var DOMTokenListPrototype = require('../internals/dom-token-list-prototype');
 var ArrayIteratorMethods = require('../modules/es.array.iterator');
 var createNonEnumerableProperty = require('../internals/create-non-enumerable-property');
+var setToStringTag = require('../internals/set-to-string-tag');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 
 var ITERATOR = wellKnownSymbol('iterator');
-var TO_STRING_TAG = wellKnownSymbol('toStringTag');
 var ArrayValues = ArrayIteratorMethods.values;
 
 var handlePrototype = function (CollectionPrototype, COLLECTION_NAME) {
@@ -4549,9 +4290,7 @@ var handlePrototype = function (CollectionPrototype, COLLECTION_NAME) {
     } catch (error) {
       CollectionPrototype[ITERATOR] = ArrayValues;
     }
-    if (!CollectionPrototype[TO_STRING_TAG]) {
-      createNonEnumerableProperty(CollectionPrototype, TO_STRING_TAG, COLLECTION_NAME);
-    }
+    setToStringTag(CollectionPrototype, COLLECTION_NAME, true);
     if (DOMIterables[COLLECTION_NAME]) for (var METHOD_NAME in ArrayIteratorMethods) {
       // some Chrome versions have non-configurable methods on DOMTokenList
       if (CollectionPrototype[METHOD_NAME] !== ArrayIteratorMethods[METHOD_NAME]) try {
@@ -4564,25 +4303,27 @@ var handlePrototype = function (CollectionPrototype, COLLECTION_NAME) {
 };
 
 for (var COLLECTION_NAME in DOMIterables) {
-  handlePrototype(global[COLLECTION_NAME] && global[COLLECTION_NAME].prototype, COLLECTION_NAME);
+  handlePrototype(globalThis[COLLECTION_NAME] && globalThis[COLLECTION_NAME].prototype, COLLECTION_NAME);
 }
 
 handlePrototype(DOMTokenListPrototype, 'DOMTokenList');
 
-},{"../internals/create-non-enumerable-property":29,"../internals/dom-iterables":35,"../internals/dom-token-list-prototype":36,"../internals/global":56,"../internals/well-known-symbol":131,"../modules/es.array.iterator":138}],151:[function(require,module,exports){
+},{"../internals/create-non-enumerable-property":26,"../internals/dom-iterables":37,"../internals/dom-token-list-prototype":38,"../internals/global-this":58,"../internals/set-to-string-tag":106,"../internals/well-known-symbol":131,"../modules/es.array.iterator":138}],149:[function(require,module,exports){
 'use strict';
 // TODO: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
 require('../modules/es.array.iterator');
 var $ = require('../internals/export');
-var global = require('../internals/global');
-var getBuiltIn = require('../internals/get-built-in');
+var globalThis = require('../internals/global-this');
+var safeGetBuiltIn = require('../internals/safe-get-built-in');
 var call = require('../internals/function-call');
 var uncurryThis = require('../internals/function-uncurry-this');
-var USE_NATIVE_URL = require('../internals/native-url');
-var redefine = require('../internals/redefine');
-var redefineAll = require('../internals/redefine-all');
+var DESCRIPTORS = require('../internals/descriptors');
+var USE_NATIVE_URL = require('../internals/url-constructor-detection');
+var defineBuiltIn = require('../internals/define-built-in');
+var defineBuiltInAccessor = require('../internals/define-built-in-accessor');
+var defineBuiltIns = require('../internals/define-built-ins');
 var setToStringTag = require('../internals/set-to-string-tag');
-var createIteratorConstructor = require('../internals/create-iterator-constructor');
+var createIteratorConstructor = require('../internals/iterator-create-constructor');
 var InternalStateModule = require('../internals/internal-state');
 var anInstance = require('../internals/an-instance');
 var isCallable = require('../internals/is-callable');
@@ -4596,6 +4337,7 @@ var create = require('../internals/object-create');
 var createPropertyDescriptor = require('../internals/create-property-descriptor');
 var getIterator = require('../internals/get-iterator');
 var getIteratorMethod = require('../internals/get-iterator-method');
+var createIterResultObject = require('../internals/create-iter-result-object');
 var validateArgumentsLength = require('../internals/validate-arguments-length');
 var wellKnownSymbol = require('../internals/well-known-symbol');
 var arraySort = require('../internals/array-sort');
@@ -4607,15 +4349,15 @@ var setInternalState = InternalStateModule.set;
 var getInternalParamsState = InternalStateModule.getterFor(URL_SEARCH_PARAMS);
 var getInternalIteratorState = InternalStateModule.getterFor(URL_SEARCH_PARAMS_ITERATOR);
 
-var n$Fetch = getBuiltIn('fetch');
-var N$Request = getBuiltIn('Request');
-var Headers = getBuiltIn('Headers');
-var RequestPrototype = N$Request && N$Request.prototype;
+var nativeFetch = safeGetBuiltIn('fetch');
+var NativeRequest = safeGetBuiltIn('Request');
+var Headers = safeGetBuiltIn('Headers');
+var RequestPrototype = NativeRequest && NativeRequest.prototype;
 var HeadersPrototype = Headers && Headers.prototype;
-var RegExp = global.RegExp;
-var TypeError = global.TypeError;
-var decodeURIComponent = global.decodeURIComponent;
-var encodeURIComponent = global.encodeURIComponent;
+var RegExp = globalThis.RegExp;
+var TypeError = globalThis.TypeError;
+var decodeURIComponent = globalThis.decodeURIComponent;
+var encodeURIComponent = globalThis.encodeURIComponent;
 var charAt = uncurryThis(''.charAt);
 var join = uncurryThis([].join);
 var push = uncurryThis([].push);
@@ -4675,17 +4417,23 @@ var serialize = function (it) {
 var URLSearchParamsIterator = createIteratorConstructor(function Iterator(params, kind) {
   setInternalState(this, {
     type: URL_SEARCH_PARAMS_ITERATOR,
-    iterator: getIterator(getInternalParamsState(params).entries),
+    target: getInternalParamsState(params).entries,
+    index: 0,
     kind: kind
   });
-}, 'Iterator', function next() {
+}, URL_SEARCH_PARAMS, function next() {
   var state = getInternalIteratorState(this);
-  var kind = state.kind;
-  var step = state.iterator.next();
-  var entry = step.value;
-  if (!step.done) {
-    step.value = kind === 'keys' ? entry.key : kind === 'values' ? entry.value : [entry.key, entry.value];
-  } return step;
+  var target = state.target;
+  var index = state.index++;
+  if (!target || index >= target.length) {
+    state.target = undefined;
+    return createIterResultObject(undefined, true);
+  }
+  var entry = target[index];
+  switch (state.kind) {
+    case 'keys': return createIterResultObject(entry.key, false);
+    case 'values': return createIterResultObject(entry.value, false);
+  } return createIterResultObject([entry.key, entry.value], false);
 }, true);
 
 var URLSearchParamsState = function (init) {
@@ -4705,6 +4453,7 @@ URLSearchParamsState.prototype = {
     this.update();
   },
   parseObject: function (object) {
+    var entries = this.entries;
     var iteratorMethod = getIteratorMethod(object);
     var iterator, next, step, entryIterator, entryNext, first, second;
 
@@ -4718,15 +4467,16 @@ URLSearchParamsState.prototype = {
           (first = call(entryNext, entryIterator)).done ||
           (second = call(entryNext, entryIterator)).done ||
           !call(entryNext, entryIterator).done
-        ) throw TypeError('Expected sequence with length 2');
-        push(this.entries, { key: $toString(first.value), value: $toString(second.value) });
+        ) throw new TypeError('Expected sequence with length 2');
+        push(entries, { key: $toString(first.value), value: $toString(second.value) });
       }
     } else for (var key in object) if (hasOwn(object, key)) {
-      push(this.entries, { key: key, value: $toString(object[key]) });
+      push(entries, { key: key, value: $toString(object[key]) });
     }
   },
   parseQuery: function (query) {
     if (query) {
+      var entries = this.entries;
       var attributes = split(query, '&');
       var index = 0;
       var attribute, entry;
@@ -4734,7 +4484,7 @@ URLSearchParamsState.prototype = {
         attribute = attributes[index++];
         if (attribute.length) {
           entry = split(attribute, '=');
-          push(this.entries, {
+          push(entries, {
             key: deserialize(shift(entry)),
             value: deserialize(join(entry, '='))
           });
@@ -4766,39 +4516,47 @@ URLSearchParamsState.prototype = {
 var URLSearchParamsConstructor = function URLSearchParams(/* init */) {
   anInstance(this, URLSearchParamsPrototype);
   var init = arguments.length > 0 ? arguments[0] : undefined;
-  setInternalState(this, new URLSearchParamsState(init));
+  var state = setInternalState(this, new URLSearchParamsState(init));
+  if (!DESCRIPTORS) this.size = state.entries.length;
 };
 
 var URLSearchParamsPrototype = URLSearchParamsConstructor.prototype;
 
-redefineAll(URLSearchParamsPrototype, {
+defineBuiltIns(URLSearchParamsPrototype, {
   // `URLSearchParams.prototype.append` method
   // https://url.spec.whatwg.org/#dom-urlsearchparams-append
   append: function append(name, value) {
-    validateArgumentsLength(arguments.length, 2);
     var state = getInternalParamsState(this);
+    validateArgumentsLength(arguments.length, 2);
     push(state.entries, { key: $toString(name), value: $toString(value) });
+    if (!DESCRIPTORS) this.length++;
     state.updateURL();
   },
   // `URLSearchParams.prototype.delete` method
   // https://url.spec.whatwg.org/#dom-urlsearchparams-delete
-  'delete': function (name) {
-    validateArgumentsLength(arguments.length, 1);
+  'delete': function (name /* , value */) {
     var state = getInternalParamsState(this);
+    var length = validateArgumentsLength(arguments.length, 1);
     var entries = state.entries;
     var key = $toString(name);
+    var $value = length < 2 ? undefined : arguments[1];
+    var value = $value === undefined ? $value : $toString($value);
     var index = 0;
     while (index < entries.length) {
-      if (entries[index].key === key) splice(entries, index, 1);
-      else index++;
+      var entry = entries[index];
+      if (entry.key === key && (value === undefined || entry.value === value)) {
+        splice(entries, index, 1);
+        if (value !== undefined) break;
+      } else index++;
     }
+    if (!DESCRIPTORS) this.size = entries.length;
     state.updateURL();
   },
   // `URLSearchParams.prototype.get` method
   // https://url.spec.whatwg.org/#dom-urlsearchparams-get
   get: function get(name) {
-    validateArgumentsLength(arguments.length, 1);
     var entries = getInternalParamsState(this).entries;
+    validateArgumentsLength(arguments.length, 1);
     var key = $toString(name);
     var index = 0;
     for (; index < entries.length; index++) {
@@ -4809,8 +4567,8 @@ redefineAll(URLSearchParamsPrototype, {
   // `URLSearchParams.prototype.getAll` method
   // https://url.spec.whatwg.org/#dom-urlsearchparams-getall
   getAll: function getAll(name) {
-    validateArgumentsLength(arguments.length, 1);
     var entries = getInternalParamsState(this).entries;
+    validateArgumentsLength(arguments.length, 1);
     var key = $toString(name);
     var result = [];
     var index = 0;
@@ -4821,21 +4579,24 @@ redefineAll(URLSearchParamsPrototype, {
   },
   // `URLSearchParams.prototype.has` method
   // https://url.spec.whatwg.org/#dom-urlsearchparams-has
-  has: function has(name) {
-    validateArgumentsLength(arguments.length, 1);
+  has: function has(name /* , value */) {
     var entries = getInternalParamsState(this).entries;
+    var length = validateArgumentsLength(arguments.length, 1);
     var key = $toString(name);
+    var $value = length < 2 ? undefined : arguments[1];
+    var value = $value === undefined ? $value : $toString($value);
     var index = 0;
     while (index < entries.length) {
-      if (entries[index++].key === key) return true;
+      var entry = entries[index++];
+      if (entry.key === key && (value === undefined || entry.value === value)) return true;
     }
     return false;
   },
   // `URLSearchParams.prototype.set` method
   // https://url.spec.whatwg.org/#dom-urlsearchparams-set
   set: function set(name, value) {
-    validateArgumentsLength(arguments.length, 1);
     var state = getInternalParamsState(this);
+    validateArgumentsLength(arguments.length, 1);
     var entries = state.entries;
     var found = false;
     var key = $toString(name);
@@ -4853,6 +4614,7 @@ redefineAll(URLSearchParamsPrototype, {
       }
     }
     if (!found) push(entries, { key: key, value: val });
+    if (!DESCRIPTORS) this.size = entries.length;
     state.updateURL();
   },
   // `URLSearchParams.prototype.sort` method
@@ -4890,17 +4652,27 @@ redefineAll(URLSearchParamsPrototype, {
 }, { enumerable: true });
 
 // `URLSearchParams.prototype[@@iterator]` method
-redefine(URLSearchParamsPrototype, ITERATOR, URLSearchParamsPrototype.entries, { name: 'entries' });
+defineBuiltIn(URLSearchParamsPrototype, ITERATOR, URLSearchParamsPrototype.entries, { name: 'entries' });
 
 // `URLSearchParams.prototype.toString` method
 // https://url.spec.whatwg.org/#urlsearchparams-stringification-behavior
-redefine(URLSearchParamsPrototype, 'toString', function toString() {
+defineBuiltIn(URLSearchParamsPrototype, 'toString', function toString() {
   return getInternalParamsState(this).serialize();
 }, { enumerable: true });
 
+// `URLSearchParams.prototype.size` getter
+// https://github.com/whatwg/url/pull/734
+if (DESCRIPTORS) defineBuiltInAccessor(URLSearchParamsPrototype, 'size', {
+  get: function size() {
+    return getInternalParamsState(this).entries.length;
+  },
+  configurable: true,
+  enumerable: true
+});
+
 setToStringTag(URLSearchParamsConstructor, URL_SEARCH_PARAMS);
 
-$({ global: true, forced: !USE_NATIVE_URL }, {
+$({ global: true, constructor: true, forced: !USE_NATIVE_URL }, {
   URLSearchParams: URLSearchParamsConstructor
 });
 
@@ -4926,24 +4698,24 @@ if (!USE_NATIVE_URL && isCallable(Headers)) {
     } return init;
   };
 
-  if (isCallable(n$Fetch)) {
-    $({ global: true, enumerable: true, forced: true }, {
+  if (isCallable(nativeFetch)) {
+    $({ global: true, enumerable: true, dontCallGetSet: true, forced: true }, {
       fetch: function fetch(input /* , init */) {
-        return n$Fetch(input, arguments.length > 1 ? wrapRequestOptions(arguments[1]) : {});
+        return nativeFetch(input, arguments.length > 1 ? wrapRequestOptions(arguments[1]) : {});
       }
     });
   }
 
-  if (isCallable(N$Request)) {
+  if (isCallable(NativeRequest)) {
     var RequestConstructor = function Request(input /* , init */) {
       anInstance(this, RequestPrototype);
-      return new N$Request(input, arguments.length > 1 ? wrapRequestOptions(arguments[1]) : {});
+      return new NativeRequest(input, arguments.length > 1 ? wrapRequestOptions(arguments[1]) : {});
     };
 
     RequestPrototype.constructor = RequestConstructor;
     RequestConstructor.prototype = RequestPrototype;
 
-    $({ global: true, forced: true }, {
+    $({ global: true, constructor: true, dontCallGetSet: true, forced: true }, {
       Request: RequestConstructor
     });
   }
@@ -4954,29 +4726,34 @@ module.exports = {
   getState: getInternalParamsState
 };
 
-},{"../internals/an-instance":8,"../internals/an-object":9,"../internals/array-sort":18,"../internals/classof":24,"../internals/create-iterator-constructor":28,"../internals/create-property-descriptor":30,"../internals/export":43,"../internals/function-bind-context":47,"../internals/function-call":49,"../internals/function-uncurry-this":51,"../internals/get-built-in":52,"../internals/get-iterator":54,"../internals/get-iterator-method":53,"../internals/global":56,"../internals/has-own-property":57,"../internals/internal-state":64,"../internals/is-callable":67,"../internals/is-object":70,"../internals/native-url":79,"../internals/object-create":83,"../internals/redefine":99,"../internals/redefine-all":98,"../internals/set-to-string-tag":108,"../internals/to-string":125,"../internals/validate-arguments-length":130,"../internals/well-known-symbol":131,"../modules/es.array.iterator":138}],152:[function(require,module,exports){
+},{"../internals/an-instance":6,"../internals/an-object":7,"../internals/array-sort":15,"../internals/classof":21,"../internals/create-iter-result-object":25,"../internals/create-property-descriptor":27,"../internals/define-built-in":30,"../internals/define-built-in-accessor":29,"../internals/define-built-ins":31,"../internals/descriptors":34,"../internals/export":45,"../internals/function-bind-context":47,"../internals/function-call":49,"../internals/function-uncurry-this":53,"../internals/get-iterator":56,"../internals/get-iterator-method":55,"../internals/global-this":58,"../internals/has-own-property":59,"../internals/internal-state":66,"../internals/is-callable":69,"../internals/is-object":73,"../internals/iterator-create-constructor":79,"../internals/object-create":88,"../internals/safe-get-built-in":105,"../internals/set-to-string-tag":106,"../internals/to-string":123,"../internals/url-constructor-detection":126,"../internals/validate-arguments-length":129,"../internals/well-known-symbol":131,"../modules/es.array.iterator":138}],150:[function(require,module,exports){
+'use strict';
+// TODO: Remove this module from `core-js@4` since it's replaced to module below
+require('../modules/web.url-search-params.constructor');
+
+},{"../modules/web.url-search-params.constructor":149}],151:[function(require,module,exports){
 'use strict';
 // TODO: in core-js@4, move /modules/ dependencies to public entries for better optimization by tools like `preset-env`
 require('../modules/es.string.iterator');
 var $ = require('../internals/export');
 var DESCRIPTORS = require('../internals/descriptors');
-var USE_NATIVE_URL = require('../internals/native-url');
-var global = require('../internals/global');
+var USE_NATIVE_URL = require('../internals/url-constructor-detection');
+var globalThis = require('../internals/global-this');
 var bind = require('../internals/function-bind-context');
 var uncurryThis = require('../internals/function-uncurry-this');
-var defineProperties = require('../internals/object-define-properties').f;
-var redefine = require('../internals/redefine');
+var defineBuiltIn = require('../internals/define-built-in');
+var defineBuiltInAccessor = require('../internals/define-built-in-accessor');
 var anInstance = require('../internals/an-instance');
 var hasOwn = require('../internals/has-own-property');
 var assign = require('../internals/object-assign');
 var arrayFrom = require('../internals/array-from');
-var arraySlice = require('../internals/array-slice-simple');
+var arraySlice = require('../internals/array-slice');
 var codeAt = require('../internals/string-multibyte').codeAt;
 var toASCII = require('../internals/string-punycode-to-ascii');
 var $toString = require('../internals/to-string');
 var setToStringTag = require('../internals/set-to-string-tag');
 var validateArgumentsLength = require('../internals/validate-arguments-length');
-var URLSearchParamsModule = require('../modules/web.url-search-params');
+var URLSearchParamsModule = require('../modules/web.url-search-params.constructor');
 var InternalStateModule = require('../internals/internal-state');
 
 var setInternalState = InternalStateModule.set;
@@ -4984,9 +4761,9 @@ var getInternalURLState = InternalStateModule.getterFor('URL');
 var URLSearchParams = URLSearchParamsModule.URLSearchParams;
 var getInternalSearchParamsState = URLSearchParamsModule.getState;
 
-var NativeURL = global.URL;
-var TypeError = global.TypeError;
-var parseInt = global.parseInt;
+var NativeURL = globalThis.URL;
+var TypeError = globalThis.TypeError;
+var parseInt = globalThis.parseInt;
 var floor = Math.floor;
 var pow = Math.pow;
 var charAt = uncurryThis(''.charAt);
@@ -5018,7 +4795,8 @@ var HEX = /^[\da-f]+$/i;
 /* eslint-disable regexp/no-control-character -- safe */
 var FORBIDDEN_HOST_CODE_POINT = /[\0\t\n\r #%/:<>?@[\\\]^|]/;
 var FORBIDDEN_HOST_CODE_POINT_EXCLUDING_PERCENT = /[\0\t\n\r #/:<>?@[\\\]^|]/;
-var LEADING_AND_TRAILING_C0_CONTROL_OR_SPACE = /^[\u0000-\u0020]+|[\u0000-\u0020]+$/g;
+var LEADING_C0_CONTROL_OR_SPACE = /^[\u0000-\u0020]+/;
+var TRAILING_C0_CONTROL_OR_SPACE = /(^|[^\u0000-\u0020])[\u0000-\u0020]+$/;
 var TAB_AND_NEW_LINE = /[\t\n\r]/g;
 /* eslint-enable regexp/no-control-character -- safe */
 var EOF;
@@ -5027,7 +4805,7 @@ var EOF;
 var parseIPv4 = function (input) {
   var parts = split(input, '.');
   var partsLength, numbers, index, part, radix, number, ipv4;
-  if (parts.length && parts[parts.length - 1] == '') {
+  if (parts.length && parts[parts.length - 1] === '') {
     parts.length--;
   }
   partsLength = parts.length;
@@ -5035,23 +4813,23 @@ var parseIPv4 = function (input) {
   numbers = [];
   for (index = 0; index < partsLength; index++) {
     part = parts[index];
-    if (part == '') return input;
+    if (part === '') return input;
     radix = 10;
-    if (part.length > 1 && charAt(part, 0) == '0') {
+    if (part.length > 1 && charAt(part, 0) === '0') {
       radix = exec(HEX_START, part) ? 16 : 8;
-      part = stringSlice(part, radix == 8 ? 1 : 2);
+      part = stringSlice(part, radix === 8 ? 1 : 2);
     }
     if (part === '') {
       number = 0;
     } else {
-      if (!exec(radix == 10 ? DEC : radix == 8 ? OCT : HEX, part)) return input;
+      if (!exec(radix === 10 ? DEC : radix === 8 ? OCT : HEX, part)) return input;
       number = parseInt(part, radix);
     }
     push(numbers, number);
   }
   for (index = 0; index < partsLength; index++) {
     number = numbers[index];
-    if (index == partsLength - 1) {
+    if (index === partsLength - 1) {
       if (number >= pow(256, 5 - partsLength)) return null;
     } else if (number > 255) return null;
   }
@@ -5075,15 +4853,15 @@ var parseIPv6 = function (input) {
     return charAt(input, pointer);
   };
 
-  if (chr() == ':') {
-    if (charAt(input, 1) != ':') return;
+  if (chr() === ':') {
+    if (charAt(input, 1) !== ':') return;
     pointer += 2;
     pieceIndex++;
     compress = pieceIndex;
   }
   while (chr()) {
-    if (pieceIndex == 8) return;
-    if (chr() == ':') {
+    if (pieceIndex === 8) return;
+    if (chr() === ':') {
       if (compress !== null) return;
       pointer++;
       pieceIndex++;
@@ -5096,33 +4874,33 @@ var parseIPv6 = function (input) {
       pointer++;
       length++;
     }
-    if (chr() == '.') {
-      if (length == 0) return;
+    if (chr() === '.') {
+      if (length === 0) return;
       pointer -= length;
       if (pieceIndex > 6) return;
       numbersSeen = 0;
       while (chr()) {
         ipv4Piece = null;
         if (numbersSeen > 0) {
-          if (chr() == '.' && numbersSeen < 4) pointer++;
+          if (chr() === '.' && numbersSeen < 4) pointer++;
           else return;
         }
         if (!exec(DIGIT, chr())) return;
         while (exec(DIGIT, chr())) {
           number = parseInt(chr(), 10);
           if (ipv4Piece === null) ipv4Piece = number;
-          else if (ipv4Piece == 0) return;
+          else if (ipv4Piece === 0) return;
           else ipv4Piece = ipv4Piece * 10 + number;
           if (ipv4Piece > 255) return;
           pointer++;
         }
         address[pieceIndex] = address[pieceIndex] * 256 + ipv4Piece;
         numbersSeen++;
-        if (numbersSeen == 2 || numbersSeen == 4) pieceIndex++;
+        if (numbersSeen === 2 || numbersSeen === 4) pieceIndex++;
       }
-      if (numbersSeen != 4) return;
+      if (numbersSeen !== 4) return;
       break;
-    } else if (chr() == ':') {
+    } else if (chr() === ':') {
       pointer++;
       if (!chr()) return;
     } else if (chr()) return;
@@ -5131,12 +4909,12 @@ var parseIPv6 = function (input) {
   if (compress !== null) {
     swaps = pieceIndex - compress;
     pieceIndex = 7;
-    while (pieceIndex != 0 && swaps > 0) {
+    while (pieceIndex !== 0 && swaps > 0) {
       swap = address[pieceIndex];
       address[pieceIndex--] = address[compress + swaps - 1];
       address[compress + --swaps] = swap;
     }
-  } else if (pieceIndex != 8) return;
+  } else if (pieceIndex !== 8) return;
   return address;
 };
 
@@ -5159,25 +4937,25 @@ var findLongestZeroSequence = function (ipv6) {
       ++currLength;
     }
   }
-  if (currLength > maxLength) {
-    maxIndex = currStart;
-    maxLength = currLength;
-  }
-  return maxIndex;
+  return currLength > maxLength ? currStart : maxIndex;
 };
 
 // https://url.spec.whatwg.org/#host-serializing
 var serializeHost = function (host) {
   var result, index, compress, ignore0;
+
   // ipv4
   if (typeof host == 'number') {
     result = [];
     for (index = 0; index < 4; index++) {
       unshift(result, host % 256);
       host = floor(host / 256);
-    } return join(result, '.');
+    }
+    return join(result, '.');
+  }
+
   // ipv6
-  } else if (typeof host == 'object') {
+  if (typeof host == 'object') {
     result = '';
     compress = findLongestZeroSequence(host);
     for (index = 0; index < 8; index++) {
@@ -5192,7 +4970,9 @@ var serializeHost = function (host) {
       }
     }
     return '[' + result + ']';
-  } return host;
+  }
+
+  return host;
 };
 
 var C0ControlPercentEncodeSet = {};
@@ -5224,15 +5004,15 @@ var specialSchemes = {
 // https://url.spec.whatwg.org/#windows-drive-letter
 var isWindowsDriveLetter = function (string, normalized) {
   var second;
-  return string.length == 2 && exec(ALPHA, charAt(string, 0))
-    && ((second = charAt(string, 1)) == ':' || (!normalized && second == '|'));
+  return string.length === 2 && exec(ALPHA, charAt(string, 0))
+    && ((second = charAt(string, 1)) === ':' || (!normalized && second === '|'));
 };
 
 // https://url.spec.whatwg.org/#start-with-a-windows-drive-letter
 var startsWithWindowsDriveLetter = function (string) {
   var third;
   return string.length > 1 && isWindowsDriveLetter(stringSlice(string, 0, 2)) && (
-    string.length == 2 ||
+    string.length === 2 ||
     ((third = charAt(string, 2)) === '/' || third === '\\' || third === '?' || third === '#')
   );
 };
@@ -5276,12 +5056,12 @@ var URLState = function (url, isBase, base) {
   var baseState, failure, searchParams;
   if (isBase) {
     failure = this.parse(urlString);
-    if (failure) throw TypeError(failure);
+    if (failure) throw new TypeError(failure);
     this.searchParams = null;
   } else {
     if (base !== undefined) baseState = new URLState(base, true);
     failure = this.parse(urlString, null, baseState);
-    if (failure) throw TypeError(failure);
+    if (failure) throw new TypeError(failure);
     searchParams = getInternalSearchParamsState(new URLSearchParams());
     searchParams.bindURL(this);
     this.searchParams = searchParams;
@@ -5314,7 +5094,8 @@ URLState.prototype = {
       url.query = null;
       url.fragment = null;
       url.cannotBeABaseURL = false;
-      input = replace(input, LEADING_AND_TRAILING_C0_CONTROL_OR_SPACE, '');
+      input = replace(input, LEADING_C0_CONTROL_OR_SPACE, '');
+      input = replace(input, TRAILING_C0_CONTROL_OR_SPACE, '$1');
     }
 
     input = replace(input, TAB_AND_NEW_LINE, '');
@@ -5335,27 +5116,27 @@ URLState.prototype = {
           break;
 
         case SCHEME:
-          if (chr && (exec(ALPHANUMERIC, chr) || chr == '+' || chr == '-' || chr == '.')) {
+          if (chr && (exec(ALPHANUMERIC, chr) || chr === '+' || chr === '-' || chr === '.')) {
             buffer += toLowerCase(chr);
-          } else if (chr == ':') {
+          } else if (chr === ':') {
             if (stateOverride && (
-              (url.isSpecial() != hasOwn(specialSchemes, buffer)) ||
-              (buffer == 'file' && (url.includesCredentials() || url.port !== null)) ||
-              (url.scheme == 'file' && !url.host)
+              (url.isSpecial() !== hasOwn(specialSchemes, buffer)) ||
+              (buffer === 'file' && (url.includesCredentials() || url.port !== null)) ||
+              (url.scheme === 'file' && !url.host)
             )) return;
             url.scheme = buffer;
             if (stateOverride) {
-              if (url.isSpecial() && specialSchemes[url.scheme] == url.port) url.port = null;
+              if (url.isSpecial() && specialSchemes[url.scheme] === url.port) url.port = null;
               return;
             }
             buffer = '';
-            if (url.scheme == 'file') {
+            if (url.scheme === 'file') {
               state = FILE;
-            } else if (url.isSpecial() && base && base.scheme == url.scheme) {
+            } else if (url.isSpecial() && base && base.scheme === url.scheme) {
               state = SPECIAL_RELATIVE_OR_AUTHORITY;
             } else if (url.isSpecial()) {
               state = SPECIAL_AUTHORITY_SLASHES;
-            } else if (codePoints[pointer + 1] == '/') {
+            } else if (codePoints[pointer + 1] === '/') {
               state = PATH_OR_AUTHORITY;
               pointer++;
             } else {
@@ -5372,8 +5153,8 @@ URLState.prototype = {
           break;
 
         case NO_SCHEME:
-          if (!base || (base.cannotBeABaseURL && chr != '#')) return INVALID_SCHEME;
-          if (base.cannotBeABaseURL && chr == '#') {
+          if (!base || (base.cannotBeABaseURL && chr !== '#')) return INVALID_SCHEME;
+          if (base.cannotBeABaseURL && chr === '#') {
             url.scheme = base.scheme;
             url.path = arraySlice(base.path);
             url.query = base.query;
@@ -5382,11 +5163,11 @@ URLState.prototype = {
             state = FRAGMENT;
             break;
           }
-          state = base.scheme == 'file' ? FILE : RELATIVE;
+          state = base.scheme === 'file' ? FILE : RELATIVE;
           continue;
 
         case SPECIAL_RELATIVE_OR_AUTHORITY:
-          if (chr == '/' && codePoints[pointer + 1] == '/') {
+          if (chr === '/' && codePoints[pointer + 1] === '/') {
             state = SPECIAL_AUTHORITY_IGNORE_SLASHES;
             pointer++;
           } else {
@@ -5395,7 +5176,7 @@ URLState.prototype = {
           } break;
 
         case PATH_OR_AUTHORITY:
-          if (chr == '/') {
+          if (chr === '/') {
             state = AUTHORITY;
             break;
           } else {
@@ -5405,16 +5186,16 @@ URLState.prototype = {
 
         case RELATIVE:
           url.scheme = base.scheme;
-          if (chr == EOF) {
+          if (chr === EOF) {
             url.username = base.username;
             url.password = base.password;
             url.host = base.host;
             url.port = base.port;
             url.path = arraySlice(base.path);
             url.query = base.query;
-          } else if (chr == '/' || (chr == '\\' && url.isSpecial())) {
+          } else if (chr === '/' || (chr === '\\' && url.isSpecial())) {
             state = RELATIVE_SLASH;
-          } else if (chr == '?') {
+          } else if (chr === '?') {
             url.username = base.username;
             url.password = base.password;
             url.host = base.host;
@@ -5422,7 +5203,7 @@ URLState.prototype = {
             url.path = arraySlice(base.path);
             url.query = '';
             state = QUERY;
-          } else if (chr == '#') {
+          } else if (chr === '#') {
             url.username = base.username;
             url.password = base.password;
             url.host = base.host;
@@ -5443,9 +5224,9 @@ URLState.prototype = {
           } break;
 
         case RELATIVE_SLASH:
-          if (url.isSpecial() && (chr == '/' || chr == '\\')) {
+          if (url.isSpecial() && (chr === '/' || chr === '\\')) {
             state = SPECIAL_AUTHORITY_IGNORE_SLASHES;
-          } else if (chr == '/') {
+          } else if (chr === '/') {
             state = AUTHORITY;
           } else {
             url.username = base.username;
@@ -5458,24 +5239,24 @@ URLState.prototype = {
 
         case SPECIAL_AUTHORITY_SLASHES:
           state = SPECIAL_AUTHORITY_IGNORE_SLASHES;
-          if (chr != '/' || charAt(buffer, pointer + 1) != '/') continue;
+          if (chr !== '/' || charAt(buffer, pointer + 1) !== '/') continue;
           pointer++;
           break;
 
         case SPECIAL_AUTHORITY_IGNORE_SLASHES:
-          if (chr != '/' && chr != '\\') {
+          if (chr !== '/' && chr !== '\\') {
             state = AUTHORITY;
             continue;
           } break;
 
         case AUTHORITY:
-          if (chr == '@') {
+          if (chr === '@') {
             if (seenAt) buffer = '%40' + buffer;
             seenAt = true;
             bufferCodePoints = arrayFrom(buffer);
             for (var i = 0; i < bufferCodePoints.length; i++) {
               var codePoint = bufferCodePoints[i];
-              if (codePoint == ':' && !seenPasswordToken) {
+              if (codePoint === ':' && !seenPasswordToken) {
                 seenPasswordToken = true;
                 continue;
               }
@@ -5485,10 +5266,10 @@ URLState.prototype = {
             }
             buffer = '';
           } else if (
-            chr == EOF || chr == '/' || chr == '?' || chr == '#' ||
-            (chr == '\\' && url.isSpecial())
+            chr === EOF || chr === '/' || chr === '?' || chr === '#' ||
+            (chr === '\\' && url.isSpecial())
           ) {
-            if (seenAt && buffer == '') return INVALID_AUTHORITY;
+            if (seenAt && buffer === '') return INVALID_AUTHORITY;
             pointer -= arrayFrom(buffer).length + 1;
             buffer = '';
             state = HOST;
@@ -5497,22 +5278,22 @@ URLState.prototype = {
 
         case HOST:
         case HOSTNAME:
-          if (stateOverride && url.scheme == 'file') {
+          if (stateOverride && url.scheme === 'file') {
             state = FILE_HOST;
             continue;
-          } else if (chr == ':' && !seenBracket) {
-            if (buffer == '') return INVALID_HOST;
+          } else if (chr === ':' && !seenBracket) {
+            if (buffer === '') return INVALID_HOST;
             failure = url.parseHost(buffer);
             if (failure) return failure;
             buffer = '';
             state = PORT;
-            if (stateOverride == HOSTNAME) return;
+            if (stateOverride === HOSTNAME) return;
           } else if (
-            chr == EOF || chr == '/' || chr == '?' || chr == '#' ||
-            (chr == '\\' && url.isSpecial())
+            chr === EOF || chr === '/' || chr === '?' || chr === '#' ||
+            (chr === '\\' && url.isSpecial())
           ) {
-            if (url.isSpecial() && buffer == '') return INVALID_HOST;
-            if (stateOverride && buffer == '' && (url.includesCredentials() || url.port !== null)) return;
+            if (url.isSpecial() && buffer === '') return INVALID_HOST;
+            if (stateOverride && buffer === '' && (url.includesCredentials() || url.port !== null)) return;
             failure = url.parseHost(buffer);
             if (failure) return failure;
             buffer = '';
@@ -5520,8 +5301,8 @@ URLState.prototype = {
             if (stateOverride) return;
             continue;
           } else {
-            if (chr == '[') seenBracket = true;
-            else if (chr == ']') seenBracket = false;
+            if (chr === '[') seenBracket = true;
+            else if (chr === ']') seenBracket = false;
             buffer += chr;
           } break;
 
@@ -5529,11 +5310,11 @@ URLState.prototype = {
           if (exec(DIGIT, chr)) {
             buffer += chr;
           } else if (
-            chr == EOF || chr == '/' || chr == '?' || chr == '#' ||
-            (chr == '\\' && url.isSpecial()) ||
+            chr === EOF || chr === '/' || chr === '?' || chr === '#' ||
+            (chr === '\\' && url.isSpecial()) ||
             stateOverride
           ) {
-            if (buffer != '') {
+            if (buffer !== '') {
               var port = parseInt(buffer, 10);
               if (port > 0xFFFF) return INVALID_PORT;
               url.port = (url.isSpecial() && port === specialSchemes[url.scheme]) ? null : port;
@@ -5547,31 +5328,35 @@ URLState.prototype = {
 
         case FILE:
           url.scheme = 'file';
-          if (chr == '/' || chr == '\\') state = FILE_SLASH;
-          else if (base && base.scheme == 'file') {
-            if (chr == EOF) {
-              url.host = base.host;
-              url.path = arraySlice(base.path);
-              url.query = base.query;
-            } else if (chr == '?') {
-              url.host = base.host;
-              url.path = arraySlice(base.path);
-              url.query = '';
-              state = QUERY;
-            } else if (chr == '#') {
-              url.host = base.host;
-              url.path = arraySlice(base.path);
-              url.query = base.query;
-              url.fragment = '';
-              state = FRAGMENT;
-            } else {
-              if (!startsWithWindowsDriveLetter(join(arraySlice(codePoints, pointer), ''))) {
+          if (chr === '/' || chr === '\\') state = FILE_SLASH;
+          else if (base && base.scheme === 'file') {
+            switch (chr) {
+              case EOF:
                 url.host = base.host;
                 url.path = arraySlice(base.path);
-                url.shortenPath();
-              }
-              state = PATH;
-              continue;
+                url.query = base.query;
+                break;
+              case '?':
+                url.host = base.host;
+                url.path = arraySlice(base.path);
+                url.query = '';
+                state = QUERY;
+                break;
+              case '#':
+                url.host = base.host;
+                url.path = arraySlice(base.path);
+                url.query = base.query;
+                url.fragment = '';
+                state = FRAGMENT;
+                break;
+              default:
+                if (!startsWithWindowsDriveLetter(join(arraySlice(codePoints, pointer), ''))) {
+                  url.host = base.host;
+                  url.path = arraySlice(base.path);
+                  url.shortenPath();
+                }
+                state = PATH;
+                continue;
             }
           } else {
             state = PATH;
@@ -5579,11 +5364,11 @@ URLState.prototype = {
           } break;
 
         case FILE_SLASH:
-          if (chr == '/' || chr == '\\') {
+          if (chr === '/' || chr === '\\') {
             state = FILE_HOST;
             break;
           }
-          if (base && base.scheme == 'file' && !startsWithWindowsDriveLetter(join(arraySlice(codePoints, pointer), ''))) {
+          if (base && base.scheme === 'file' && !startsWithWindowsDriveLetter(join(arraySlice(codePoints, pointer), ''))) {
             if (isWindowsDriveLetter(base.path[0], true)) push(url.path, base.path[0]);
             else url.host = base.host;
           }
@@ -5591,17 +5376,17 @@ URLState.prototype = {
           continue;
 
         case FILE_HOST:
-          if (chr == EOF || chr == '/' || chr == '\\' || chr == '?' || chr == '#') {
+          if (chr === EOF || chr === '/' || chr === '\\' || chr === '?' || chr === '#') {
             if (!stateOverride && isWindowsDriveLetter(buffer)) {
               state = PATH;
-            } else if (buffer == '') {
+            } else if (buffer === '') {
               url.host = '';
               if (stateOverride) return;
               state = PATH_START;
             } else {
               failure = url.parseHost(buffer);
               if (failure) return failure;
-              if (url.host == 'localhost') url.host = '';
+              if (url.host === 'localhost') url.host = '';
               if (stateOverride) return;
               buffer = '';
               state = PATH_START;
@@ -5612,50 +5397,50 @@ URLState.prototype = {
         case PATH_START:
           if (url.isSpecial()) {
             state = PATH;
-            if (chr != '/' && chr != '\\') continue;
-          } else if (!stateOverride && chr == '?') {
+            if (chr !== '/' && chr !== '\\') continue;
+          } else if (!stateOverride && chr === '?') {
             url.query = '';
             state = QUERY;
-          } else if (!stateOverride && chr == '#') {
+          } else if (!stateOverride && chr === '#') {
             url.fragment = '';
             state = FRAGMENT;
-          } else if (chr != EOF) {
+          } else if (chr !== EOF) {
             state = PATH;
-            if (chr != '/') continue;
+            if (chr !== '/') continue;
           } break;
 
         case PATH:
           if (
-            chr == EOF || chr == '/' ||
-            (chr == '\\' && url.isSpecial()) ||
-            (!stateOverride && (chr == '?' || chr == '#'))
+            chr === EOF || chr === '/' ||
+            (chr === '\\' && url.isSpecial()) ||
+            (!stateOverride && (chr === '?' || chr === '#'))
           ) {
             if (isDoubleDot(buffer)) {
               url.shortenPath();
-              if (chr != '/' && !(chr == '\\' && url.isSpecial())) {
+              if (chr !== '/' && !(chr === '\\' && url.isSpecial())) {
                 push(url.path, '');
               }
             } else if (isSingleDot(buffer)) {
-              if (chr != '/' && !(chr == '\\' && url.isSpecial())) {
+              if (chr !== '/' && !(chr === '\\' && url.isSpecial())) {
                 push(url.path, '');
               }
             } else {
-              if (url.scheme == 'file' && !url.path.length && isWindowsDriveLetter(buffer)) {
+              if (url.scheme === 'file' && !url.path.length && isWindowsDriveLetter(buffer)) {
                 if (url.host) url.host = '';
                 buffer = charAt(buffer, 0) + ':'; // normalize windows drive letter
               }
               push(url.path, buffer);
             }
             buffer = '';
-            if (url.scheme == 'file' && (chr == EOF || chr == '?' || chr == '#')) {
+            if (url.scheme === 'file' && (chr === EOF || chr === '?' || chr === '#')) {
               while (url.path.length > 1 && url.path[0] === '') {
                 shift(url.path);
               }
             }
-            if (chr == '?') {
+            if (chr === '?') {
               url.query = '';
               state = QUERY;
-            } else if (chr == '#') {
+            } else if (chr === '#') {
               url.fragment = '';
               state = FRAGMENT;
             }
@@ -5664,28 +5449,28 @@ URLState.prototype = {
           } break;
 
         case CANNOT_BE_A_BASE_URL_PATH:
-          if (chr == '?') {
+          if (chr === '?') {
             url.query = '';
             state = QUERY;
-          } else if (chr == '#') {
+          } else if (chr === '#') {
             url.fragment = '';
             state = FRAGMENT;
-          } else if (chr != EOF) {
+          } else if (chr !== EOF) {
             url.path[0] += percentEncode(chr, C0ControlPercentEncodeSet);
           } break;
 
         case QUERY:
-          if (!stateOverride && chr == '#') {
+          if (!stateOverride && chr === '#') {
             url.fragment = '';
             state = FRAGMENT;
-          } else if (chr != EOF) {
-            if (chr == "'" && url.isSpecial()) url.query += '%27';
-            else if (chr == '#') url.query += '%23';
+          } else if (chr !== EOF) {
+            if (chr === "'" && url.isSpecial()) url.query += '%27';
+            else if (chr === '#') url.query += '%23';
             else url.query += percentEncode(chr, C0ControlPercentEncodeSet);
           } break;
 
         case FRAGMENT:
-          if (chr != EOF) url.fragment += percentEncode(chr, fragmentPercentEncodeSet);
+          if (chr !== EOF) url.fragment += percentEncode(chr, fragmentPercentEncodeSet);
           break;
       }
 
@@ -5695,8 +5480,8 @@ URLState.prototype = {
   // https://url.spec.whatwg.org/#host-parsing
   parseHost: function (input) {
     var result, codePoints, index;
-    if (charAt(input, 0) == '[') {
-      if (charAt(input, input.length - 1) != ']') return INVALID_HOST;
+    if (charAt(input, 0) === '[') {
+      if (charAt(input, input.length - 1) !== ']') return INVALID_HOST;
       result = parseIPv6(stringSlice(input, 1, -1));
       if (!result) return INVALID_HOST;
       this.host = result;
@@ -5719,11 +5504,11 @@ URLState.prototype = {
   },
   // https://url.spec.whatwg.org/#cannot-have-a-username-password-port
   cannotHaveUsernamePasswordPort: function () {
-    return !this.host || this.cannotBeABaseURL || this.scheme == 'file';
+    return !this.host || this.cannotBeABaseURL || this.scheme === 'file';
   },
   // https://url.spec.whatwg.org/#include-credentials
   includesCredentials: function () {
-    return this.username != '' || this.password != '';
+    return this.username !== '' || this.password !== '';
   },
   // https://url.spec.whatwg.org/#is-special
   isSpecial: function () {
@@ -5733,7 +5518,7 @@ URLState.prototype = {
   shortenPath: function () {
     var path = this.path;
     var pathSize = path.length;
-    if (pathSize && (this.scheme != 'file' || pathSize != 1 || !isWindowsDriveLetter(path[0], true))) {
+    if (pathSize && (this.scheme !== 'file' || pathSize !== 1 || !isWindowsDriveLetter(path[0], true))) {
       path.length--;
     }
   },
@@ -5756,7 +5541,7 @@ URLState.prototype = {
       }
       output += serializeHost(host);
       if (port !== null) output += ':' + port;
-    } else if (scheme == 'file') output += '//';
+    } else if (scheme === 'file') output += '//';
     output += url.cannotBeABaseURL ? path[0] : path.length ? '/' + join(path, '/') : '';
     if (query !== null) output += '?' + query;
     if (fragment !== null) output += '#' + fragment;
@@ -5765,19 +5550,19 @@ URLState.prototype = {
   // https://url.spec.whatwg.org/#dom-url-href
   setHref: function (href) {
     var failure = this.parse(href);
-    if (failure) throw TypeError(failure);
+    if (failure) throw new TypeError(failure);
     this.searchParams.update();
   },
   // https://url.spec.whatwg.org/#dom-url-origin
   getOrigin: function () {
     var scheme = this.scheme;
     var port = this.port;
-    if (scheme == 'blob') try {
+    if (scheme === 'blob') try {
       return new URLConstructor(scheme.path[0]).origin;
     } catch (error) {
       return 'null';
     }
-    if (scheme == 'file' || !this.isSpecial()) return 'null';
+    if (scheme === 'file' || !this.isSpecial()) return 'null';
     return scheme + '://' + serializeHost(this.host) + (port !== null ? ':' + port : '');
   },
   // https://url.spec.whatwg.org/#dom-url-protocol
@@ -5840,7 +5625,7 @@ URLState.prototype = {
   setPort: function (port) {
     if (this.cannotHaveUsernamePasswordPort()) return;
     port = $toString(port);
-    if (port == '') this.port = null;
+    if (port === '') this.port = null;
     else this.parse(port, PORT);
   },
   // https://url.spec.whatwg.org/#dom-url-pathname
@@ -5860,10 +5645,10 @@ URLState.prototype = {
   },
   setSearch: function (search) {
     search = $toString(search);
-    if (search == '') {
+    if (search === '') {
       this.query = null;
     } else {
-      if ('?' == charAt(search, 0)) search = stringSlice(search, 1);
+      if (charAt(search, 0) === '?') search = stringSlice(search, 1);
       this.query = '';
       this.parse(search, QUERY);
     }
@@ -5880,11 +5665,11 @@ URLState.prototype = {
   },
   setHash: function (hash) {
     hash = $toString(hash);
-    if (hash == '') {
+    if (hash === '') {
       this.fragment = null;
       return;
     }
-    if ('#' == charAt(hash, 0)) hash = stringSlice(hash, 1);
+    if (charAt(hash, 0) === '#') hash = stringSlice(hash, 1);
     this.fragment = '';
     this.parse(hash, FRAGMENT);
   },
@@ -5931,55 +5716,53 @@ var accessorDescriptor = function (getter, setter) {
 };
 
 if (DESCRIPTORS) {
-  defineProperties(URLPrototype, {
-    // `URL.prototype.href` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-href
-    href: accessorDescriptor('serialize', 'setHref'),
-    // `URL.prototype.origin` getter
-    // https://url.spec.whatwg.org/#dom-url-origin
-    origin: accessorDescriptor('getOrigin'),
-    // `URL.prototype.protocol` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-protocol
-    protocol: accessorDescriptor('getProtocol', 'setProtocol'),
-    // `URL.prototype.username` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-username
-    username: accessorDescriptor('getUsername', 'setUsername'),
-    // `URL.prototype.password` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-password
-    password: accessorDescriptor('getPassword', 'setPassword'),
-    // `URL.prototype.host` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-host
-    host: accessorDescriptor('getHost', 'setHost'),
-    // `URL.prototype.hostname` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-hostname
-    hostname: accessorDescriptor('getHostname', 'setHostname'),
-    // `URL.prototype.port` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-port
-    port: accessorDescriptor('getPort', 'setPort'),
-    // `URL.prototype.pathname` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-pathname
-    pathname: accessorDescriptor('getPathname', 'setPathname'),
-    // `URL.prototype.search` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-search
-    search: accessorDescriptor('getSearch', 'setSearch'),
-    // `URL.prototype.searchParams` getter
-    // https://url.spec.whatwg.org/#dom-url-searchparams
-    searchParams: accessorDescriptor('getSearchParams'),
-    // `URL.prototype.hash` accessors pair
-    // https://url.spec.whatwg.org/#dom-url-hash
-    hash: accessorDescriptor('getHash', 'setHash')
-  });
+  // `URL.prototype.href` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-href
+  defineBuiltInAccessor(URLPrototype, 'href', accessorDescriptor('serialize', 'setHref'));
+  // `URL.prototype.origin` getter
+  // https://url.spec.whatwg.org/#dom-url-origin
+  defineBuiltInAccessor(URLPrototype, 'origin', accessorDescriptor('getOrigin'));
+  // `URL.prototype.protocol` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-protocol
+  defineBuiltInAccessor(URLPrototype, 'protocol', accessorDescriptor('getProtocol', 'setProtocol'));
+  // `URL.prototype.username` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-username
+  defineBuiltInAccessor(URLPrototype, 'username', accessorDescriptor('getUsername', 'setUsername'));
+  // `URL.prototype.password` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-password
+  defineBuiltInAccessor(URLPrototype, 'password', accessorDescriptor('getPassword', 'setPassword'));
+  // `URL.prototype.host` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-host
+  defineBuiltInAccessor(URLPrototype, 'host', accessorDescriptor('getHost', 'setHost'));
+  // `URL.prototype.hostname` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-hostname
+  defineBuiltInAccessor(URLPrototype, 'hostname', accessorDescriptor('getHostname', 'setHostname'));
+  // `URL.prototype.port` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-port
+  defineBuiltInAccessor(URLPrototype, 'port', accessorDescriptor('getPort', 'setPort'));
+  // `URL.prototype.pathname` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-pathname
+  defineBuiltInAccessor(URLPrototype, 'pathname', accessorDescriptor('getPathname', 'setPathname'));
+  // `URL.prototype.search` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-search
+  defineBuiltInAccessor(URLPrototype, 'search', accessorDescriptor('getSearch', 'setSearch'));
+  // `URL.prototype.searchParams` getter
+  // https://url.spec.whatwg.org/#dom-url-searchparams
+  defineBuiltInAccessor(URLPrototype, 'searchParams', accessorDescriptor('getSearchParams'));
+  // `URL.prototype.hash` accessors pair
+  // https://url.spec.whatwg.org/#dom-url-hash
+  defineBuiltInAccessor(URLPrototype, 'hash', accessorDescriptor('getHash', 'setHash'));
 }
 
 // `URL.prototype.toJSON` method
 // https://url.spec.whatwg.org/#dom-url-tojson
-redefine(URLPrototype, 'toJSON', function toJSON() {
+defineBuiltIn(URLPrototype, 'toJSON', function toJSON() {
   return getInternalURLState(this).serialize();
 }, { enumerable: true });
 
 // `URL.prototype.toString` method
 // https://url.spec.whatwg.org/#URL-stringification-behavior
-redefine(URLPrototype, 'toString', function toString() {
+defineBuiltIn(URLPrototype, 'toString', function toString() {
   return getInternalURLState(this).serialize();
 }, { enumerable: true });
 
@@ -5988,20 +5771,38 @@ if (NativeURL) {
   var nativeRevokeObjectURL = NativeURL.revokeObjectURL;
   // `URL.createObjectURL` method
   // https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
-  if (nativeCreateObjectURL) redefine(URLConstructor, 'createObjectURL', bind(nativeCreateObjectURL, NativeURL));
+  if (nativeCreateObjectURL) defineBuiltIn(URLConstructor, 'createObjectURL', bind(nativeCreateObjectURL, NativeURL));
   // `URL.revokeObjectURL` method
   // https://developer.mozilla.org/en-US/docs/Web/API/URL/revokeObjectURL
-  if (nativeRevokeObjectURL) redefine(URLConstructor, 'revokeObjectURL', bind(nativeRevokeObjectURL, NativeURL));
+  if (nativeRevokeObjectURL) defineBuiltIn(URLConstructor, 'revokeObjectURL', bind(nativeRevokeObjectURL, NativeURL));
 }
 
 setToStringTag(URLConstructor, 'URL');
 
-$({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
+$({ global: true, constructor: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
   URL: URLConstructor
 });
 
-},{"../internals/an-instance":8,"../internals/array-from":11,"../internals/array-slice-simple":16,"../internals/descriptors":33,"../internals/export":43,"../internals/function-bind-context":47,"../internals/function-uncurry-this":51,"../internals/global":56,"../internals/has-own-property":57,"../internals/internal-state":64,"../internals/native-url":79,"../internals/object-assign":82,"../internals/object-define-properties":84,"../internals/redefine":99,"../internals/set-to-string-tag":108,"../internals/string-multibyte":113,"../internals/string-punycode-to-ascii":114,"../internals/to-string":125,"../internals/validate-arguments-length":130,"../modules/es.string.iterator":147,"../modules/web.url-search-params":151}],153:[function(require,module,exports){
-/* flatpickr v4.6.9, @license MIT */
+},{"../internals/an-instance":6,"../internals/array-from":9,"../internals/array-slice":14,"../internals/define-built-in":30,"../internals/define-built-in-accessor":29,"../internals/descriptors":34,"../internals/export":45,"../internals/function-bind-context":47,"../internals/function-uncurry-this":53,"../internals/global-this":58,"../internals/has-own-property":59,"../internals/internal-state":66,"../internals/object-assign":87,"../internals/set-to-string-tag":106,"../internals/string-multibyte":110,"../internals/string-punycode-to-ascii":111,"../internals/to-string":123,"../internals/url-constructor-detection":126,"../internals/validate-arguments-length":129,"../modules/es.string.iterator":146,"../modules/web.url-search-params.constructor":149}],152:[function(require,module,exports){
+'use strict';
+// TODO: Remove this module from `core-js@4` since it's replaced to module below
+require('../modules/web.url.constructor');
+
+},{"../modules/web.url.constructor":151}],153:[function(require,module,exports){
+'use strict';
+var $ = require('../internals/export');
+var call = require('../internals/function-call');
+
+// `URL.prototype.toJSON` method
+// https://url.spec.whatwg.org/#dom-url-tojson
+$({ target: 'URL', proto: true, enumerable: true }, {
+  toJSON: function toJSON() {
+    return call(URL.prototype.toString, this);
+  }
+});
+
+},{"../internals/export":45,"../internals/function-call":49}],154:[function(require,module,exports){
+/* flatpickr v4.6.13, @license MIT */
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
@@ -6211,8 +6012,9 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
         var t;
         return function () {
             var _this = this;
+            var args = arguments;
             clearTimeout(t);
-            t = setTimeout(function () { return fn.apply(_this, arguments); }, wait);
+            t = setTimeout(function () { return fn.apply(_this, args); }, wait);
         };
     }
     var arrayify = function (obj) {
@@ -6282,7 +6084,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             dateObj.setMonth(locale.months.longhand.indexOf(monthName));
         },
         G: function (dateObj, hour) {
-            dateObj.setHours(parseFloat(hour));
+            dateObj.setHours((dateObj.getHours() >= 12 ? 12 : 0) + parseFloat(hour));
         },
         H: function (dateObj, hour) {
             dateObj.setHours(parseFloat(hour));
@@ -6315,7 +6117,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             dateObj.setDate(parseFloat(day));
         },
         h: function (dateObj, hour) {
-            dateObj.setHours(parseFloat(hour));
+            dateObj.setHours((dateObj.getHours() >= 12 ? 12 : 0) + parseFloat(hour));
         },
         i: function (dateObj, minutes) {
             dateObj.setMinutes(parseFloat(minutes));
@@ -6342,13 +6144,13 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
         },
     };
     var tokenRegex = {
-        D: "(\\w+)",
-        F: "(\\w+)",
+        D: "",
+        F: "",
         G: "(\\d\\d|\\d)",
         H: "(\\d\\d|\\d)",
         J: "(\\d\\d|\\d)\\w+",
         K: "",
-        M: "(\\w+)",
+        M: "",
         S: "(\\d\\d|\\d)",
         U: "(.+)",
         W: "(\\d\\d|\\d)",
@@ -6358,7 +6160,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
         h: "(\\d\\d|\\d)",
         i: "(\\d\\d|\\d)",
         j: "(\\d\\d|\\d)",
-        l: "(\\w+)",
+        l: "",
         m: "(\\d\\d|\\d)",
         n: "(\\d\\d|\\d)",
         s: "(\\d\\d|\\d)",
@@ -6472,17 +6274,15 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                     parsedDate = new Date();
                     timeless = true;
                 }
+                else if (config && config.parseDate) {
+                    parsedDate = config.parseDate(date, format);
+                }
                 else if (/Z$/.test(datestr) ||
                     /GMT$/.test(datestr) // datestrings w/ timezone
-                )
+                ) {
                     parsedDate = new Date(date);
-                else if (config && config.parseDate)
-                    parsedDate = config.parseDate(date, format);
+                }
                 else {
-                    parsedDate =
-                        !config || !config.noCalendar
-                            ? new Date(new Date().getFullYear(), 0, 1, 0, 0, 0, 0)
-                            : new Date(new Date().setHours(0, 0, 0, 0));
                     var matched = void 0, ops = [];
                     for (var i = 0, matchIndex = 0, regexStr = ""; i < format.length; i++) {
                         var token_1 = format[i];
@@ -6500,11 +6300,15 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                         }
                         else if (!isBackSlash)
                             regexStr += "."; // don't really care
-                        ops.forEach(function (_a) {
-                            var fn = _a.fn, val = _a.val;
-                            return (parsedDate = fn(parsedDate, val, locale) || parsedDate);
-                        });
                     }
+                    parsedDate =
+                        !config || !config.noCalendar
+                            ? new Date(new Date().getFullYear(), 0, 1, 0, 0, 0, 0)
+                            : new Date(new Date().setHours(0, 0, 0, 0));
+                    ops.forEach(function (_a) {
+                        var fn = _a.fn, val = _a.val;
+                        return (parsedDate = fn(parsedDate, val, locale) || parsedDate);
+                    });
                     parsedDate = matched ? parsedDate : undefined;
                 }
             }
@@ -6531,6 +6335,13 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
     }
     var isBetween = function (ts, ts1, ts2) {
         return ts > Math.min(ts1, ts2) && ts < Math.max(ts1, ts2);
+    };
+    var calculateSecondsSinceMidnight = function (hours, minutes, seconds) {
+        return hours * 3600 + minutes * 60 + seconds;
+    };
+    var parseSeconds = function (secondsSinceMidnight) {
+        var hours = Math.floor(secondsSinceMidnight / 3600), minutes = (secondsSinceMidnight - hours * 3600) / 60;
+        return [hours, minutes, secondsSinceMidnight - hours * 3600 - minutes * 60];
     };
     var duration = {
         DAY: 86400000,
@@ -6603,10 +6414,13 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
         self.changeYear = changeYear;
         self.clear = clear;
         self.close = close;
+        self.onMouseOver = onMouseOver;
         self._createElement = createElement;
+        self.createDay = createDay;
         self.destroy = destroy;
         self.isEnabled = isEnabled;
         self.jumpToDate = jumpToDate;
+        self.updateValue = updateValue;
         self.open = open;
         self.redraw = redraw;
         self.set = set;
@@ -6654,6 +6468,11 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                 positionCalendar();
             }
             triggerEvent("onReady");
+        }
+        function getClosestActiveElement() {
+            var _a;
+            return (((_a = self.calendarContainer) === null || _a === void 0 ? void 0 : _a.getRootNode())
+                .activeElement || document.activeElement);
         }
         function bindToInstance(fn) {
             return fn.bind(self);
@@ -6744,25 +6563,40 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                     self.latestSelectedDateObj &&
                     compareDates(self.latestSelectedDateObj, self.config.maxDate, true) ===
                         0);
-            if (limitMaxHours) {
-                var maxTime = self.config.maxTime !== undefined
-                    ? self.config.maxTime
-                    : self.config.maxDate;
-                hours = Math.min(hours, maxTime.getHours());
-                if (hours === maxTime.getHours())
-                    minutes = Math.min(minutes, maxTime.getMinutes());
-                if (minutes === maxTime.getMinutes())
-                    seconds = Math.min(seconds, maxTime.getSeconds());
+            if (self.config.maxTime !== undefined &&
+                self.config.minTime !== undefined &&
+                self.config.minTime > self.config.maxTime) {
+                var minBound = calculateSecondsSinceMidnight(self.config.minTime.getHours(), self.config.minTime.getMinutes(), self.config.minTime.getSeconds());
+                var maxBound = calculateSecondsSinceMidnight(self.config.maxTime.getHours(), self.config.maxTime.getMinutes(), self.config.maxTime.getSeconds());
+                var currentTime = calculateSecondsSinceMidnight(hours, minutes, seconds);
+                if (currentTime > maxBound && currentTime < minBound) {
+                    var result = parseSeconds(minBound);
+                    hours = result[0];
+                    minutes = result[1];
+                    seconds = result[2];
+                }
             }
-            if (limitMinHours) {
-                var minTime = self.config.minTime !== undefined
-                    ? self.config.minTime
-                    : self.config.minDate;
-                hours = Math.max(hours, minTime.getHours());
-                if (hours === minTime.getHours() && minutes < minTime.getMinutes())
-                    minutes = minTime.getMinutes();
-                if (minutes === minTime.getMinutes())
-                    seconds = Math.max(seconds, minTime.getSeconds());
+            else {
+                if (limitMaxHours) {
+                    var maxTime = self.config.maxTime !== undefined
+                        ? self.config.maxTime
+                        : self.config.maxDate;
+                    hours = Math.min(hours, maxTime.getHours());
+                    if (hours === maxTime.getHours())
+                        minutes = Math.min(minutes, maxTime.getMinutes());
+                    if (minutes === maxTime.getMinutes())
+                        seconds = Math.min(seconds, maxTime.getSeconds());
+                }
+                if (limitMinHours) {
+                    var minTime = self.config.minTime !== undefined
+                        ? self.config.minTime
+                        : self.config.minDate;
+                    hours = Math.max(hours, minTime.getHours());
+                    if (hours === minTime.getHours() && minutes < minTime.getMinutes())
+                        minutes = minTime.getMinutes();
+                    if (minutes === minTime.getMinutes())
+                        seconds = Math.max(seconds, minTime.getSeconds());
+                }
             }
             setHours(hours, minutes, seconds);
         }
@@ -6771,7 +6605,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
          */
         function setHoursFromDate(dateObj) {
             var date = dateObj || self.latestSelectedDateObj;
-            if (date) {
+            if (date && date instanceof Date) {
                 setHours(date.getHours(), date.getMinutes(), date.getSeconds());
             }
         }
@@ -6824,7 +6658,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                 return element.forEach(function (el) { return bind(el, event, handler, options); });
             element.addEventListener(event, handler, options);
             self._handlers.push({
-                remove: function () { return element.removeEventListener(event, handler); },
+                remove: function () { return element.removeEventListener(event, handler, options); },
             });
         }
         function triggerChange() {
@@ -6852,7 +6686,10 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                     if (self.config.mode === "range")
                         onMouseOver(getEventTarget(e));
                 });
-            bind(window.document.body, "keydown", onKeyDown);
+            bind(self._input, "keydown", onKeyDown);
+            if (self.calendarContainer !== undefined) {
+                bind(self.calendarContainer, "keydown", onKeyDown);
+            }
             if (!self.config.inline && !self.config.static)
                 bind(window, "resize", debouncedResize);
             if (window.ontouchstart !== undefined)
@@ -6884,7 +6721,6 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                 if (self.amPM !== undefined) {
                     bind(self.amPM, "click", function (e) {
                         updateTime(e);
-                        triggerChange();
                     });
                 }
             }
@@ -7011,8 +6847,8 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                     ? self.config.appendTo
                     : window.document.body).appendChild(self.calendarContainer);
         }
-        function createDay(className, date, dayNumber, i) {
-            var dateIsEnabled = isEnabled(date, true), dayElement = createElement("span", "flatpickr-day " + className, date.getDate().toString());
+        function createDay(className, date, _dayNumber, i) {
+            var dateIsEnabled = isEnabled(date, true), dayElement = createElement("span", className, date.getDate().toString());
             dayElement.dateObj = date;
             dayElement.$i = i;
             dayElement.setAttribute("aria-label", self.formatDate(date, self.config.ariaDateFormat));
@@ -7047,7 +6883,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             if (self.weekNumbers &&
                 self.config.showMonths === 1 &&
                 className !== "prevMonthDay" &&
-                dayNumber % 7 === 1) {
+                i % 7 === 6) {
                 self.weekNumbers.insertAdjacentHTML("beforeend", "<span class='flatpickr-day'>" + self.config.getWeek(date) + "</span>");
             }
             triggerEvent("onDayCreate", dayElement);
@@ -7100,11 +6936,12 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             return undefined;
         }
         function focusOnDay(current, offset) {
-            var dayFocused = isInView(document.activeElement || document.body);
+            var activeElement = getClosestActiveElement();
+            var dayFocused = isInView(activeElement || document.body);
             var startElem = current !== undefined
                 ? current
                 : dayFocused
-                    ? document.activeElement
+                    ? activeElement
                     : self.selectedDateElem !== undefined && isInView(self.selectedDateElem)
                         ? self.selectedDateElem
                         : self.todayDateElem !== undefined && isInView(self.todayDateElem)
@@ -7127,16 +6964,16 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             var dayNumber = prevMonthDays + 1 - firstOfMonth, dayIndex = 0;
             // prepend days from the ending of previous month
             for (; dayNumber <= prevMonthDays; dayNumber++, dayIndex++) {
-                days.appendChild(createDay(prevMonthDayClass, new Date(year, month - 1, dayNumber), dayNumber, dayIndex));
+                days.appendChild(createDay("flatpickr-day " + prevMonthDayClass, new Date(year, month - 1, dayNumber), dayNumber, dayIndex));
             }
             // Start at 1 since there is no 0th day
             for (dayNumber = 1; dayNumber <= daysInMonth; dayNumber++, dayIndex++) {
-                days.appendChild(createDay("", new Date(year, month, dayNumber), dayNumber, dayIndex));
+                days.appendChild(createDay("flatpickr-day", new Date(year, month, dayNumber), dayNumber, dayIndex));
             }
             // append days from the next month
             for (var dayNum = daysInMonth + 1; dayNum <= 42 - firstOfMonth &&
                 (self.config.showMonths === 1 || dayIndex % 7 !== 0); dayNum++, dayIndex++) {
-                days.appendChild(createDay(nextMonthDayClass, new Date(year, month + 1, dayNum % daysInMonth), dayNum, dayIndex));
+                days.appendChild(createDay("flatpickr-day " + nextMonthDayClass, new Date(year, month + 1, dayNum % daysInMonth), dayNum, dayIndex));
             }
             //updateNavigationCurrentMonth();
             var dayContainer = createElement("div", "dayContainer");
@@ -7507,8 +7344,6 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             });
         }
         function isCalendarElem(elem) {
-            if (self.config.appendTo && self.config.appendTo.contains(elem))
-                return true;
             return self.calendarContainer.contains(elem);
         }
         function documentClick(e) {
@@ -7524,17 +7359,18 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                         e.path.indexOf &&
                         (~e.path.indexOf(self.input) ||
                             ~e.path.indexOf(self.altInput)));
-                var lostFocus = e.type === "blur"
-                    ? isInput &&
-                        e.relatedTarget &&
-                        !isCalendarElem(e.relatedTarget)
-                    : !isInput &&
-                        !isCalendarElement &&
-                        !isCalendarElem(e.relatedTarget);
+                var lostFocus = !isInput &&
+                    !isCalendarElement &&
+                    !isCalendarElem(e.relatedTarget);
                 var isIgnored = !self.config.ignoredFocusElements.some(function (elem) {
                     return elem.contains(eventTarget_1);
                 });
                 if (lostFocus && isIgnored) {
+                    if (self.config.allowInput) {
+                        self.setDate(self._input.value, false, self.config.altInput
+                            ? self.config.altFormat
+                            : self.config.dateFormat);
+                    }
                     if (self.timeContainer !== undefined &&
                         self.minuteElement !== undefined &&
                         self.hourElement !== undefined &&
@@ -7545,10 +7381,8 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                     self.close();
                     if (self.config &&
                         self.config.mode === "range" &&
-                        self.selectedDates.length === 1) {
+                        self.selectedDates.length === 1)
                         self.clear(false);
-                        self.redraw();
-                    }
                 }
             }
         }
@@ -7628,8 +7462,9 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
         }
         function onBlur(e) {
             var isInput = e.target === self._input;
+            var valueChanged = self._input.value.trimEnd() !== getDateStr();
             if (isInput &&
-                (self.selectedDates.length > 0 || self._input.value.length > 0) &&
+                valueChanged &&
                 !(e.relatedTarget && isCalendarElem(e.relatedTarget))) {
                 self.setDate(self._input.value, true, e.target === self.altInput
                     ? self.config.altFormat
@@ -7659,6 +7494,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                     self.setDate(self._input.value, true, eventTarget === self.altInput
                         ? self.config.altFormat
                         : self.config.dateFormat);
+                    self.close();
                     return eventTarget.blur();
                 }
                 else {
@@ -7695,9 +7531,10 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                     case 39:
                         if (!isTimeObj && !isInput) {
                             e.preventDefault();
+                            var activeElement = getClosestActiveElement();
                             if (self.daysContainer !== undefined &&
                                 (allowInput === false ||
-                                    (document.activeElement && isInView(document.activeElement)))) {
+                                    (activeElement && isInView(activeElement)))) {
                                 var delta_1 = e.keyCode === 39 ? 1 : -1;
                                 if (!e.ctrlKey)
                                     focusOnDay(undefined, delta_1);
@@ -7784,10 +7621,11 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                 triggerEvent("onKeyDown", e);
             }
         }
-        function onMouseOver(elem) {
+        function onMouseOver(elem, cellClass) {
+            if (cellClass === void 0) { cellClass = "flatpickr-day"; }
             if (self.selectedDates.length !== 1 ||
                 (elem &&
-                    (!elem.classList.contains("flatpickr-day") ||
+                    (!elem.classList.contains(cellClass) ||
                         elem.classList.contains("flatpickr-disabled"))))
                 return;
             var hoverDate = elem
@@ -7805,43 +7643,38 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                         maxRange = t;
                 }
             }
-            for (var m = 0; m < self.config.showMonths; m++) {
-                var month = self.daysContainer.children[m];
-                var _loop_1 = function (i, l) {
-                    var dayElem = month.children[i], date = dayElem.dateObj;
-                    var timestamp = date.getTime();
-                    var outOfRange = (minRange > 0 && timestamp < minRange) ||
-                        (maxRange > 0 && timestamp > maxRange);
-                    if (outOfRange) {
-                        dayElem.classList.add("notAllowed");
-                        ["inRange", "startRange", "endRange"].forEach(function (c) {
-                            dayElem.classList.remove(c);
-                        });
-                        return "continue";
-                    }
-                    else if (containsDisabled && !outOfRange)
-                        return "continue";
-                    ["startRange", "inRange", "endRange", "notAllowed"].forEach(function (c) {
+            var hoverableCells = Array.from(self.rContainer.querySelectorAll("*:nth-child(-n+" + self.config.showMonths + ") > ." + cellClass));
+            hoverableCells.forEach(function (dayElem) {
+                var date = dayElem.dateObj;
+                var timestamp = date.getTime();
+                var outOfRange = (minRange > 0 && timestamp < minRange) ||
+                    (maxRange > 0 && timestamp > maxRange);
+                if (outOfRange) {
+                    dayElem.classList.add("notAllowed");
+                    ["inRange", "startRange", "endRange"].forEach(function (c) {
                         dayElem.classList.remove(c);
                     });
-                    if (elem !== undefined) {
-                        elem.classList.add(hoverDate <= self.selectedDates[0].getTime()
-                            ? "startRange"
-                            : "endRange");
-                        if (initialDate < hoverDate && timestamp === initialDate)
-                            dayElem.classList.add("startRange");
-                        else if (initialDate > hoverDate && timestamp === initialDate)
-                            dayElem.classList.add("endRange");
-                        if (timestamp >= minRange &&
-                            (maxRange === 0 || timestamp <= maxRange) &&
-                            isBetween(timestamp, initialDate, hoverDate))
-                            dayElem.classList.add("inRange");
-                    }
-                };
-                for (var i = 0, l = month.children.length; i < l; i++) {
-                    _loop_1(i, l);
+                    return;
                 }
-            }
+                else if (containsDisabled && !outOfRange)
+                    return;
+                ["startRange", "inRange", "endRange", "notAllowed"].forEach(function (c) {
+                    dayElem.classList.remove(c);
+                });
+                if (elem !== undefined) {
+                    elem.classList.add(hoverDate <= self.selectedDates[0].getTime()
+                        ? "startRange"
+                        : "endRange");
+                    if (initialDate < hoverDate && timestamp === initialDate)
+                        dayElem.classList.add("startRange");
+                    else if (initialDate > hoverDate && timestamp === initialDate)
+                        dayElem.classList.add("endRange");
+                    if (timestamp >= minRange &&
+                        (maxRange === 0 || timestamp <= maxRange) &&
+                        isBetween(timestamp, initialDate, hoverDate))
+                        dayElem.classList.add("inRange");
+                }
+            });
         }
         function onResize() {
             if (self.isOpen && !self.config.static && !self.config.inline)
@@ -8034,6 +7867,10 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                 : self.config.locale !== "default"
                     ? flatpickr.l10ns[self.config.locale]
                     : undefined));
+            tokenRegex.D = "(" + self.l10n.weekdays.shorthand.join("|") + ")";
+            tokenRegex.l = "(" + self.l10n.weekdays.longhand.join("|") + ")";
+            tokenRegex.M = "(" + self.l10n.months.shorthand.join("|") + ")";
+            tokenRegex.F = "(" + self.l10n.months.longhand.join("|") + ")";
             tokenRegex.K = "(" + self.l10n.amPM[0] + "|" + self.l10n.amPM[1] + "|" + self.l10n.amPM[0].toLowerCase() + "|" + self.l10n.amPM[1].toLowerCase() + ")";
             var userConfig = __assign(__assign({}, instanceConfig), JSON.parse(JSON.stringify(element.dataset || {})));
             if (userConfig.time_24hr === undefined &&
@@ -8114,6 +7951,8 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             var editableSheet = null;
             for (var i = 0; i < document.styleSheets.length; i++) {
                 var sheet = document.styleSheets[i];
+                if (!sheet.cssRules)
+                    continue;
                 try {
                     sheet.cssRules;
                 }
@@ -8227,6 +8066,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             showMonths: [buildMonths, setCalendarWidth, buildWeekdays],
             minDate: [jumpToDate],
             maxDate: [jumpToDate],
+            positionElement: [updatePositionElement],
             clickOpens: [
                 function () {
                     if (self.config.clickOpens === true) {
@@ -8398,6 +8238,9 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
             }
             if (!self.config.allowInput)
                 self._input.setAttribute("readonly", "readonly");
+            updatePositionElement();
+        }
+        function updatePositionElement() {
             self._positionElement = self.config.positionElement || self._input;
         }
         function setupMobile() {
@@ -8468,7 +8311,9 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
         }
         function isDateSelected(date) {
             for (var i = 0; i < self.selectedDates.length; i++) {
-                if (compareDates(self.selectedDates[i], date) === 0)
+                var selectedDate = self.selectedDates[i];
+                if (selectedDate instanceof Date &&
+                    compareDates(selectedDate, date) === 0)
                     return "" + i;
             }
             return false;
@@ -8506,7 +8351,9 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
                         ? self.currentMonth + 1 > self.config.maxDate.getMonth()
                         : self.currentYear > self.config.maxDate.getFullYear());
         }
-        function getDateStr(format) {
+        function getDateStr(specificFormat) {
+            var format = specificFormat ||
+                (self.config.altInput ? self.config.altFormat : self.config.dateFormat);
             return self.selectedDates
                 .map(function (dObj) { return self.formatDate(dObj, format); })
                 .filter(function (d, i, arr) {
@@ -8675,7 +8522,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
 
 })));
 
-},{}],154:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -8747,19 +8594,16 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
 
 })));
 
-},{}],155:[function(require,module,exports){
+},{}],156:[function(require,module,exports){
 /*!
- * jQuery JavaScript Library v3.6.0
+ * jQuery JavaScript Library v3.7.1
  * https://jquery.com/
- *
- * Includes Sizzle.js
- * https://sizzlejs.com/
  *
  * Copyright OpenJS Foundation and other contributors
  * Released under the MIT license
  * https://jquery.org/license
  *
- * Date: 2021-03-02T17:08Z
+ * Date: 2023-08-28T13:37Z
  */
 ( function( global, factory ) {
 
@@ -8773,7 +8617,7 @@ $({ global: true, forced: !USE_NATIVE_URL, sham: !DESCRIPTORS }, {
 		// (such as Node.js), expose a factory as module.exports.
 		// This accentuates the need for the creation of a real `window`.
 		// e.g. var jQuery = require("jquery")(window);
-		// See ticket #14549 for more info.
+		// See ticket trac-14549 for more info.
 		module.exports = global.document ?
 			factory( global, true ) :
 			function( w ) {
@@ -8900,8 +8744,9 @@ function toType( obj ) {
 
 
 
-var
-	version = "3.6.0",
+var version = "3.7.1",
+
+	rhtmlSuffix = /HTML$/i,
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -9147,6 +8992,38 @@ jQuery.extend( {
 		return obj;
 	},
 
+
+	// Retrieve the text value of an array of DOM nodes
+	text: function( elem ) {
+		var node,
+			ret = "",
+			i = 0,
+			nodeType = elem.nodeType;
+
+		if ( !nodeType ) {
+
+			// If no nodeType, this is expected to be an array
+			while ( ( node = elem[ i++ ] ) ) {
+
+				// Do not traverse comment nodes
+				ret += jQuery.text( node );
+			}
+		}
+		if ( nodeType === 1 || nodeType === 11 ) {
+			return elem.textContent;
+		}
+		if ( nodeType === 9 ) {
+			return elem.documentElement.textContent;
+		}
+		if ( nodeType === 3 || nodeType === 4 ) {
+			return elem.nodeValue;
+		}
+
+		// Do not include comment or processing instruction nodes
+
+		return ret;
+	},
+
 	// results is for internal usage only
 	makeArray: function( arr, results ) {
 		var ret = results || [];
@@ -9167,6 +9044,15 @@ jQuery.extend( {
 
 	inArray: function( elem, arr, i ) {
 		return arr == null ? -1 : indexOf.call( arr, elem, i );
+	},
+
+	isXMLDoc: function( elem ) {
+		var namespace = elem && elem.namespaceURI,
+			docElem = elem && ( elem.ownerDocument || elem ).documentElement;
+
+		// Assume HTML when documentElement doesn't yet exist, such as inside
+		// document fragments.
+		return !rhtmlSuffix.test( namespace || docElem && docElem.nodeName || "HTML" );
 	},
 
 	// Support: Android <=4.0 only, PhantomJS 1 only
@@ -9270,43 +9156,98 @@ function isArrayLike( obj ) {
 	return type === "array" || length === 0 ||
 		typeof length === "number" && length > 0 && ( length - 1 ) in obj;
 }
-var Sizzle =
-/*!
- * Sizzle CSS Selector Engine v2.3.6
- * https://sizzlejs.com/
- *
- * Copyright JS Foundation and other contributors
- * Released under the MIT license
- * https://js.foundation/
- *
- * Date: 2021-02-16
- */
-( function( window ) {
+
+
+function nodeName( elem, name ) {
+
+	return elem.nodeName && elem.nodeName.toLowerCase() === name.toLowerCase();
+
+}
+var pop = arr.pop;
+
+
+var sort = arr.sort;
+
+
+var splice = arr.splice;
+
+
+var whitespace = "[\\x20\\t\\r\\n\\f]";
+
+
+var rtrimCSS = new RegExp(
+	"^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" + whitespace + "+$",
+	"g"
+);
+
+
+
+
+// Note: an element does not contain itself
+jQuery.contains = function( a, b ) {
+	var bup = b && b.parentNode;
+
+	return a === bup || !!( bup && bup.nodeType === 1 && (
+
+		// Support: IE 9 - 11+
+		// IE doesn't have `contains` on SVG.
+		a.contains ?
+			a.contains( bup ) :
+			a.compareDocumentPosition && a.compareDocumentPosition( bup ) & 16
+	) );
+};
+
+
+
+
+// CSS string/identifier serialization
+// https://drafts.csswg.org/cssom/#common-serializing-idioms
+var rcssescape = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\x80-\uFFFF\w-]/g;
+
+function fcssescape( ch, asCodePoint ) {
+	if ( asCodePoint ) {
+
+		// U+0000 NULL becomes U+FFFD REPLACEMENT CHARACTER
+		if ( ch === "\0" ) {
+			return "\uFFFD";
+		}
+
+		// Control characters and (dependent upon position) numbers get escaped as code points
+		return ch.slice( 0, -1 ) + "\\" + ch.charCodeAt( ch.length - 1 ).toString( 16 ) + " ";
+	}
+
+	// Other potentially-special ASCII characters get backslash-escaped
+	return "\\" + ch;
+}
+
+jQuery.escapeSelector = function( sel ) {
+	return ( sel + "" ).replace( rcssescape, fcssescape );
+};
+
+
+
+
+var preferredDoc = document,
+	pushNative = push;
+
+( function() {
+
 var i,
-	support,
 	Expr,
-	getText,
-	isXML,
-	tokenize,
-	compile,
-	select,
 	outermostContext,
 	sortInput,
 	hasDuplicate,
+	push = pushNative,
 
 	// Local document vars
-	setDocument,
 	document,
-	docElem,
+	documentElement,
 	documentIsHTML,
 	rbuggyQSA,
-	rbuggyMatches,
 	matches,
-	contains,
 
 	// Instance-specific data
-	expando = "sizzle" + 1 * new Date(),
-	preferredDoc = window.document,
+	expando = jQuery.expando,
 	dirruns = 0,
 	done = 0,
 	classCache = createCache(),
@@ -9320,47 +9261,22 @@ var i,
 		return 0;
 	},
 
-	// Instance methods
-	hasOwn = ( {} ).hasOwnProperty,
-	arr = [],
-	pop = arr.pop,
-	pushNative = arr.push,
-	push = arr.push,
-	slice = arr.slice,
-
-	// Use a stripped-down indexOf as it's faster than native
-	// https://jsperf.com/thor-indexof-vs-for/5
-	indexOf = function( list, elem ) {
-		var i = 0,
-			len = list.length;
-		for ( ; i < len; i++ ) {
-			if ( list[ i ] === elem ) {
-				return i;
-			}
-		}
-		return -1;
-	},
-
-	booleans = "checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|" +
-		"ismap|loop|multiple|open|readonly|required|scoped",
+	booleans = "checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|" +
+		"loop|multiple|open|readonly|required|scoped",
 
 	// Regular expressions
-
-	// http://www.w3.org/TR/css3-selectors/#whitespace
-	whitespace = "[\\x20\\t\\r\\n\\f]",
 
 	// https://www.w3.org/TR/css-syntax-3/#ident-token-diagram
 	identifier = "(?:\\\\[\\da-fA-F]{1,6}" + whitespace +
 		"?|\\\\[^\\r\\n\\f]|[\\w-]|[^\0-\\x7f])+",
 
-	// Attribute selectors: http://www.w3.org/TR/selectors/#attribute-selectors
+	// Attribute selectors: https://www.w3.org/TR/selectors/#attribute-selectors
 	attributes = "\\[" + whitespace + "*(" + identifier + ")(?:" + whitespace +
 
 		// Operator (capture 2)
 		"*([*^$|!~]?=)" + whitespace +
 
-		// "Attribute values must be CSS identifiers [capture 5]
-		// or strings [capture 3 or capture 4]"
+		// "Attribute values must be CSS identifiers [capture 5] or strings [capture 3 or capture 4]"
 		"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|(" + identifier + "))|)" +
 		whitespace + "*\\]",
 
@@ -9379,40 +9295,36 @@ var i,
 
 	// Leading and non-escaped trailing whitespace, capturing some non-whitespace characters preceding the latter
 	rwhitespace = new RegExp( whitespace + "+", "g" ),
-	rtrim = new RegExp( "^" + whitespace + "+|((?:^|[^\\\\])(?:\\\\.)*)" +
-		whitespace + "+$", "g" ),
 
 	rcomma = new RegExp( "^" + whitespace + "*," + whitespace + "*" ),
-	rcombinators = new RegExp( "^" + whitespace + "*([>+~]|" + whitespace + ")" + whitespace +
-		"*" ),
+	rleadingCombinator = new RegExp( "^" + whitespace + "*([>+~]|" + whitespace + ")" +
+		whitespace + "*" ),
 	rdescend = new RegExp( whitespace + "|>" ),
 
 	rpseudo = new RegExp( pseudos ),
 	ridentifier = new RegExp( "^" + identifier + "$" ),
 
 	matchExpr = {
-		"ID": new RegExp( "^#(" + identifier + ")" ),
-		"CLASS": new RegExp( "^\\.(" + identifier + ")" ),
-		"TAG": new RegExp( "^(" + identifier + "|[*])" ),
-		"ATTR": new RegExp( "^" + attributes ),
-		"PSEUDO": new RegExp( "^" + pseudos ),
-		"CHILD": new RegExp( "^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\(" +
-			whitespace + "*(even|odd|(([+-]|)(\\d*)n|)" + whitespace + "*(?:([+-]|)" +
-			whitespace + "*(\\d+)|))" + whitespace + "*\\)|)", "i" ),
-		"bool": new RegExp( "^(?:" + booleans + ")$", "i" ),
+		ID: new RegExp( "^#(" + identifier + ")" ),
+		CLASS: new RegExp( "^\\.(" + identifier + ")" ),
+		TAG: new RegExp( "^(" + identifier + "|[*])" ),
+		ATTR: new RegExp( "^" + attributes ),
+		PSEUDO: new RegExp( "^" + pseudos ),
+		CHILD: new RegExp(
+			"^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\(" +
+				whitespace + "*(even|odd|(([+-]|)(\\d*)n|)" + whitespace + "*(?:([+-]|)" +
+				whitespace + "*(\\d+)|))" + whitespace + "*\\)|)", "i" ),
+		bool: new RegExp( "^(?:" + booleans + ")$", "i" ),
 
 		// For use in libraries implementing .is()
 		// We use this for POS matching in `select`
-		"needsContext": new RegExp( "^" + whitespace +
+		needsContext: new RegExp( "^" + whitespace +
 			"*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\(" + whitespace +
 			"*((?:-\\d)?\\d*)" + whitespace + "*\\)|)(?=[^-]|$)", "i" )
 	},
 
-	rhtml = /HTML$/i,
 	rinputs = /^(?:input|select|textarea|button)$/i,
 	rheader = /^h\d$/i,
-
-	rnative = /^[^{]+\{\s*\[native \w/,
 
 	// Easily-parseable/retrievable ID or TAG or CLASS selectors
 	rquickExpr = /^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,
@@ -9420,59 +9332,50 @@ var i,
 	rsibling = /[+~]/,
 
 	// CSS escapes
-	// http://www.w3.org/TR/CSS21/syndata.html#escaped-characters
-	runescape = new RegExp( "\\\\[\\da-fA-F]{1,6}" + whitespace + "?|\\\\([^\\r\\n\\f])", "g" ),
+	// https://www.w3.org/TR/CSS21/syndata.html#escaped-characters
+	runescape = new RegExp( "\\\\[\\da-fA-F]{1,6}" + whitespace +
+		"?|\\\\([^\\r\\n\\f])", "g" ),
 	funescape = function( escape, nonHex ) {
 		var high = "0x" + escape.slice( 1 ) - 0x10000;
 
-		return nonHex ?
+		if ( nonHex ) {
 
 			// Strip the backslash prefix from a non-hex escape sequence
-			nonHex :
-
-			// Replace a hexadecimal escape sequence with the encoded Unicode code point
-			// Support: IE <=11+
-			// For values outside the Basic Multilingual Plane (BMP), manually construct a
-			// surrogate pair
-			high < 0 ?
-				String.fromCharCode( high + 0x10000 ) :
-				String.fromCharCode( high >> 10 | 0xD800, high & 0x3FF | 0xDC00 );
-	},
-
-	// CSS string/identifier serialization
-	// https://drafts.csswg.org/cssom/#common-serializing-idioms
-	rcssescape = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g,
-	fcssescape = function( ch, asCodePoint ) {
-		if ( asCodePoint ) {
-
-			// U+0000 NULL becomes U+FFFD REPLACEMENT CHARACTER
-			if ( ch === "\0" ) {
-				return "\uFFFD";
-			}
-
-			// Control characters and (dependent upon position) numbers get escaped as code points
-			return ch.slice( 0, -1 ) + "\\" +
-				ch.charCodeAt( ch.length - 1 ).toString( 16 ) + " ";
+			return nonHex;
 		}
 
-		// Other potentially-special ASCII characters get backslash-escaped
-		return "\\" + ch;
+		// Replace a hexadecimal escape sequence with the encoded Unicode code point
+		// Support: IE <=11+
+		// For values outside the Basic Multilingual Plane (BMP), manually construct a
+		// surrogate pair
+		return high < 0 ?
+			String.fromCharCode( high + 0x10000 ) :
+			String.fromCharCode( high >> 10 | 0xD800, high & 0x3FF | 0xDC00 );
 	},
 
-	// Used for iframes
-	// See setDocument()
+	// Used for iframes; see `setDocument`.
+	// Support: IE 9 - 11+, Edge 12 - 18+
 	// Removing the function wrapper causes a "Permission Denied"
-	// error in IE
+	// error in IE/Edge.
 	unloadHandler = function() {
 		setDocument();
 	},
 
 	inDisabledFieldset = addCombinator(
 		function( elem ) {
-			return elem.disabled === true && elem.nodeName.toLowerCase() === "fieldset";
+			return elem.disabled === true && nodeName( elem, "fieldset" );
 		},
 		{ dir: "parentNode", next: "legend" }
 	);
+
+// Support: IE <=9 only
+// Accessing document.activeElement can throw unexpectedly
+// https://bugs.jquery.com/ticket/13393
+function safeActiveElement() {
+	try {
+		return document.activeElement;
+	} catch ( err ) { }
+}
 
 // Optimize for push.apply( _, NodeList )
 try {
@@ -9481,32 +9384,22 @@ try {
 		preferredDoc.childNodes
 	);
 
-	// Support: Android<4.0
+	// Support: Android <=4.0
 	// Detect silently failing push.apply
 	// eslint-disable-next-line no-unused-expressions
 	arr[ preferredDoc.childNodes.length ].nodeType;
 } catch ( e ) {
-	push = { apply: arr.length ?
-
-		// Leverage slice if possible
-		function( target, els ) {
+	push = {
+		apply: function( target, els ) {
 			pushNative.apply( target, slice.call( els ) );
-		} :
-
-		// Support: IE<9
-		// Otherwise append directly
-		function( target, els ) {
-			var j = target.length,
-				i = 0;
-
-			// Can't trust NodeList.length
-			while ( ( target[ j++ ] = els[ i++ ] ) ) {}
-			target.length = j - 1;
+		},
+		call: function( target ) {
+			pushNative.apply( target, slice.call( arguments, 1 ) );
 		}
 	};
 }
 
-function Sizzle( selector, context, results, seed ) {
+function find( selector, context, results, seed ) {
 	var m, i, elem, nid, match, groups, newSelector,
 		newContext = context && context.ownerDocument,
 
@@ -9540,11 +9433,10 @@ function Sizzle( selector, context, results, seed ) {
 					if ( nodeType === 9 ) {
 						if ( ( elem = context.getElementById( m ) ) ) {
 
-							// Support: IE, Opera, Webkit
-							// TODO: identify versions
+							// Support: IE 9 only
 							// getElementById can match elements by name instead of ID
 							if ( elem.id === m ) {
-								results.push( elem );
+								push.call( results, elem );
 								return results;
 							}
 						} else {
@@ -9554,14 +9446,13 @@ function Sizzle( selector, context, results, seed ) {
 					// Element context
 					} else {
 
-						// Support: IE, Opera, Webkit
-						// TODO: identify versions
+						// Support: IE 9 only
 						// getElementById can match elements by name instead of ID
 						if ( newContext && ( elem = newContext.getElementById( m ) ) &&
-							contains( context, elem ) &&
+							find.contains( context, elem ) &&
 							elem.id === m ) {
 
-							results.push( elem );
+							push.call( results, elem );
 							return results;
 						}
 					}
@@ -9572,22 +9463,15 @@ function Sizzle( selector, context, results, seed ) {
 					return results;
 
 				// Class selector
-				} else if ( ( m = match[ 3 ] ) && support.getElementsByClassName &&
-					context.getElementsByClassName ) {
-
+				} else if ( ( m = match[ 3 ] ) && context.getElementsByClassName ) {
 					push.apply( results, context.getElementsByClassName( m ) );
 					return results;
 				}
 			}
 
 			// Take advantage of querySelectorAll
-			if ( support.qsa &&
-				!nonnativeSelectorCache[ selector + " " ] &&
-				( !rbuggyQSA || !rbuggyQSA.test( selector ) ) &&
-
-				// Support: IE 8 only
-				// Exclude object elements
-				( nodeType !== 1 || context.nodeName.toLowerCase() !== "object" ) ) {
+			if ( !nonnativeSelectorCache[ selector + " " ] &&
+				( !rbuggyQSA || !rbuggyQSA.test( selector ) ) ) {
 
 				newSelector = selector;
 				newContext = context;
@@ -9600,7 +9484,7 @@ function Sizzle( selector, context, results, seed ) {
 				// as such selectors are not recognized by querySelectorAll.
 				// Thanks to Andrew Dupont for this technique.
 				if ( nodeType === 1 &&
-					( rdescend.test( selector ) || rcombinators.test( selector ) ) ) {
+					( rdescend.test( selector ) || rleadingCombinator.test( selector ) ) ) {
 
 					// Expand context for sibling selectors
 					newContext = rsibling.test( selector ) && testContext( context.parentNode ) ||
@@ -9608,11 +9492,15 @@ function Sizzle( selector, context, results, seed ) {
 
 					// We can use :scope instead of the ID hack if the browser
 					// supports it & if we're not changing the context.
-					if ( newContext !== context || !support.scope ) {
+					// Support: IE 11+, Edge 17 - 18+
+					// IE/Edge sometimes throw a "Permission denied" error when
+					// strict-comparing two documents; shallow comparisons work.
+					// eslint-disable-next-line eqeqeq
+					if ( newContext != context || !support.scope ) {
 
 						// Capture the context ID, setting it first if necessary
 						if ( ( nid = context.getAttribute( "id" ) ) ) {
-							nid = nid.replace( rcssescape, fcssescape );
+							nid = jQuery.escapeSelector( nid );
 						} else {
 							context.setAttribute( "id", ( nid = expando ) );
 						}
@@ -9645,7 +9533,7 @@ function Sizzle( selector, context, results, seed ) {
 	}
 
 	// All others
-	return select( selector.replace( rtrim, "$1" ), context, results, seed );
+	return select( selector.replace( rtrimCSS, "$1" ), context, results, seed );
 }
 
 /**
@@ -9659,7 +9547,8 @@ function createCache() {
 
 	function cache( key, value ) {
 
-		// Use (key + " ") to avoid collision with native prototype properties (see Issue #157)
+		// Use (key + " ") to avoid collision with native prototype properties
+		// (see https://github.com/jquery/sizzle/issues/157)
 		if ( keys.push( key + " " ) > Expr.cacheLength ) {
 
 			// Only keep the most recent entries
@@ -9671,7 +9560,7 @@ function createCache() {
 }
 
 /**
- * Mark a function for special use by Sizzle
+ * Mark a function for special use by jQuery selector module
  * @param {Function} fn The function to mark
  */
 function markFunction( fn ) {
@@ -9703,55 +9592,12 @@ function assert( fn ) {
 }
 
 /**
- * Adds the same handler for all of the specified attrs
- * @param {String} attrs Pipe-separated list of attributes
- * @param {Function} handler The method that will be applied
- */
-function addHandle( attrs, handler ) {
-	var arr = attrs.split( "|" ),
-		i = arr.length;
-
-	while ( i-- ) {
-		Expr.attrHandle[ arr[ i ] ] = handler;
-	}
-}
-
-/**
- * Checks document order of two siblings
- * @param {Element} a
- * @param {Element} b
- * @returns {Number} Returns less than 0 if a precedes b, greater than 0 if a follows b
- */
-function siblingCheck( a, b ) {
-	var cur = b && a,
-		diff = cur && a.nodeType === 1 && b.nodeType === 1 &&
-			a.sourceIndex - b.sourceIndex;
-
-	// Use IE sourceIndex if available on both nodes
-	if ( diff ) {
-		return diff;
-	}
-
-	// Check if b follows a
-	if ( cur ) {
-		while ( ( cur = cur.nextSibling ) ) {
-			if ( cur === b ) {
-				return -1;
-			}
-		}
-	}
-
-	return a ? 1 : -1;
-}
-
-/**
  * Returns a function to use in pseudos for input types
  * @param {String} type
  */
 function createInputPseudo( type ) {
 	return function( elem ) {
-		var name = elem.nodeName.toLowerCase();
-		return name === "input" && elem.type === type;
+		return nodeName( elem, "input" ) && elem.type === type;
 	};
 }
 
@@ -9761,8 +9607,8 @@ function createInputPseudo( type ) {
  */
 function createButtonPseudo( type ) {
 	return function( elem ) {
-		var name = elem.nodeName.toLowerCase();
-		return ( name === "input" || name === "button" ) && elem.type === type;
+		return ( nodeName( elem, "input" ) || nodeName( elem, "button" ) ) &&
+			elem.type === type;
 	};
 }
 
@@ -9798,14 +9644,13 @@ function createDisabledPseudo( disabled ) {
 					}
 				}
 
-				// Support: IE 6 - 11
+				// Support: IE 6 - 11+
 				// Use the isDisabled shortcut property to check for disabled fieldset ancestors
 				return elem.isDisabled === disabled ||
 
 					// Where there is no isDisabled, check manually
-					/* jshint -W018 */
 					elem.isDisabled !== !disabled &&
-					inDisabledFieldset( elem ) === disabled;
+						inDisabledFieldset( elem ) === disabled;
 			}
 
 			return elem.disabled === disabled;
@@ -9845,7 +9690,7 @@ function createPositionalPseudo( fn ) {
 }
 
 /**
- * Checks a node for validity as a Sizzle context
+ * Checks a node for validity as a jQuery selector context
  * @param {Element|Object=} context
  * @returns {Element|Object|Boolean} The input node if acceptable, otherwise a falsy value
  */
@@ -9853,31 +9698,13 @@ function testContext( context ) {
 	return context && typeof context.getElementsByTagName !== "undefined" && context;
 }
 
-// Expose support vars for convenience
-support = Sizzle.support = {};
-
-/**
- * Detects XML nodes
- * @param {Element|Object} elem An element or a document
- * @returns {Boolean} True iff elem is a non-HTML XML node
- */
-isXML = Sizzle.isXML = function( elem ) {
-	var namespace = elem && elem.namespaceURI,
-		docElem = elem && ( elem.ownerDocument || elem ).documentElement;
-
-	// Support: IE <=8
-	// Assume HTML when documentElement doesn't yet exist, such as inside loading iframes
-	// https://bugs.jquery.com/ticket/4833
-	return !rhtml.test( namespace || docElem && docElem.nodeName || "HTML" );
-};
-
 /**
  * Sets document-related variables once based on the current document
- * @param {Element|Object} [doc] An element or document object to use to set the document
+ * @param {Element|Object} [node] An element or document object to use to set the document
  * @returns {Object} Returns the current document
  */
-setDocument = Sizzle.setDocument = function( node ) {
-	var hasCompare, subWindow,
+function setDocument( node ) {
+	var subWindow,
 		doc = node ? node.ownerDocument || node : preferredDoc;
 
 	// Return early if doc is invalid or already selected
@@ -9891,87 +9718,90 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 	// Update global variables
 	document = doc;
-	docElem = document.documentElement;
-	documentIsHTML = !isXML( document );
+	documentElement = document.documentElement;
+	documentIsHTML = !jQuery.isXMLDoc( document );
+
+	// Support: iOS 7 only, IE 9 - 11+
+	// Older browsers didn't support unprefixed `matches`.
+	matches = documentElement.matches ||
+		documentElement.webkitMatchesSelector ||
+		documentElement.msMatchesSelector;
 
 	// Support: IE 9 - 11+, Edge 12 - 18+
-	// Accessing iframe documents after unload throws "permission denied" errors (jQuery #13936)
-	// Support: IE 11+, Edge 17 - 18+
-	// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
-	// two documents; shallow comparisons work.
-	// eslint-disable-next-line eqeqeq
-	if ( preferredDoc != document &&
+	// Accessing iframe documents after unload throws "permission denied" errors
+	// (see trac-13936).
+	// Limit the fix to IE & Edge Legacy; despite Edge 15+ implementing `matches`,
+	// all IE 9+ and Edge Legacy versions implement `msMatchesSelector` as well.
+	if ( documentElement.msMatchesSelector &&
+
+		// Support: IE 11+, Edge 17 - 18+
+		// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
+		// two documents; shallow comparisons work.
+		// eslint-disable-next-line eqeqeq
+		preferredDoc != document &&
 		( subWindow = document.defaultView ) && subWindow.top !== subWindow ) {
 
-		// Support: IE 11, Edge
-		if ( subWindow.addEventListener ) {
-			subWindow.addEventListener( "unload", unloadHandler, false );
-
-		// Support: IE 9 - 10 only
-		} else if ( subWindow.attachEvent ) {
-			subWindow.attachEvent( "onunload", unloadHandler );
-		}
+		// Support: IE 9 - 11+, Edge 12 - 18+
+		subWindow.addEventListener( "unload", unloadHandler );
 	}
 
-	// Support: IE 8 - 11+, Edge 12 - 18+, Chrome <=16 - 25 only, Firefox <=3.6 - 31 only,
-	// Safari 4 - 5 only, Opera <=11.6 - 12.x only
-	// IE/Edge & older browsers don't support the :scope pseudo-class.
-	// Support: Safari 6.0 only
-	// Safari 6.0 supports :scope but it's an alias of :root there.
-	support.scope = assert( function( el ) {
-		docElem.appendChild( el ).appendChild( document.createElement( "div" ) );
-		return typeof el.querySelectorAll !== "undefined" &&
-			!el.querySelectorAll( ":scope fieldset div" ).length;
-	} );
-
-	/* Attributes
-	---------------------------------------------------------------------- */
-
-	// Support: IE<8
-	// Verify that getAttribute really returns attributes and not properties
-	// (excepting IE8 booleans)
-	support.attributes = assert( function( el ) {
-		el.className = "i";
-		return !el.getAttribute( "className" );
-	} );
-
-	/* getElement(s)By*
-	---------------------------------------------------------------------- */
-
-	// Check if getElementsByTagName("*") returns only elements
-	support.getElementsByTagName = assert( function( el ) {
-		el.appendChild( document.createComment( "" ) );
-		return !el.getElementsByTagName( "*" ).length;
-	} );
-
-	// Support: IE<9
-	support.getElementsByClassName = rnative.test( document.getElementsByClassName );
-
-	// Support: IE<10
+	// Support: IE <10
 	// Check if getElementById returns elements by name
 	// The broken getElementById methods don't pick up programmatically-set names,
 	// so use a roundabout getElementsByName test
 	support.getById = assert( function( el ) {
-		docElem.appendChild( el ).id = expando;
-		return !document.getElementsByName || !document.getElementsByName( expando ).length;
+		documentElement.appendChild( el ).id = jQuery.expando;
+		return !document.getElementsByName ||
+			!document.getElementsByName( jQuery.expando ).length;
+	} );
+
+	// Support: IE 9 only
+	// Check to see if it's possible to do matchesSelector
+	// on a disconnected node.
+	support.disconnectedMatch = assert( function( el ) {
+		return matches.call( el, "*" );
+	} );
+
+	// Support: IE 9 - 11+, Edge 12 - 18+
+	// IE/Edge don't support the :scope pseudo-class.
+	support.scope = assert( function() {
+		return document.querySelectorAll( ":scope" );
+	} );
+
+	// Support: Chrome 105 - 111 only, Safari 15.4 - 16.3 only
+	// Make sure the `:has()` argument is parsed unforgivingly.
+	// We include `*` in the test to detect buggy implementations that are
+	// _selectively_ forgiving (specifically when the list includes at least
+	// one valid selector).
+	// Note that we treat complete lack of support for `:has()` as if it were
+	// spec-compliant support, which is fine because use of `:has()` in such
+	// environments will fail in the qSA path and fall back to jQuery traversal
+	// anyway.
+	support.cssHas = assert( function() {
+		try {
+			document.querySelector( ":has(*,:jqfake)" );
+			return false;
+		} catch ( e ) {
+			return true;
+		}
 	} );
 
 	// ID filter and find
 	if ( support.getById ) {
-		Expr.filter[ "ID" ] = function( id ) {
+		Expr.filter.ID = function( id ) {
 			var attrId = id.replace( runescape, funescape );
 			return function( elem ) {
 				return elem.getAttribute( "id" ) === attrId;
 			};
 		};
-		Expr.find[ "ID" ] = function( id, context ) {
+		Expr.find.ID = function( id, context ) {
 			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
 				var elem = context.getElementById( id );
 				return elem ? [ elem ] : [];
 			}
 		};
 	} else {
-		Expr.filter[ "ID" ] =  function( id ) {
+		Expr.filter.ID =  function( id ) {
 			var attrId = id.replace( runescape, funescape );
 			return function( elem ) {
 				var node = typeof elem.getAttributeNode !== "undefined" &&
@@ -9982,7 +9812,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 		// Support: IE 6 - 7 only
 		// getElementById is not reliable as a find shortcut
-		Expr.find[ "ID" ] = function( id, context ) {
+		Expr.find.ID = function( id, context ) {
 			if ( typeof context.getElementById !== "undefined" && documentIsHTML ) {
 				var node, i, elems,
 					elem = context.getElementById( id );
@@ -10012,40 +9842,18 @@ setDocument = Sizzle.setDocument = function( node ) {
 	}
 
 	// Tag
-	Expr.find[ "TAG" ] = support.getElementsByTagName ?
-		function( tag, context ) {
-			if ( typeof context.getElementsByTagName !== "undefined" ) {
-				return context.getElementsByTagName( tag );
+	Expr.find.TAG = function( tag, context ) {
+		if ( typeof context.getElementsByTagName !== "undefined" ) {
+			return context.getElementsByTagName( tag );
 
-			// DocumentFragment nodes don't have gEBTN
-			} else if ( support.qsa ) {
-				return context.querySelectorAll( tag );
-			}
-		} :
-
-		function( tag, context ) {
-			var elem,
-				tmp = [],
-				i = 0,
-
-				// By happy coincidence, a (broken) gEBTN appears on DocumentFragment nodes too
-				results = context.getElementsByTagName( tag );
-
-			// Filter out possible comments
-			if ( tag === "*" ) {
-				while ( ( elem = results[ i++ ] ) ) {
-					if ( elem.nodeType === 1 ) {
-						tmp.push( elem );
-					}
-				}
-
-				return tmp;
-			}
-			return results;
-		};
+		// DocumentFragment nodes don't have gEBTN
+		} else {
+			return context.querySelectorAll( tag );
+		}
+	};
 
 	// Class
-	Expr.find[ "CLASS" ] = support.getElementsByClassName && function( className, context ) {
+	Expr.find.CLASS = function( className, context ) {
 		if ( typeof context.getElementsByClassName !== "undefined" && documentIsHTML ) {
 			return context.getElementsByClassName( className );
 		}
@@ -10056,177 +9864,94 @@ setDocument = Sizzle.setDocument = function( node ) {
 
 	// QSA and matchesSelector support
 
-	// matchesSelector(:active) reports false when true (IE9/Opera 11.5)
-	rbuggyMatches = [];
-
-	// qSa(:focus) reports false when true (Chrome 21)
-	// We allow this because of a bug in IE8/9 that throws an error
-	// whenever `document.activeElement` is accessed on an iframe
-	// So, we allow :focus to pass through QSA all the time to avoid the IE error
-	// See https://bugs.jquery.com/ticket/13378
 	rbuggyQSA = [];
 
-	if ( ( support.qsa = rnative.test( document.querySelectorAll ) ) ) {
+	// Build QSA regex
+	// Regex strategy adopted from Diego Perini
+	assert( function( el ) {
 
-		// Build QSA regex
-		// Regex strategy adopted from Diego Perini
-		assert( function( el ) {
+		var input;
 
-			var input;
+		documentElement.appendChild( el ).innerHTML =
+			"<a id='" + expando + "' href='' disabled='disabled'></a>" +
+			"<select id='" + expando + "-\r\\' disabled='disabled'>" +
+			"<option selected=''></option></select>";
 
-			// Select is set to empty string on purpose
-			// This is to test IE's treatment of not explicitly
-			// setting a boolean content attribute,
-			// since its presence should be enough
-			// https://bugs.jquery.com/ticket/12359
-			docElem.appendChild( el ).innerHTML = "<a id='" + expando + "'></a>" +
-				"<select id='" + expando + "-\r\\' msallowcapture=''>" +
-				"<option selected=''></option></select>";
+		// Support: iOS <=7 - 8 only
+		// Boolean attributes and "value" are not treated correctly in some XML documents
+		if ( !el.querySelectorAll( "[selected]" ).length ) {
+			rbuggyQSA.push( "\\[" + whitespace + "*(?:value|" + booleans + ")" );
+		}
 
-			// Support: IE8, Opera 11-12.16
-			// Nothing should be selected when empty strings follow ^= or $= or *=
-			// The test attribute must be unknown in Opera but "safe" for WinRT
-			// https://msdn.microsoft.com/en-us/library/ie/hh465388.aspx#attribute_section
-			if ( el.querySelectorAll( "[msallowcapture^='']" ).length ) {
-				rbuggyQSA.push( "[*^$]=" + whitespace + "*(?:''|\"\")" );
-			}
+		// Support: iOS <=7 - 8 only
+		if ( !el.querySelectorAll( "[id~=" + expando + "-]" ).length ) {
+			rbuggyQSA.push( "~=" );
+		}
 
-			// Support: IE8
-			// Boolean attributes and "value" are not treated correctly
-			if ( !el.querySelectorAll( "[selected]" ).length ) {
-				rbuggyQSA.push( "\\[" + whitespace + "*(?:value|" + booleans + ")" );
-			}
+		// Support: iOS 8 only
+		// https://bugs.webkit.org/show_bug.cgi?id=136851
+		// In-page `selector#id sibling-combinator selector` fails
+		if ( !el.querySelectorAll( "a#" + expando + "+*" ).length ) {
+			rbuggyQSA.push( ".#.+[+~]" );
+		}
 
-			// Support: Chrome<29, Android<4.4, Safari<7.0+, iOS<7.0+, PhantomJS<1.9.8+
-			if ( !el.querySelectorAll( "[id~=" + expando + "-]" ).length ) {
-				rbuggyQSA.push( "~=" );
-			}
+		// Support: Chrome <=105+, Firefox <=104+, Safari <=15.4+
+		// In some of the document kinds, these selectors wouldn't work natively.
+		// This is probably OK but for backwards compatibility we want to maintain
+		// handling them through jQuery traversal in jQuery 3.x.
+		if ( !el.querySelectorAll( ":checked" ).length ) {
+			rbuggyQSA.push( ":checked" );
+		}
 
-			// Support: IE 11+, Edge 15 - 18+
-			// IE 11/Edge don't find elements on a `[name='']` query in some cases.
-			// Adding a temporary attribute to the document before the selection works
-			// around the issue.
-			// Interestingly, IE 10 & older don't seem to have the issue.
-			input = document.createElement( "input" );
-			input.setAttribute( "name", "" );
-			el.appendChild( input );
-			if ( !el.querySelectorAll( "[name='']" ).length ) {
-				rbuggyQSA.push( "\\[" + whitespace + "*name" + whitespace + "*=" +
-					whitespace + "*(?:''|\"\")" );
-			}
+		// Support: Windows 8 Native Apps
+		// The type and name attributes are restricted during .innerHTML assignment
+		input = document.createElement( "input" );
+		input.setAttribute( "type", "hidden" );
+		el.appendChild( input ).setAttribute( "name", "D" );
 
-			// Webkit/Opera - :checked should return selected option elements
-			// http://www.w3.org/TR/2011/REC-css3-selectors-20110929/#checked
-			// IE8 throws error here and will not see later tests
-			if ( !el.querySelectorAll( ":checked" ).length ) {
-				rbuggyQSA.push( ":checked" );
-			}
+		// Support: IE 9 - 11+
+		// IE's :disabled selector does not pick up the children of disabled fieldsets
+		// Support: Chrome <=105+, Firefox <=104+, Safari <=15.4+
+		// In some of the document kinds, these selectors wouldn't work natively.
+		// This is probably OK but for backwards compatibility we want to maintain
+		// handling them through jQuery traversal in jQuery 3.x.
+		documentElement.appendChild( el ).disabled = true;
+		if ( el.querySelectorAll( ":disabled" ).length !== 2 ) {
+			rbuggyQSA.push( ":enabled", ":disabled" );
+		}
 
-			// Support: Safari 8+, iOS 8+
-			// https://bugs.webkit.org/show_bug.cgi?id=136851
-			// In-page `selector#id sibling-combinator selector` fails
-			if ( !el.querySelectorAll( "a#" + expando + "+*" ).length ) {
-				rbuggyQSA.push( ".#.+[+~]" );
-			}
+		// Support: IE 11+, Edge 15 - 18+
+		// IE 11/Edge don't find elements on a `[name='']` query in some cases.
+		// Adding a temporary attribute to the document before the selection works
+		// around the issue.
+		// Interestingly, IE 10 & older don't seem to have the issue.
+		input = document.createElement( "input" );
+		input.setAttribute( "name", "" );
+		el.appendChild( input );
+		if ( !el.querySelectorAll( "[name='']" ).length ) {
+			rbuggyQSA.push( "\\[" + whitespace + "*name" + whitespace + "*=" +
+				whitespace + "*(?:''|\"\")" );
+		}
+	} );
 
-			// Support: Firefox <=3.6 - 5 only
-			// Old Firefox doesn't throw on a badly-escaped identifier.
-			el.querySelectorAll( "\\\f" );
-			rbuggyQSA.push( "[\\r\\n\\f]" );
-		} );
+	if ( !support.cssHas ) {
 
-		assert( function( el ) {
-			el.innerHTML = "<a href='' disabled='disabled'></a>" +
-				"<select disabled='disabled'><option/></select>";
-
-			// Support: Windows 8 Native Apps
-			// The type and name attributes are restricted during .innerHTML assignment
-			var input = document.createElement( "input" );
-			input.setAttribute( "type", "hidden" );
-			el.appendChild( input ).setAttribute( "name", "D" );
-
-			// Support: IE8
-			// Enforce case-sensitivity of name attribute
-			if ( el.querySelectorAll( "[name=d]" ).length ) {
-				rbuggyQSA.push( "name" + whitespace + "*[*^$|!~]?=" );
-			}
-
-			// FF 3.5 - :enabled/:disabled and hidden elements (hidden elements are still enabled)
-			// IE8 throws error here and will not see later tests
-			if ( el.querySelectorAll( ":enabled" ).length !== 2 ) {
-				rbuggyQSA.push( ":enabled", ":disabled" );
-			}
-
-			// Support: IE9-11+
-			// IE's :disabled selector does not pick up the children of disabled fieldsets
-			docElem.appendChild( el ).disabled = true;
-			if ( el.querySelectorAll( ":disabled" ).length !== 2 ) {
-				rbuggyQSA.push( ":enabled", ":disabled" );
-			}
-
-			// Support: Opera 10 - 11 only
-			// Opera 10-11 does not throw on post-comma invalid pseudos
-			el.querySelectorAll( "*,:x" );
-			rbuggyQSA.push( ",.*:" );
-		} );
-	}
-
-	if ( ( support.matchesSelector = rnative.test( ( matches = docElem.matches ||
-		docElem.webkitMatchesSelector ||
-		docElem.mozMatchesSelector ||
-		docElem.oMatchesSelector ||
-		docElem.msMatchesSelector ) ) ) ) {
-
-		assert( function( el ) {
-
-			// Check to see if it's possible to do matchesSelector
-			// on a disconnected node (IE 9)
-			support.disconnectedMatch = matches.call( el, "*" );
-
-			// This should fail with an exception
-			// Gecko does not error, returns false instead
-			matches.call( el, "[s!='']:x" );
-			rbuggyMatches.push( "!=", pseudos );
-		} );
+		// Support: Chrome 105 - 110+, Safari 15.4 - 16.3+
+		// Our regular `try-catch` mechanism fails to detect natively-unsupported
+		// pseudo-classes inside `:has()` (such as `:has(:contains("Foo"))`)
+		// in browsers that parse the `:has()` argument as a forgiving selector list.
+		// https://drafts.csswg.org/selectors/#relational now requires the argument
+		// to be parsed unforgivingly, but browsers have not yet fully adjusted.
+		rbuggyQSA.push( ":has" );
 	}
 
 	rbuggyQSA = rbuggyQSA.length && new RegExp( rbuggyQSA.join( "|" ) );
-	rbuggyMatches = rbuggyMatches.length && new RegExp( rbuggyMatches.join( "|" ) );
-
-	/* Contains
-	---------------------------------------------------------------------- */
-	hasCompare = rnative.test( docElem.compareDocumentPosition );
-
-	// Element contains another
-	// Purposefully self-exclusive
-	// As in, an element does not contain itself
-	contains = hasCompare || rnative.test( docElem.contains ) ?
-		function( a, b ) {
-			var adown = a.nodeType === 9 ? a.documentElement : a,
-				bup = b && b.parentNode;
-			return a === bup || !!( bup && bup.nodeType === 1 && (
-				adown.contains ?
-					adown.contains( bup ) :
-					a.compareDocumentPosition && a.compareDocumentPosition( bup ) & 16
-			) );
-		} :
-		function( a, b ) {
-			if ( b ) {
-				while ( ( b = b.parentNode ) ) {
-					if ( b === a ) {
-						return true;
-					}
-				}
-			}
-			return false;
-		};
 
 	/* Sorting
 	---------------------------------------------------------------------- */
 
 	// Document order sorting
-	sortOrder = hasCompare ?
-	function( a, b ) {
+	sortOrder = function( a, b ) {
 
 		// Flag for duplicate removal
 		if ( a === b ) {
@@ -10260,8 +9985,8 @@ setDocument = Sizzle.setDocument = function( node ) {
 			// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
 			// two documents; shallow comparisons work.
 			// eslint-disable-next-line eqeqeq
-			if ( a == document || a.ownerDocument == preferredDoc &&
-				contains( preferredDoc, a ) ) {
+			if ( a === document || a.ownerDocument == preferredDoc &&
+				find.contains( preferredDoc, a ) ) {
 				return -1;
 			}
 
@@ -10269,100 +9994,33 @@ setDocument = Sizzle.setDocument = function( node ) {
 			// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
 			// two documents; shallow comparisons work.
 			// eslint-disable-next-line eqeqeq
-			if ( b == document || b.ownerDocument == preferredDoc &&
-				contains( preferredDoc, b ) ) {
+			if ( b === document || b.ownerDocument == preferredDoc &&
+				find.contains( preferredDoc, b ) ) {
 				return 1;
 			}
 
 			// Maintain original order
 			return sortInput ?
-				( indexOf( sortInput, a ) - indexOf( sortInput, b ) ) :
+				( indexOf.call( sortInput, a ) - indexOf.call( sortInput, b ) ) :
 				0;
 		}
 
 		return compare & 4 ? -1 : 1;
-	} :
-	function( a, b ) {
-
-		// Exit early if the nodes are identical
-		if ( a === b ) {
-			hasDuplicate = true;
-			return 0;
-		}
-
-		var cur,
-			i = 0,
-			aup = a.parentNode,
-			bup = b.parentNode,
-			ap = [ a ],
-			bp = [ b ];
-
-		// Parentless nodes are either documents or disconnected
-		if ( !aup || !bup ) {
-
-			// Support: IE 11+, Edge 17 - 18+
-			// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
-			// two documents; shallow comparisons work.
-			/* eslint-disable eqeqeq */
-			return a == document ? -1 :
-				b == document ? 1 :
-				/* eslint-enable eqeqeq */
-				aup ? -1 :
-				bup ? 1 :
-				sortInput ?
-				( indexOf( sortInput, a ) - indexOf( sortInput, b ) ) :
-				0;
-
-		// If the nodes are siblings, we can do a quick check
-		} else if ( aup === bup ) {
-			return siblingCheck( a, b );
-		}
-
-		// Otherwise we need full lists of their ancestors for comparison
-		cur = a;
-		while ( ( cur = cur.parentNode ) ) {
-			ap.unshift( cur );
-		}
-		cur = b;
-		while ( ( cur = cur.parentNode ) ) {
-			bp.unshift( cur );
-		}
-
-		// Walk down the tree looking for a discrepancy
-		while ( ap[ i ] === bp[ i ] ) {
-			i++;
-		}
-
-		return i ?
-
-			// Do a sibling check if the nodes have a common ancestor
-			siblingCheck( ap[ i ], bp[ i ] ) :
-
-			// Otherwise nodes in our document sort first
-			// Support: IE 11+, Edge 17 - 18+
-			// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
-			// two documents; shallow comparisons work.
-			/* eslint-disable eqeqeq */
-			ap[ i ] == preferredDoc ? -1 :
-			bp[ i ] == preferredDoc ? 1 :
-			/* eslint-enable eqeqeq */
-			0;
 	};
 
 	return document;
+}
+
+find.matches = function( expr, elements ) {
+	return find( expr, null, null, elements );
 };
 
-Sizzle.matches = function( expr, elements ) {
-	return Sizzle( expr, null, null, elements );
-};
-
-Sizzle.matchesSelector = function( elem, expr ) {
+find.matchesSelector = function( elem, expr ) {
 	setDocument( elem );
 
-	if ( support.matchesSelector && documentIsHTML &&
+	if ( documentIsHTML &&
 		!nonnativeSelectorCache[ expr + " " ] &&
-		( !rbuggyMatches || !rbuggyMatches.test( expr ) ) &&
-		( !rbuggyQSA     || !rbuggyQSA.test( expr ) ) ) {
+		( !rbuggyQSA || !rbuggyQSA.test( expr ) ) ) {
 
 		try {
 			var ret = matches.call( elem, expr );
@@ -10370,9 +10028,9 @@ Sizzle.matchesSelector = function( elem, expr ) {
 			// IE 9's matchesSelector returns false on disconnected nodes
 			if ( ret || support.disconnectedMatch ||
 
-				// As well, disconnected nodes are said to be in a document
-				// fragment in IE 9
-				elem.document && elem.document.nodeType !== 11 ) {
+					// As well, disconnected nodes are said to be in a document
+					// fragment in IE 9
+					elem.document && elem.document.nodeType !== 11 ) {
 				return ret;
 			}
 		} catch ( e ) {
@@ -10380,10 +10038,10 @@ Sizzle.matchesSelector = function( elem, expr ) {
 		}
 	}
 
-	return Sizzle( expr, document, null, [ elem ] ).length > 0;
+	return find( expr, document, null, [ elem ] ).length > 0;
 };
 
-Sizzle.contains = function( context, elem ) {
+find.contains = function( context, elem ) {
 
 	// Set document vars if needed
 	// Support: IE 11+, Edge 17 - 18+
@@ -10393,10 +10051,11 @@ Sizzle.contains = function( context, elem ) {
 	if ( ( context.ownerDocument || context ) != document ) {
 		setDocument( context );
 	}
-	return contains( context, elem );
+	return jQuery.contains( context, elem );
 };
 
-Sizzle.attr = function( elem, name ) {
+
+find.attr = function( elem, name ) {
 
 	// Set document vars if needed
 	// Support: IE 11+, Edge 17 - 18+
@@ -10409,25 +10068,19 @@ Sizzle.attr = function( elem, name ) {
 
 	var fn = Expr.attrHandle[ name.toLowerCase() ],
 
-		// Don't get fooled by Object.prototype properties (jQuery #13807)
+		// Don't get fooled by Object.prototype properties (see trac-13807)
 		val = fn && hasOwn.call( Expr.attrHandle, name.toLowerCase() ) ?
 			fn( elem, name, !documentIsHTML ) :
 			undefined;
 
-	return val !== undefined ?
-		val :
-		support.attributes || !documentIsHTML ?
-			elem.getAttribute( name ) :
-			( val = elem.getAttributeNode( name ) ) && val.specified ?
-				val.value :
-				null;
+	if ( val !== undefined ) {
+		return val;
+	}
+
+	return elem.getAttribute( name );
 };
 
-Sizzle.escape = function( sel ) {
-	return ( sel + "" ).replace( rcssescape, fcssescape );
-};
-
-Sizzle.error = function( msg ) {
+find.error = function( msg ) {
 	throw new Error( "Syntax error, unrecognized expression: " + msg );
 };
 
@@ -10435,16 +10088,20 @@ Sizzle.error = function( msg ) {
  * Document sorting and removing duplicates
  * @param {ArrayLike} results
  */
-Sizzle.uniqueSort = function( results ) {
+jQuery.uniqueSort = function( results ) {
 	var elem,
 		duplicates = [],
 		j = 0,
 		i = 0;
 
 	// Unless we *know* we can detect duplicates, assume their presence
-	hasDuplicate = !support.detectDuplicates;
-	sortInput = !support.sortStable && results.slice( 0 );
-	results.sort( sortOrder );
+	//
+	// Support: Android <=4.0+
+	// Testing for detecting duplicates is unpredictable so instead assume we can't
+	// depend on duplicate detection in all browsers without a stable sort.
+	hasDuplicate = !support.sortStable;
+	sortInput = !support.sortStable && slice.call( results, 0 );
+	sort.call( results, sortOrder );
 
 	if ( hasDuplicate ) {
 		while ( ( elem = results[ i++ ] ) ) {
@@ -10453,7 +10110,7 @@ Sizzle.uniqueSort = function( results ) {
 			}
 		}
 		while ( j-- ) {
-			results.splice( duplicates[ j ], 1 );
+			splice.call( results, duplicates[ j ], 1 );
 		}
 	}
 
@@ -10464,47 +10121,11 @@ Sizzle.uniqueSort = function( results ) {
 	return results;
 };
 
-/**
- * Utility function for retrieving the text value of an array of DOM nodes
- * @param {Array|Element} elem
- */
-getText = Sizzle.getText = function( elem ) {
-	var node,
-		ret = "",
-		i = 0,
-		nodeType = elem.nodeType;
-
-	if ( !nodeType ) {
-
-		// If no nodeType, this is expected to be an array
-		while ( ( node = elem[ i++ ] ) ) {
-
-			// Do not traverse comment nodes
-			ret += getText( node );
-		}
-	} else if ( nodeType === 1 || nodeType === 9 || nodeType === 11 ) {
-
-		// Use textContent for elements
-		// innerText usage removed for consistency of new lines (jQuery #11153)
-		if ( typeof elem.textContent === "string" ) {
-			return elem.textContent;
-		} else {
-
-			// Traverse its children
-			for ( elem = elem.firstChild; elem; elem = elem.nextSibling ) {
-				ret += getText( elem );
-			}
-		}
-	} else if ( nodeType === 3 || nodeType === 4 ) {
-		return elem.nodeValue;
-	}
-
-	// Do not include comment or processing instruction nodes
-
-	return ret;
+jQuery.fn.uniqueSort = function() {
+	return this.pushStack( jQuery.uniqueSort( slice.apply( this ) ) );
 };
 
-Expr = Sizzle.selectors = {
+Expr = jQuery.expr = {
 
 	// Can be adjusted by the user
 	cacheLength: 50,
@@ -10525,12 +10146,12 @@ Expr = Sizzle.selectors = {
 	},
 
 	preFilter: {
-		"ATTR": function( match ) {
+		ATTR: function( match ) {
 			match[ 1 ] = match[ 1 ].replace( runescape, funescape );
 
 			// Move the given value to match[3] whether quoted or unquoted
-			match[ 3 ] = ( match[ 3 ] || match[ 4 ] ||
-				match[ 5 ] || "" ).replace( runescape, funescape );
+			match[ 3 ] = ( match[ 3 ] || match[ 4 ] || match[ 5 ] || "" )
+				.replace( runescape, funescape );
 
 			if ( match[ 2 ] === "~=" ) {
 				match[ 3 ] = " " + match[ 3 ] + " ";
@@ -10539,7 +10160,7 @@ Expr = Sizzle.selectors = {
 			return match.slice( 0, 4 );
 		},
 
-		"CHILD": function( match ) {
+		CHILD: function( match ) {
 
 			/* matches from matchExpr["CHILD"]
 				1 type (only|nth|...)
@@ -10557,29 +10178,30 @@ Expr = Sizzle.selectors = {
 
 				// nth-* requires argument
 				if ( !match[ 3 ] ) {
-					Sizzle.error( match[ 0 ] );
+					find.error( match[ 0 ] );
 				}
 
 				// numeric x and y parameters for Expr.filter.CHILD
 				// remember that false/true cast respectively to 0/1
 				match[ 4 ] = +( match[ 4 ] ?
 					match[ 5 ] + ( match[ 6 ] || 1 ) :
-					2 * ( match[ 3 ] === "even" || match[ 3 ] === "odd" ) );
+					2 * ( match[ 3 ] === "even" || match[ 3 ] === "odd" )
+				);
 				match[ 5 ] = +( ( match[ 7 ] + match[ 8 ] ) || match[ 3 ] === "odd" );
 
-				// other types prohibit arguments
+			// other types prohibit arguments
 			} else if ( match[ 3 ] ) {
-				Sizzle.error( match[ 0 ] );
+				find.error( match[ 0 ] );
 			}
 
 			return match;
 		},
 
-		"PSEUDO": function( match ) {
+		PSEUDO: function( match ) {
 			var excess,
 				unquoted = !match[ 6 ] && match[ 2 ];
 
-			if ( matchExpr[ "CHILD" ].test( match[ 0 ] ) ) {
+			if ( matchExpr.CHILD.test( match[ 0 ] ) ) {
 				return null;
 			}
 
@@ -10608,36 +10230,36 @@ Expr = Sizzle.selectors = {
 
 	filter: {
 
-		"TAG": function( nodeNameSelector ) {
-			var nodeName = nodeNameSelector.replace( runescape, funescape ).toLowerCase();
+		TAG: function( nodeNameSelector ) {
+			var expectedNodeName = nodeNameSelector.replace( runescape, funescape ).toLowerCase();
 			return nodeNameSelector === "*" ?
 				function() {
 					return true;
 				} :
 				function( elem ) {
-					return elem.nodeName && elem.nodeName.toLowerCase() === nodeName;
+					return nodeName( elem, expectedNodeName );
 				};
 		},
 
-		"CLASS": function( className ) {
+		CLASS: function( className ) {
 			var pattern = classCache[ className + " " ];
 
 			return pattern ||
-				( pattern = new RegExp( "(^|" + whitespace +
-					")" + className + "(" + whitespace + "|$)" ) ) && classCache(
-						className, function( elem ) {
-							return pattern.test(
-								typeof elem.className === "string" && elem.className ||
-								typeof elem.getAttribute !== "undefined" &&
-									elem.getAttribute( "class" ) ||
-								""
-							);
+				( pattern = new RegExp( "(^|" + whitespace + ")" + className +
+					"(" + whitespace + "|$)" ) ) &&
+				classCache( className, function( elem ) {
+					return pattern.test(
+						typeof elem.className === "string" && elem.className ||
+							typeof elem.getAttribute !== "undefined" &&
+								elem.getAttribute( "class" ) ||
+							""
+					);
 				} );
 		},
 
-		"ATTR": function( name, operator, check ) {
+		ATTR: function( name, operator, check ) {
 			return function( elem ) {
-				var result = Sizzle.attr( elem, name );
+				var result = find.attr( elem, name );
 
 				if ( result == null ) {
 					return operator === "!=";
@@ -10648,22 +10270,34 @@ Expr = Sizzle.selectors = {
 
 				result += "";
 
-				/* eslint-disable max-len */
+				if ( operator === "=" ) {
+					return result === check;
+				}
+				if ( operator === "!=" ) {
+					return result !== check;
+				}
+				if ( operator === "^=" ) {
+					return check && result.indexOf( check ) === 0;
+				}
+				if ( operator === "*=" ) {
+					return check && result.indexOf( check ) > -1;
+				}
+				if ( operator === "$=" ) {
+					return check && result.slice( -check.length ) === check;
+				}
+				if ( operator === "~=" ) {
+					return ( " " + result.replace( rwhitespace, " " ) + " " )
+						.indexOf( check ) > -1;
+				}
+				if ( operator === "|=" ) {
+					return result === check || result.slice( 0, check.length + 1 ) === check + "-";
+				}
 
-				return operator === "=" ? result === check :
-					operator === "!=" ? result !== check :
-					operator === "^=" ? check && result.indexOf( check ) === 0 :
-					operator === "*=" ? check && result.indexOf( check ) > -1 :
-					operator === "$=" ? check && result.slice( -check.length ) === check :
-					operator === "~=" ? ( " " + result.replace( rwhitespace, " " ) + " " ).indexOf( check ) > -1 :
-					operator === "|=" ? result === check || result.slice( 0, check.length + 1 ) === check + "-" :
-					false;
-				/* eslint-enable max-len */
-
+				return false;
 			};
 		},
 
-		"CHILD": function( type, what, _argument, first, last ) {
+		CHILD: function( type, what, _argument, first, last ) {
 			var simple = type.slice( 0, 3 ) !== "nth",
 				forward = type.slice( -4 ) !== "last",
 				ofType = what === "of-type";
@@ -10676,7 +10310,7 @@ Expr = Sizzle.selectors = {
 				} :
 
 				function( elem, _context, xml ) {
-					var cache, uniqueCache, outerCache, node, nodeIndex, start,
+					var cache, outerCache, node, nodeIndex, start,
 						dir = simple !== forward ? "nextSibling" : "previousSibling",
 						parent = elem.parentNode,
 						name = ofType && elem.nodeName.toLowerCase(),
@@ -10691,7 +10325,7 @@ Expr = Sizzle.selectors = {
 								node = elem;
 								while ( ( node = node[ dir ] ) ) {
 									if ( ofType ?
-										node.nodeName.toLowerCase() === name :
+										nodeName( node, name ) :
 										node.nodeType === 1 ) {
 
 										return false;
@@ -10710,17 +10344,8 @@ Expr = Sizzle.selectors = {
 						if ( forward && useCache ) {
 
 							// Seek `elem` from a previously-cached index
-
-							// ...in a gzip-friendly way
-							node = parent;
-							outerCache = node[ expando ] || ( node[ expando ] = {} );
-
-							// Support: IE <9 only
-							// Defend against cloned attroperties (jQuery gh-1709)
-							uniqueCache = outerCache[ node.uniqueID ] ||
-								( outerCache[ node.uniqueID ] = {} );
-
-							cache = uniqueCache[ type ] || [];
+							outerCache = parent[ expando ] || ( parent[ expando ] = {} );
+							cache = outerCache[ type ] || [];
 							nodeIndex = cache[ 0 ] === dirruns && cache[ 1 ];
 							diff = nodeIndex && cache[ 2 ];
 							node = nodeIndex && parent.childNodes[ nodeIndex ];
@@ -10732,7 +10357,7 @@ Expr = Sizzle.selectors = {
 
 								// When found, cache indexes on `parent` and break
 								if ( node.nodeType === 1 && ++diff && node === elem ) {
-									uniqueCache[ type ] = [ dirruns, nodeIndex, diff ];
+									outerCache[ type ] = [ dirruns, nodeIndex, diff ];
 									break;
 								}
 							}
@@ -10741,17 +10366,8 @@ Expr = Sizzle.selectors = {
 
 							// Use previously-cached element index if available
 							if ( useCache ) {
-
-								// ...in a gzip-friendly way
-								node = elem;
-								outerCache = node[ expando ] || ( node[ expando ] = {} );
-
-								// Support: IE <9 only
-								// Defend against cloned attroperties (jQuery gh-1709)
-								uniqueCache = outerCache[ node.uniqueID ] ||
-									( outerCache[ node.uniqueID ] = {} );
-
-								cache = uniqueCache[ type ] || [];
+								outerCache = elem[ expando ] || ( elem[ expando ] = {} );
+								cache = outerCache[ type ] || [];
 								nodeIndex = cache[ 0 ] === dirruns && cache[ 1 ];
 								diff = nodeIndex;
 							}
@@ -10765,7 +10381,7 @@ Expr = Sizzle.selectors = {
 									( diff = nodeIndex = 0 ) || start.pop() ) ) {
 
 									if ( ( ofType ?
-										node.nodeName.toLowerCase() === name :
+										nodeName( node, name ) :
 										node.nodeType === 1 ) &&
 										++diff ) {
 
@@ -10773,13 +10389,7 @@ Expr = Sizzle.selectors = {
 										if ( useCache ) {
 											outerCache = node[ expando ] ||
 												( node[ expando ] = {} );
-
-											// Support: IE <9 only
-											// Defend against cloned attroperties (jQuery gh-1709)
-											uniqueCache = outerCache[ node.uniqueID ] ||
-												( outerCache[ node.uniqueID ] = {} );
-
-											uniqueCache[ type ] = [ dirruns, diff ];
+											outerCache[ type ] = [ dirruns, diff ];
 										}
 
 										if ( node === elem ) {
@@ -10797,19 +10407,19 @@ Expr = Sizzle.selectors = {
 				};
 		},
 
-		"PSEUDO": function( pseudo, argument ) {
+		PSEUDO: function( pseudo, argument ) {
 
 			// pseudo-class names are case-insensitive
-			// http://www.w3.org/TR/selectors/#pseudo-classes
+			// https://www.w3.org/TR/selectors/#pseudo-classes
 			// Prioritize by case sensitivity in case custom pseudos are added with uppercase letters
 			// Remember that setFilters inherits from pseudos
 			var args,
 				fn = Expr.pseudos[ pseudo ] || Expr.setFilters[ pseudo.toLowerCase() ] ||
-					Sizzle.error( "unsupported pseudo: " + pseudo );
+					find.error( "unsupported pseudo: " + pseudo );
 
 			// The user may use createPseudo to indicate that
 			// arguments are needed to create the filter function
-			// just as Sizzle does
+			// just as jQuery does
 			if ( fn[ expando ] ) {
 				return fn( argument );
 			}
@@ -10823,7 +10433,7 @@ Expr = Sizzle.selectors = {
 							matched = fn( seed, argument ),
 							i = matched.length;
 						while ( i-- ) {
-							idx = indexOf( seed, matched[ i ] );
+							idx = indexOf.call( seed, matched[ i ] );
 							seed[ idx ] = !( matches[ idx ] = matched[ i ] );
 						}
 					} ) :
@@ -10839,14 +10449,14 @@ Expr = Sizzle.selectors = {
 	pseudos: {
 
 		// Potentially complex pseudos
-		"not": markFunction( function( selector ) {
+		not: markFunction( function( selector ) {
 
 			// Trim the selector passed to compile
 			// to avoid treating leading and trailing
 			// spaces as combinators
 			var input = [],
 				results = [],
-				matcher = compile( selector.replace( rtrim, "$1" ) );
+				matcher = compile( selector.replace( rtrimCSS, "$1" ) );
 
 			return matcher[ expando ] ?
 				markFunction( function( seed, matches, _context, xml ) {
@@ -10865,22 +10475,23 @@ Expr = Sizzle.selectors = {
 					input[ 0 ] = elem;
 					matcher( input, null, xml, results );
 
-					// Don't keep the element (issue #299)
+					// Don't keep the element
+					// (see https://github.com/jquery/sizzle/issues/299)
 					input[ 0 ] = null;
 					return !results.pop();
 				};
 		} ),
 
-		"has": markFunction( function( selector ) {
+		has: markFunction( function( selector ) {
 			return function( elem ) {
-				return Sizzle( selector, elem ).length > 0;
+				return find( selector, elem ).length > 0;
 			};
 		} ),
 
-		"contains": markFunction( function( text ) {
+		contains: markFunction( function( text ) {
 			text = text.replace( runescape, funescape );
 			return function( elem ) {
-				return ( elem.textContent || getText( elem ) ).indexOf( text ) > -1;
+				return ( elem.textContent || jQuery.text( elem ) ).indexOf( text ) > -1;
 			};
 		} ),
 
@@ -10890,12 +10501,12 @@ Expr = Sizzle.selectors = {
 		// or beginning with the identifier C immediately followed by "-".
 		// The matching of C against the element's language value is performed case-insensitively.
 		// The identifier C does not have to be a valid language name."
-		// http://www.w3.org/TR/selectors/#lang-pseudo
-		"lang": markFunction( function( lang ) {
+		// https://www.w3.org/TR/selectors/#lang-pseudo
+		lang: markFunction( function( lang ) {
 
 			// lang value must be a valid identifier
 			if ( !ridentifier.test( lang || "" ) ) {
-				Sizzle.error( "unsupported lang: " + lang );
+				find.error( "unsupported lang: " + lang );
 			}
 			lang = lang.replace( runescape, funescape ).toLowerCase();
 			return function( elem ) {
@@ -10914,38 +10525,39 @@ Expr = Sizzle.selectors = {
 		} ),
 
 		// Miscellaneous
-		"target": function( elem ) {
+		target: function( elem ) {
 			var hash = window.location && window.location.hash;
 			return hash && hash.slice( 1 ) === elem.id;
 		},
 
-		"root": function( elem ) {
-			return elem === docElem;
+		root: function( elem ) {
+			return elem === documentElement;
 		},
 
-		"focus": function( elem ) {
-			return elem === document.activeElement &&
-				( !document.hasFocus || document.hasFocus() ) &&
+		focus: function( elem ) {
+			return elem === safeActiveElement() &&
+				document.hasFocus() &&
 				!!( elem.type || elem.href || ~elem.tabIndex );
 		},
 
 		// Boolean properties
-		"enabled": createDisabledPseudo( false ),
-		"disabled": createDisabledPseudo( true ),
+		enabled: createDisabledPseudo( false ),
+		disabled: createDisabledPseudo( true ),
 
-		"checked": function( elem ) {
+		checked: function( elem ) {
 
 			// In CSS3, :checked should return both checked and selected elements
-			// http://www.w3.org/TR/2011/REC-css3-selectors-20110929/#checked
-			var nodeName = elem.nodeName.toLowerCase();
-			return ( nodeName === "input" && !!elem.checked ) ||
-				( nodeName === "option" && !!elem.selected );
+			// https://www.w3.org/TR/2011/REC-css3-selectors-20110929/#checked
+			return ( nodeName( elem, "input" ) && !!elem.checked ) ||
+				( nodeName( elem, "option" ) && !!elem.selected );
 		},
 
-		"selected": function( elem ) {
+		selected: function( elem ) {
 
-			// Accessing this property makes selected-by-default
-			// options in Safari work properly
+			// Support: IE <=11+
+			// Accessing the selectedIndex property
+			// forces the browser to treat the default option as
+			// selected when in an optgroup.
 			if ( elem.parentNode ) {
 				// eslint-disable-next-line no-unused-expressions
 				elem.parentNode.selectedIndex;
@@ -10955,9 +10567,9 @@ Expr = Sizzle.selectors = {
 		},
 
 		// Contents
-		"empty": function( elem ) {
+		empty: function( elem ) {
 
-			// http://www.w3.org/TR/selectors/#empty-pseudo
+			// https://www.w3.org/TR/selectors/#empty-pseudo
 			// :empty is negated by element (1) or content nodes (text: 3; cdata: 4; entity ref: 5),
 			//   but not by others (comment: 8; processing instruction: 7; etc.)
 			// nodeType < 6 works because attributes (2) do not appear as children
@@ -10969,49 +10581,49 @@ Expr = Sizzle.selectors = {
 			return true;
 		},
 
-		"parent": function( elem ) {
-			return !Expr.pseudos[ "empty" ]( elem );
+		parent: function( elem ) {
+			return !Expr.pseudos.empty( elem );
 		},
 
 		// Element/input types
-		"header": function( elem ) {
+		header: function( elem ) {
 			return rheader.test( elem.nodeName );
 		},
 
-		"input": function( elem ) {
+		input: function( elem ) {
 			return rinputs.test( elem.nodeName );
 		},
 
-		"button": function( elem ) {
-			var name = elem.nodeName.toLowerCase();
-			return name === "input" && elem.type === "button" || name === "button";
+		button: function( elem ) {
+			return nodeName( elem, "input" ) && elem.type === "button" ||
+				nodeName( elem, "button" );
 		},
 
-		"text": function( elem ) {
+		text: function( elem ) {
 			var attr;
-			return elem.nodeName.toLowerCase() === "input" &&
-				elem.type === "text" &&
+			return nodeName( elem, "input" ) && elem.type === "text" &&
 
-				// Support: IE<8
-				// New HTML5 attribute values (e.g., "search") appear with elem.type === "text"
+				// Support: IE <10 only
+				// New HTML5 attribute values (e.g., "search") appear
+				// with elem.type === "text"
 				( ( attr = elem.getAttribute( "type" ) ) == null ||
 					attr.toLowerCase() === "text" );
 		},
 
 		// Position-in-collection
-		"first": createPositionalPseudo( function() {
+		first: createPositionalPseudo( function() {
 			return [ 0 ];
 		} ),
 
-		"last": createPositionalPseudo( function( _matchIndexes, length ) {
+		last: createPositionalPseudo( function( _matchIndexes, length ) {
 			return [ length - 1 ];
 		} ),
 
-		"eq": createPositionalPseudo( function( _matchIndexes, length, argument ) {
+		eq: createPositionalPseudo( function( _matchIndexes, length, argument ) {
 			return [ argument < 0 ? argument + length : argument ];
 		} ),
 
-		"even": createPositionalPseudo( function( matchIndexes, length ) {
+		even: createPositionalPseudo( function( matchIndexes, length ) {
 			var i = 0;
 			for ( ; i < length; i += 2 ) {
 				matchIndexes.push( i );
@@ -11019,7 +10631,7 @@ Expr = Sizzle.selectors = {
 			return matchIndexes;
 		} ),
 
-		"odd": createPositionalPseudo( function( matchIndexes, length ) {
+		odd: createPositionalPseudo( function( matchIndexes, length ) {
 			var i = 1;
 			for ( ; i < length; i += 2 ) {
 				matchIndexes.push( i );
@@ -11027,19 +10639,24 @@ Expr = Sizzle.selectors = {
 			return matchIndexes;
 		} ),
 
-		"lt": createPositionalPseudo( function( matchIndexes, length, argument ) {
-			var i = argument < 0 ?
-				argument + length :
-				argument > length ?
-					length :
-					argument;
+		lt: createPositionalPseudo( function( matchIndexes, length, argument ) {
+			var i;
+
+			if ( argument < 0 ) {
+				i = argument + length;
+			} else if ( argument > length ) {
+				i = length;
+			} else {
+				i = argument;
+			}
+
 			for ( ; --i >= 0; ) {
 				matchIndexes.push( i );
 			}
 			return matchIndexes;
 		} ),
 
-		"gt": createPositionalPseudo( function( matchIndexes, length, argument ) {
+		gt: createPositionalPseudo( function( matchIndexes, length, argument ) {
 			var i = argument < 0 ? argument + length : argument;
 			for ( ; ++i < length; ) {
 				matchIndexes.push( i );
@@ -11049,7 +10666,7 @@ Expr = Sizzle.selectors = {
 	}
 };
 
-Expr.pseudos[ "nth" ] = Expr.pseudos[ "eq" ];
+Expr.pseudos.nth = Expr.pseudos.eq;
 
 // Add button/input type pseudos
 for ( i in { radio: true, checkbox: true, file: true, password: true, image: true } ) {
@@ -11064,7 +10681,7 @@ function setFilters() {}
 setFilters.prototype = Expr.filters = Expr.pseudos;
 Expr.setFilters = new setFilters();
 
-tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
+function tokenize( selector, parseOnly ) {
 	var matched, match, tokens, type,
 		soFar, groups, preFilters,
 		cached = tokenCache[ selector + " " ];
@@ -11092,13 +10709,13 @@ tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 		matched = false;
 
 		// Combinators
-		if ( ( match = rcombinators.exec( soFar ) ) ) {
+		if ( ( match = rleadingCombinator.exec( soFar ) ) ) {
 			matched = match.shift();
 			tokens.push( {
 				value: matched,
 
 				// Cast descendant combinators to space
-				type: match[ 0 ].replace( rtrim, " " )
+				type: match[ 0 ].replace( rtrimCSS, " " )
 			} );
 			soFar = soFar.slice( matched.length );
 		}
@@ -11125,14 +10742,16 @@ tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 	// Return the length of the invalid excess
 	// if we're just parsing
 	// Otherwise, throw an error or return tokens
-	return parseOnly ?
-		soFar.length :
-		soFar ?
-			Sizzle.error( selector ) :
+	if ( parseOnly ) {
+		return soFar.length;
+	}
 
-			// Cache the tokens
-			tokenCache( selector, groups ).slice( 0 );
-};
+	return soFar ?
+		find.error( selector ) :
+
+		// Cache the tokens
+		tokenCache( selector, groups ).slice( 0 );
+}
 
 function toSelector( tokens ) {
 	var i = 0,
@@ -11165,7 +10784,7 @@ function addCombinator( matcher, combinator, base ) {
 
 		// Check against all ancestor/preceding elements
 		function( elem, context, xml ) {
-			var oldCache, uniqueCache, outerCache,
+			var oldCache, outerCache,
 				newCache = [ dirruns, doneName ];
 
 			// We can't set arbitrary data on XML nodes, so they don't benefit from combinator caching
@@ -11182,14 +10801,9 @@ function addCombinator( matcher, combinator, base ) {
 					if ( elem.nodeType === 1 || checkNonElements ) {
 						outerCache = elem[ expando ] || ( elem[ expando ] = {} );
 
-						// Support: IE <9 only
-						// Defend against cloned attroperties (jQuery gh-1709)
-						uniqueCache = outerCache[ elem.uniqueID ] ||
-							( outerCache[ elem.uniqueID ] = {} );
-
-						if ( skip && skip === elem.nodeName.toLowerCase() ) {
+						if ( skip && nodeName( elem, skip ) ) {
 							elem = elem[ dir ] || elem;
-						} else if ( ( oldCache = uniqueCache[ key ] ) &&
+						} else if ( ( oldCache = outerCache[ key ] ) &&
 							oldCache[ 0 ] === dirruns && oldCache[ 1 ] === doneName ) {
 
 							// Assign to newCache so results back-propagate to previous elements
@@ -11197,7 +10811,7 @@ function addCombinator( matcher, combinator, base ) {
 						} else {
 
 							// Reuse newcache so results back-propagate to previous elements
-							uniqueCache[ key ] = newCache;
+							outerCache[ key ] = newCache;
 
 							// A match means we're done; a fail means we have to keep checking
 							if ( ( newCache[ 2 ] = matcher( elem, context, xml ) ) ) {
@@ -11229,7 +10843,7 @@ function multipleContexts( selector, contexts, results ) {
 	var i = 0,
 		len = contexts.length;
 	for ( ; i < len; i++ ) {
-		Sizzle( selector, contexts[ i ], results );
+		find( selector, contexts[ i ], results );
 	}
 	return results;
 }
@@ -11263,38 +10877,37 @@ function setMatcher( preFilter, selector, matcher, postFilter, postFinder, postS
 		postFinder = setMatcher( postFinder, postSelector );
 	}
 	return markFunction( function( seed, results, context, xml ) {
-		var temp, i, elem,
+		var temp, i, elem, matcherOut,
 			preMap = [],
 			postMap = [],
 			preexisting = results.length,
 
 			// Get initial elements from seed or context
-			elems = seed || multipleContexts(
-				selector || "*",
-				context.nodeType ? [ context ] : context,
-				[]
-			),
+			elems = seed ||
+				multipleContexts( selector || "*",
+					context.nodeType ? [ context ] : context, [] ),
 
 			// Prefilter to get matcher input, preserving a map for seed-results synchronization
 			matcherIn = preFilter && ( seed || !selector ) ?
 				condense( elems, preMap, preFilter, context, xml ) :
-				elems,
+				elems;
 
-			matcherOut = matcher ?
-
-				// If we have a postFinder, or filtered seed, or non-seed postFilter or preexisting results,
-				postFinder || ( seed ? preFilter : preexisting || postFilter ) ?
-
-					// ...intermediate processing is necessary
-					[] :
-
-					// ...otherwise use results directly
-					results :
-				matcherIn;
-
-		// Find primary matches
 		if ( matcher ) {
+
+			// If we have a postFinder, or filtered seed, or non-seed postFilter
+			// or preexisting results,
+			matcherOut = postFinder || ( seed ? preFilter : preexisting || postFilter ) ?
+
+				// ...intermediate processing is necessary
+				[] :
+
+				// ...otherwise use results directly
+				results;
+
+			// Find primary matches
 			matcher( matcherIn, matcherOut, context, xml );
+		} else {
+			matcherOut = matcherIn;
 		}
 
 		// Apply postFilter
@@ -11332,7 +10945,7 @@ function setMatcher( preFilter, selector, matcher, postFilter, postFinder, postS
 				i = matcherOut.length;
 				while ( i-- ) {
 					if ( ( elem = matcherOut[ i ] ) &&
-						( temp = postFinder ? indexOf( seed, elem ) : preMap[ i ] ) > -1 ) {
+						( temp = postFinder ? indexOf.call( seed, elem ) : preMap[ i ] ) > -1 ) {
 
 						seed[ temp ] = !( results[ temp ] = elem );
 					}
@@ -11367,15 +10980,21 @@ function matcherFromTokens( tokens ) {
 			return elem === checkContext;
 		}, implicitRelative, true ),
 		matchAnyContext = addCombinator( function( elem ) {
-			return indexOf( checkContext, elem ) > -1;
+			return indexOf.call( checkContext, elem ) > -1;
 		}, implicitRelative, true ),
 		matchers = [ function( elem, context, xml ) {
-			var ret = ( !leadingRelative && ( xml || context !== outermostContext ) ) || (
+
+			// Support: IE 11+, Edge 17 - 18+
+			// IE/Edge sometimes throw a "Permission denied" error when strict-comparing
+			// two documents; shallow comparisons work.
+			// eslint-disable-next-line eqeqeq
+			var ret = ( !leadingRelative && ( xml || context != outermostContext ) ) || (
 				( checkContext = context ).nodeType ?
 					matchContext( elem, context, xml ) :
 					matchAnyContext( elem, context, xml ) );
 
-			// Avoid hanging onto element (issue #299)
+			// Avoid hanging onto element
+			// (see https://github.com/jquery/sizzle/issues/299)
 			checkContext = null;
 			return ret;
 		} ];
@@ -11400,11 +11019,10 @@ function matcherFromTokens( tokens ) {
 					i > 1 && elementMatcher( matchers ),
 					i > 1 && toSelector(
 
-					// If the preceding token was a descendant combinator, insert an implicit any-element `*`
-					tokens
-						.slice( 0, i - 1 )
-						.concat( { value: tokens[ i - 2 ].type === " " ? "*" : "" } )
-					).replace( rtrim, "$1" ),
+						// If the preceding token was a descendant combinator, insert an implicit any-element `*`
+						tokens.slice( 0, i - 1 )
+							.concat( { value: tokens[ i - 2 ].type === " " ? "*" : "" } )
+					).replace( rtrimCSS, "$1" ),
 					matcher,
 					i < j && matcherFromTokens( tokens.slice( i, j ) ),
 					j < len && matcherFromTokens( ( tokens = tokens.slice( j ) ) ),
@@ -11430,7 +11048,7 @@ function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
 				contextBackup = outermostContext,
 
 				// We must always have either seed elements or outermost context
-				elems = seed || byElement && Expr.find[ "TAG" ]( "*", outermost ),
+				elems = seed || byElement && Expr.find.TAG( "*", outermost ),
 
 				// Use integer dirruns iff this is the outermost matcher
 				dirrunsUnique = ( dirruns += contextBackup == null ? 1 : Math.random() || 0.1 ),
@@ -11446,8 +11064,9 @@ function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
 			}
 
 			// Add elements passing elementMatchers directly to results
-			// Support: IE<9, Safari
-			// Tolerate NodeList properties (IE: "length"; Safari: <number>) matching elements by id
+			// Support: iOS <=7 - 9 only
+			// Tolerate NodeList properties (IE: "length"; Safari: <number>) matching
+			// elements by id. (see trac-14142)
 			for ( ; i !== len && ( elem = elems[ i ] ) != null; i++ ) {
 				if ( byElement && elem ) {
 					j = 0;
@@ -11462,7 +11081,7 @@ function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
 					}
 					while ( ( matcher = elementMatchers[ j++ ] ) ) {
 						if ( matcher( elem, context || document, xml ) ) {
-							results.push( elem );
+							push.call( results, elem );
 							break;
 						}
 					}
@@ -11525,7 +11144,7 @@ function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
 				if ( outermost && !seed && setMatched.length > 0 &&
 					( matchedCount + setMatchers.length ) > 1 ) {
 
-					Sizzle.uniqueSort( results );
+					jQuery.uniqueSort( results );
 				}
 			}
 
@@ -11543,7 +11162,7 @@ function matcherFromGroupMatchers( elementMatchers, setMatchers ) {
 		superMatcher;
 }
 
-compile = Sizzle.compile = function( selector, match /* Internal Use Only */ ) {
+function compile( selector, match /* Internal Use Only */ ) {
 	var i,
 		setMatchers = [],
 		elementMatchers = [],
@@ -11566,27 +11185,25 @@ compile = Sizzle.compile = function( selector, match /* Internal Use Only */ ) {
 		}
 
 		// Cache the compiled function
-		cached = compilerCache(
-			selector,
-			matcherFromGroupMatchers( elementMatchers, setMatchers )
-		);
+		cached = compilerCache( selector,
+			matcherFromGroupMatchers( elementMatchers, setMatchers ) );
 
 		// Save selector and tokenization
 		cached.selector = selector;
 	}
 	return cached;
-};
+}
 
 /**
- * A low-level selection function that works with Sizzle's compiled
+ * A low-level selection function that works with jQuery's compiled
  *  selector functions
  * @param {String|Function} selector A selector or a pre-compiled
- *  selector function built with Sizzle.compile
+ *  selector function built with jQuery selector compile
  * @param {Element} context
  * @param {Array} [results]
  * @param {Array} [seed] A set of elements to match against
  */
-select = Sizzle.select = function( selector, context, results, seed ) {
+function select( selector, context, results, seed ) {
 	var i, tokens, token, type, find,
 		compiled = typeof selector === "function" && selector,
 		match = !seed && tokenize( ( selector = compiled.selector || selector ) );
@@ -11600,10 +11217,12 @@ select = Sizzle.select = function( selector, context, results, seed ) {
 		// Reduce context if the leading compound selector is an ID
 		tokens = match[ 0 ] = match[ 0 ].slice( 0 );
 		if ( tokens.length > 2 && ( token = tokens[ 0 ] ).type === "ID" &&
-			context.nodeType === 9 && documentIsHTML && Expr.relative[ tokens[ 1 ].type ] ) {
+				context.nodeType === 9 && documentIsHTML && Expr.relative[ tokens[ 1 ].type ] ) {
 
-			context = ( Expr.find[ "ID" ]( token.matches[ 0 ]
-				.replace( runescape, funescape ), context ) || [] )[ 0 ];
+			context = ( Expr.find.ID(
+				token.matches[ 0 ].replace( runescape, funescape ),
+				context
+			) || [] )[ 0 ];
 			if ( !context ) {
 				return results;
 
@@ -11616,7 +11235,7 @@ select = Sizzle.select = function( selector, context, results, seed ) {
 		}
 
 		// Fetch a seed set for right-to-left matching
-		i = matchExpr[ "needsContext" ].test( selector ) ? 0 : tokens.length;
+		i = matchExpr.needsContext.test( selector ) ? 0 : tokens.length;
 		while ( i-- ) {
 			token = tokens[ i ];
 
@@ -11629,8 +11248,8 @@ select = Sizzle.select = function( selector, context, results, seed ) {
 				// Search, expanding context for leading sibling combinators
 				if ( ( seed = find(
 					token.matches[ 0 ].replace( runescape, funescape ),
-					rsibling.test( tokens[ 0 ].type ) && testContext( context.parentNode ) ||
-						context
+					rsibling.test( tokens[ 0 ].type ) &&
+						testContext( context.parentNode ) || context
 				) ) ) {
 
 					// If seed is empty or no tokens remain, we can return early
@@ -11657,21 +11276,18 @@ select = Sizzle.select = function( selector, context, results, seed ) {
 		!context || rsibling.test( selector ) && testContext( context.parentNode ) || context
 	);
 	return results;
-};
+}
 
 // One-time assignments
 
+// Support: Android <=4.0 - 4.1+
 // Sort stability
 support.sortStable = expando.split( "" ).sort( sortOrder ).join( "" ) === expando;
-
-// Support: Chrome 14-35+
-// Always assume duplicates if they aren't passed to the comparison function
-support.detectDuplicates = !!hasDuplicate;
 
 // Initialize against the default document
 setDocument();
 
-// Support: Webkit<537.32 - Safari 6.0.3/Chrome 25 (fixed in Chrome 27)
+// Support: Android <=4.0 - 4.1+
 // Detached nodes confoundingly follow *each other*
 support.sortDetached = assert( function( el ) {
 
@@ -11679,68 +11295,29 @@ support.sortDetached = assert( function( el ) {
 	return el.compareDocumentPosition( document.createElement( "fieldset" ) ) & 1;
 } );
 
-// Support: IE<8
-// Prevent attribute/property "interpolation"
-// https://msdn.microsoft.com/en-us/library/ms536429%28VS.85%29.aspx
-if ( !assert( function( el ) {
-	el.innerHTML = "<a href='#'></a>";
-	return el.firstChild.getAttribute( "href" ) === "#";
-} ) ) {
-	addHandle( "type|href|height|width", function( elem, name, isXML ) {
-		if ( !isXML ) {
-			return elem.getAttribute( name, name.toLowerCase() === "type" ? 1 : 2 );
-		}
-	} );
-}
-
-// Support: IE<9
-// Use defaultValue in place of getAttribute("value")
-if ( !support.attributes || !assert( function( el ) {
-	el.innerHTML = "<input/>";
-	el.firstChild.setAttribute( "value", "" );
-	return el.firstChild.getAttribute( "value" ) === "";
-} ) ) {
-	addHandle( "value", function( elem, _name, isXML ) {
-		if ( !isXML && elem.nodeName.toLowerCase() === "input" ) {
-			return elem.defaultValue;
-		}
-	} );
-}
-
-// Support: IE<9
-// Use getAttributeNode to fetch booleans when getAttribute lies
-if ( !assert( function( el ) {
-	return el.getAttribute( "disabled" ) == null;
-} ) ) {
-	addHandle( booleans, function( elem, name, isXML ) {
-		var val;
-		if ( !isXML ) {
-			return elem[ name ] === true ? name.toLowerCase() :
-				( val = elem.getAttributeNode( name ) ) && val.specified ?
-					val.value :
-					null;
-		}
-	} );
-}
-
-return Sizzle;
-
-} )( window );
-
-
-
-jQuery.find = Sizzle;
-jQuery.expr = Sizzle.selectors;
+jQuery.find = find;
 
 // Deprecated
 jQuery.expr[ ":" ] = jQuery.expr.pseudos;
-jQuery.uniqueSort = jQuery.unique = Sizzle.uniqueSort;
-jQuery.text = Sizzle.getText;
-jQuery.isXMLDoc = Sizzle.isXML;
-jQuery.contains = Sizzle.contains;
-jQuery.escapeSelector = Sizzle.escape;
+jQuery.unique = jQuery.uniqueSort;
 
+// These have always been private, but they used to be documented as part of
+// Sizzle so let's maintain them for now for backwards compatibility purposes.
+find.compile = compile;
+find.select = select;
+find.setDocument = setDocument;
+find.tokenize = tokenize;
 
+find.escape = jQuery.escapeSelector;
+find.getText = jQuery.text;
+find.isXML = jQuery.isXMLDoc;
+find.selectors = jQuery.expr;
+find.support = jQuery.support;
+find.uniqueSort = jQuery.uniqueSort;
+
+	/* eslint-enable */
+
+} )();
 
 
 var dir = function( elem, dir, until ) {
@@ -11774,13 +11351,6 @@ var siblings = function( n, elem ) {
 
 var rneedsContext = jQuery.expr.match.needsContext;
 
-
-
-function nodeName( elem, name ) {
-
-	return elem.nodeName && elem.nodeName.toLowerCase() === name.toLowerCase();
-
-}
 var rsingleTag = ( /^<([a-z][^\/\0>:\x20\t\r\n\f]*)[\x20\t\r\n\f]*\/?>(?:<\/\1>|)$/i );
 
 
@@ -11879,8 +11449,8 @@ jQuery.fn.extend( {
 var rootjQuery,
 
 	// A simple way to check for HTML strings
-	// Prioritize #id over <tag> to avoid XSS via location.hash (#9521)
-	// Strict HTML recognition (#11290: must start with <)
+	// Prioritize #id over <tag> to avoid XSS via location.hash (trac-9521)
+	// Strict HTML recognition (trac-11290: must start with <)
 	// Shortcut simple #id case for speed
 	rquickExpr = /^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]+))$/,
 
@@ -12031,7 +11601,7 @@ jQuery.fn.extend( {
 					if ( cur.nodeType < 11 && ( targets ?
 						targets.index( cur ) > -1 :
 
-						// Don't pass non-elements to Sizzle
+						// Don't pass non-elements to jQuery#find
 						cur.nodeType === 1 &&
 							jQuery.find.matchesSelector( cur, selectors ) ) ) {
 
@@ -12586,7 +12156,7 @@ jQuery.extend( {
 
 											if ( jQuery.Deferred.exceptionHook ) {
 												jQuery.Deferred.exceptionHook( e,
-													process.stackTrace );
+													process.error );
 											}
 
 											// Support: Promises/A+ section 2.3.3.3.4.1
@@ -12614,10 +12184,17 @@ jQuery.extend( {
 								process();
 							} else {
 
-								// Call an optional hook to record the stack, in case of exception
+								// Call an optional hook to record the error, in case of exception
 								// since it's otherwise lost when execution goes async
-								if ( jQuery.Deferred.getStackHook ) {
-									process.stackTrace = jQuery.Deferred.getStackHook();
+								if ( jQuery.Deferred.getErrorHook ) {
+									process.error = jQuery.Deferred.getErrorHook();
+
+								// The deprecated alias of the above. While the name suggests
+								// returning the stack, not an error instance, jQuery just passes
+								// it directly to `console.warn` so both will work; an instance
+								// just better cooperates with source maps.
+								} else if ( jQuery.Deferred.getStackHook ) {
+									process.error = jQuery.Deferred.getStackHook();
 								}
 								window.setTimeout( process );
 							}
@@ -12792,12 +12369,16 @@ jQuery.extend( {
 // warn about them ASAP rather than swallowing them by default.
 var rerrorNames = /^(Eval|Internal|Range|Reference|Syntax|Type|URI)Error$/;
 
-jQuery.Deferred.exceptionHook = function( error, stack ) {
+// If `jQuery.Deferred.getErrorHook` is defined, `asyncError` is an error
+// captured before the async barrier to get the original error cause
+// which may otherwise be hidden.
+jQuery.Deferred.exceptionHook = function( error, asyncError ) {
 
 	// Support: IE 8 - 9 only
 	// Console exists when dev tools are open, which can happen at any time
 	if ( window.console && window.console.warn && error && rerrorNames.test( error.name ) ) {
-		window.console.warn( "jQuery.Deferred exception: " + error.message, error.stack, stack );
+		window.console.warn( "jQuery.Deferred exception: " + error.message,
+			error.stack, asyncError );
 	}
 };
 
@@ -12837,7 +12418,7 @@ jQuery.extend( {
 	isReady: false,
 
 	// A counter to track how many items to wait for before
-	// the ready event fires. See #6781
+	// the ready event fires. See trac-6781
 	readyWait: 1,
 
 	// Handle when the DOM is ready
@@ -12965,7 +12546,7 @@ function fcamelCase( _all, letter ) {
 
 // Convert dashed to camelCase; used by the css and data modules
 // Support: IE <=9 - 11, Edge 12 - 15
-// Microsoft forgot to hump their vendor prefix (#9572)
+// Microsoft forgot to hump their vendor prefix (trac-9572)
 function camelCase( string ) {
 	return string.replace( rmsPrefix, "ms-" ).replace( rdashAlpha, fcamelCase );
 }
@@ -13001,7 +12582,7 @@ Data.prototype = {
 			value = {};
 
 			// We can accept data for non-element nodes in modern browsers,
-			// but we should not, see #8335.
+			// but we should not, see trac-8335.
 			// Always return an empty object.
 			if ( acceptData( owner ) ) {
 
@@ -13240,7 +12821,7 @@ jQuery.fn.extend( {
 					while ( i-- ) {
 
 						// Support: IE 11 only
-						// The attrs elements can be null (#14894)
+						// The attrs elements can be null (trac-14894)
 						if ( attrs[ i ] ) {
 							name = attrs[ i ].name;
 							if ( name.indexOf( "data-" ) === 0 ) {
@@ -13663,9 +13244,9 @@ var rscriptType = ( /^$|^module$|\/(?:java|ecma)script/i );
 		input = document.createElement( "input" );
 
 	// Support: Android 4.0 - 4.3 only
-	// Check state lost if the name is set (#11217)
+	// Check state lost if the name is set (trac-11217)
 	// Support: Windows Web Apps (WWA)
-	// `name` and `type` must use .setAttribute for WWA (#14901)
+	// `name` and `type` must use .setAttribute for WWA (trac-14901)
 	input.setAttribute( "type", "radio" );
 	input.setAttribute( "checked", "checked" );
 	input.setAttribute( "name", "t" );
@@ -13689,7 +13270,7 @@ var rscriptType = ( /^$|^module$|\/(?:java|ecma)script/i );
 } )();
 
 
-// We have to close these tags to support XHTML (#13200)
+// We have to close these tags to support XHTML (trac-13200)
 var wrapMap = {
 
 	// XHTML parsers do not magically insert elements in the
@@ -13715,7 +13296,7 @@ if ( !support.option ) {
 function getAll( context, tag ) {
 
 	// Support: IE <=9 - 11 only
-	// Use typeof to avoid zero-argument method invocation on host objects (#15151)
+	// Use typeof to avoid zero-argument method invocation on host objects (trac-15151)
 	var ret;
 
 	if ( typeof context.getElementsByTagName !== "undefined" ) {
@@ -13798,7 +13379,7 @@ function buildFragment( elems, context, scripts, selection, ignored ) {
 				// Remember the top-level container
 				tmp = fragment.firstChild;
 
-				// Ensure the created nodes are orphaned (#12392)
+				// Ensure the created nodes are orphaned (trac-12392)
 				tmp.textContent = "";
 			}
 		}
@@ -13851,25 +13432,6 @@ function returnTrue() {
 
 function returnFalse() {
 	return false;
-}
-
-// Support: IE <=9 - 11+
-// focus() and blur() are asynchronous, except when they are no-op.
-// So expect focus to be synchronous when the element is already active,
-// and blur to be synchronous when the element is not already active.
-// (focus and blur are always synchronous in other supported browsers,
-// this just defines when we can count on it).
-function expectSync( elem, type ) {
-	return ( elem === safeActiveElement() ) === ( type === "focus" );
-}
-
-// Support: IE <=9 only
-// Accessing document.activeElement can throw unexpectedly
-// https://bugs.jquery.com/ticket/13393
-function safeActiveElement() {
-	try {
-		return document.activeElement;
-	} catch ( err ) { }
 }
 
 function on( elem, types, selector, data, fn, one ) {
@@ -14219,15 +13781,15 @@ jQuery.event = {
 
 			for ( ; cur !== this; cur = cur.parentNode || this ) {
 
-				// Don't check non-elements (#13208)
-				// Don't process clicks on disabled elements (#6911, #8165, #11382, #11764)
+				// Don't check non-elements (trac-13208)
+				// Don't process clicks on disabled elements (trac-6911, trac-8165, trac-11382, trac-11764)
 				if ( cur.nodeType === 1 && !( event.type === "click" && cur.disabled === true ) ) {
 					matchedHandlers = [];
 					matchedSelectors = {};
 					for ( i = 0; i < delegateCount; i++ ) {
 						handleObj = handlers[ i ];
 
-						// Don't conflict with Object.prototype properties (#13203)
+						// Don't conflict with Object.prototype properties (trac-13203)
 						sel = handleObj.selector + " ";
 
 						if ( matchedSelectors[ sel ] === undefined ) {
@@ -14309,7 +13871,7 @@ jQuery.event = {
 					el.click && nodeName( el, "input" ) ) {
 
 					// dataPriv.set( el, "click", ... )
-					leverageNative( el, "click", returnTrue );
+					leverageNative( el, "click", true );
 				}
 
 				// Return false to allow normal processing in the caller
@@ -14360,10 +13922,10 @@ jQuery.event = {
 // synthetic events by interrupting progress until reinvoked in response to
 // *native* events that it fires directly, ensuring that state changes have
 // already occurred before other listeners are invoked.
-function leverageNative( el, type, expectSync ) {
+function leverageNative( el, type, isSetup ) {
 
-	// Missing expectSync indicates a trigger call, which must force setup through jQuery.event.add
-	if ( !expectSync ) {
+	// Missing `isSetup` indicates a trigger call, which must force setup through jQuery.event.add
+	if ( !isSetup ) {
 		if ( dataPriv.get( el, type ) === undefined ) {
 			jQuery.event.add( el, type, returnTrue );
 		}
@@ -14375,15 +13937,13 @@ function leverageNative( el, type, expectSync ) {
 	jQuery.event.add( el, type, {
 		namespace: false,
 		handler: function( event ) {
-			var notAsync, result,
+			var result,
 				saved = dataPriv.get( this, type );
 
 			if ( ( event.isTrigger & 1 ) && this[ type ] ) {
 
 				// Interrupt processing of the outer synthetic .trigger()ed event
-				// Saved data should be false in such cases, but might be a leftover capture object
-				// from an async native handler (gh-4350)
-				if ( !saved.length ) {
+				if ( !saved ) {
 
 					// Store arguments for use when handling the inner native event
 					// There will always be at least one argument (an event object), so this array
@@ -14392,33 +13952,22 @@ function leverageNative( el, type, expectSync ) {
 					dataPriv.set( this, type, saved );
 
 					// Trigger the native event and capture its result
-					// Support: IE <=9 - 11+
-					// focus() and blur() are asynchronous
-					notAsync = expectSync( this, type );
 					this[ type ]();
 					result = dataPriv.get( this, type );
-					if ( saved !== result || notAsync ) {
-						dataPriv.set( this, type, false );
-					} else {
-						result = {};
-					}
+					dataPriv.set( this, type, false );
+
 					if ( saved !== result ) {
 
 						// Cancel the outer synthetic event
 						event.stopImmediatePropagation();
 						event.preventDefault();
 
-						// Support: Chrome 86+
-						// In Chrome, if an element having a focusout handler is blurred by
-						// clicking outside of it, it invokes the handler synchronously. If
-						// that handler calls `.remove()` on the element, the data is cleared,
-						// leaving `result` undefined. We need to guard against this.
-						return result && result.value;
+						return result;
 					}
 
 				// If this is an inner synthetic event for an event with a bubbling surrogate
-				// (focus or blur), assume that the surrogate already propagated from triggering the
-				// native event and prevent that from happening again here.
+				// (focus or blur), assume that the surrogate already propagated from triggering
+				// the native event and prevent that from happening again here.
 				// This technically gets the ordering wrong w.r.t. to `.trigger()` (in which the
 				// bubbling surrogate propagates *after* the non-bubbling base), but that seems
 				// less bad than duplication.
@@ -14428,22 +13977,25 @@ function leverageNative( el, type, expectSync ) {
 
 			// If this is a native event triggered above, everything is now in order
 			// Fire an inner synthetic event with the original arguments
-			} else if ( saved.length ) {
+			} else if ( saved ) {
 
 				// ...and capture the result
-				dataPriv.set( this, type, {
-					value: jQuery.event.trigger(
+				dataPriv.set( this, type, jQuery.event.trigger(
+					saved[ 0 ],
+					saved.slice( 1 ),
+					this
+				) );
 
-						// Support: IE <=9 - 11+
-						// Extend with the prototype to reset the above stopImmediatePropagation()
-						jQuery.extend( saved[ 0 ], jQuery.Event.prototype ),
-						saved.slice( 1 ),
-						this
-					)
-				} );
-
-				// Abort handling of the native event
-				event.stopImmediatePropagation();
+				// Abort handling of the native event by all jQuery handlers while allowing
+				// native handlers on the same element to run. On target, this is achieved
+				// by stopping immediate propagation just on the jQuery event. However,
+				// the native event is re-wrapped by a jQuery one on each level of the
+				// propagation so the only way to stop it for jQuery is to stop it for
+				// everyone via native `stopPropagation()`. This is not a problem for
+				// focus/blur which don't bubble, but it does also stop click on checkboxes
+				// and radios. We accept this limitation.
+				event.stopPropagation();
+				event.isImmediatePropagationStopped = returnTrue;
 			}
 		}
 	} );
@@ -14481,7 +14033,7 @@ jQuery.Event = function( src, props ) {
 
 		// Create target properties
 		// Support: Safari <=6 - 7 only
-		// Target should not be a text node (#504, #13143)
+		// Target should not be a text node (trac-504, trac-13143)
 		this.target = ( src.target && src.target.nodeType === 3 ) ?
 			src.target.parentNode :
 			src.target;
@@ -14582,18 +14134,73 @@ jQuery.each( {
 }, jQuery.event.addProp );
 
 jQuery.each( { focus: "focusin", blur: "focusout" }, function( type, delegateType ) {
+
+	function focusMappedHandler( nativeEvent ) {
+		if ( document.documentMode ) {
+
+			// Support: IE 11+
+			// Attach a single focusin/focusout handler on the document while someone wants
+			// focus/blur. This is because the former are synchronous in IE while the latter
+			// are async. In other browsers, all those handlers are invoked synchronously.
+
+			// `handle` from private data would already wrap the event, but we need
+			// to change the `type` here.
+			var handle = dataPriv.get( this, "handle" ),
+				event = jQuery.event.fix( nativeEvent );
+			event.type = nativeEvent.type === "focusin" ? "focus" : "blur";
+			event.isSimulated = true;
+
+			// First, handle focusin/focusout
+			handle( nativeEvent );
+
+			// ...then, handle focus/blur
+			//
+			// focus/blur don't bubble while focusin/focusout do; simulate the former by only
+			// invoking the handler at the lower level.
+			if ( event.target === event.currentTarget ) {
+
+				// The setup part calls `leverageNative`, which, in turn, calls
+				// `jQuery.event.add`, so event handle will already have been set
+				// by this point.
+				handle( event );
+			}
+		} else {
+
+			// For non-IE browsers, attach a single capturing handler on the document
+			// while someone wants focusin/focusout.
+			jQuery.event.simulate( delegateType, nativeEvent.target,
+				jQuery.event.fix( nativeEvent ) );
+		}
+	}
+
 	jQuery.event.special[ type ] = {
 
 		// Utilize native event if possible so blur/focus sequence is correct
 		setup: function() {
 
+			var attaches;
+
 			// Claim the first handler
 			// dataPriv.set( this, "focus", ... )
 			// dataPriv.set( this, "blur", ... )
-			leverageNative( this, type, expectSync );
+			leverageNative( this, type, true );
 
-			// Return false to allow normal processing in the caller
-			return false;
+			if ( document.documentMode ) {
+
+				// Support: IE 9 - 11+
+				// We use the same native handler for focusin & focus (and focusout & blur)
+				// so we need to coordinate setup & teardown parts between those events.
+				// Use `delegateType` as the key as `type` is already used by `leverageNative`.
+				attaches = dataPriv.get( this, delegateType );
+				if ( !attaches ) {
+					this.addEventListener( delegateType, focusMappedHandler );
+				}
+				dataPriv.set( this, delegateType, ( attaches || 0 ) + 1 );
+			} else {
+
+				// Return false to allow normal processing in the caller
+				return false;
+			}
 		},
 		trigger: function() {
 
@@ -14604,13 +14211,83 @@ jQuery.each( { focus: "focusin", blur: "focusout" }, function( type, delegateTyp
 			return true;
 		},
 
-		// Suppress native focus or blur as it's already being fired
-		// in leverageNative.
-		_default: function() {
-			return true;
+		teardown: function() {
+			var attaches;
+
+			if ( document.documentMode ) {
+				attaches = dataPriv.get( this, delegateType ) - 1;
+				if ( !attaches ) {
+					this.removeEventListener( delegateType, focusMappedHandler );
+					dataPriv.remove( this, delegateType );
+				} else {
+					dataPriv.set( this, delegateType, attaches );
+				}
+			} else {
+
+				// Return false to indicate standard teardown should be applied
+				return false;
+			}
+		},
+
+		// Suppress native focus or blur if we're currently inside
+		// a leveraged native-event stack
+		_default: function( event ) {
+			return dataPriv.get( event.target, type );
 		},
 
 		delegateType: delegateType
+	};
+
+	// Support: Firefox <=44
+	// Firefox doesn't have focus(in | out) events
+	// Related ticket - https://bugzilla.mozilla.org/show_bug.cgi?id=687787
+	//
+	// Support: Chrome <=48 - 49, Safari <=9.0 - 9.1
+	// focus(in | out) events fire after focus & blur events,
+	// which is spec violation - http://www.w3.org/TR/DOM-Level-3-Events/#events-focusevent-event-order
+	// Related ticket - https://bugs.chromium.org/p/chromium/issues/detail?id=449857
+	//
+	// Support: IE 9 - 11+
+	// To preserve relative focusin/focus & focusout/blur event order guaranteed on the 3.x branch,
+	// attach a single handler for both events in IE.
+	jQuery.event.special[ delegateType ] = {
+		setup: function() {
+
+			// Handle: regular nodes (via `this.ownerDocument`), window
+			// (via `this.document`) & document (via `this`).
+			var doc = this.ownerDocument || this.document || this,
+				dataHolder = document.documentMode ? this : doc,
+				attaches = dataPriv.get( dataHolder, delegateType );
+
+			// Support: IE 9 - 11+
+			// We use the same native handler for focusin & focus (and focusout & blur)
+			// so we need to coordinate setup & teardown parts between those events.
+			// Use `delegateType` as the key as `type` is already used by `leverageNative`.
+			if ( !attaches ) {
+				if ( document.documentMode ) {
+					this.addEventListener( delegateType, focusMappedHandler );
+				} else {
+					doc.addEventListener( type, focusMappedHandler, true );
+				}
+			}
+			dataPriv.set( dataHolder, delegateType, ( attaches || 0 ) + 1 );
+		},
+		teardown: function() {
+			var doc = this.ownerDocument || this.document || this,
+				dataHolder = document.documentMode ? this : doc,
+				attaches = dataPriv.get( dataHolder, delegateType ) - 1;
+
+			if ( !attaches ) {
+				if ( document.documentMode ) {
+					this.removeEventListener( delegateType, focusMappedHandler );
+				} else {
+					doc.removeEventListener( type, focusMappedHandler, true );
+				}
+				dataPriv.remove( dataHolder, delegateType );
+			} else {
+				dataPriv.set( dataHolder, delegateType, attaches );
+			}
+		}
 	};
 } );
 
@@ -14706,7 +14383,8 @@ var
 
 	// checked="checked" or checked
 	rchecked = /checked\s*(?:[^=]|=\s*.checked.)/i,
-	rcleanScript = /^\s*<!(?:\[CDATA\[|--)|(?:\]\]|--)>\s*$/g;
+
+	rcleanScript = /^\s*<!\[CDATA\[|\]\]>\s*$/g;
 
 // Prefer a tbody over its parent table for containing new rows
 function manipulationTarget( elem, content ) {
@@ -14820,7 +14498,7 @@ function domManip( collection, args, callback, ignored ) {
 
 			// Use the original fragment for the last item
 			// instead of the first because it can end up
-			// being emptied incorrectly in certain situations (#8070).
+			// being emptied incorrectly in certain situations (trac-8070).
 			for ( ; i < l; i++ ) {
 				node = fragment;
 
@@ -14842,7 +14520,7 @@ function domManip( collection, args, callback, ignored ) {
 			if ( hasScripts ) {
 				doc = scripts[ scripts.length - 1 ].ownerDocument;
 
-				// Reenable scripts
+				// Re-enable scripts
 				jQuery.map( scripts, restoreScript );
 
 				// Evaluate executable scripts on first document insertion
@@ -14861,6 +14539,12 @@ function domManip( collection, args, callback, ignored ) {
 								}, doc );
 							}
 						} else {
+
+							// Unwrap a CDATA section containing script contents. This shouldn't be
+							// needed as in XML documents they're already not visible when
+							// inspecting element contents and in HTML documents they have no
+							// meaning but we're preserving that logic for backwards compatibility.
+							// This will be removed completely in 4.0. See gh-4904.
 							DOMEval( node.textContent.replace( rcleanScript, "" ), node, doc );
 						}
 					}
@@ -14907,7 +14591,8 @@ jQuery.extend( {
 		if ( !support.noCloneChecked && ( elem.nodeType === 1 || elem.nodeType === 11 ) &&
 				!jQuery.isXMLDoc( elem ) ) {
 
-			// We eschew Sizzle here for performance reasons: https://jsperf.com/getall-vs-sizzle/2
+			// We eschew jQuery#find here for performance reasons:
+			// https://jsperf.com/getall-vs-sizzle/2
 			destElements = getAll( clone );
 			srcElements = getAll( elem );
 
@@ -15143,9 +14828,12 @@ jQuery.each( {
 } );
 var rnumnonpx = new RegExp( "^(" + pnum + ")(?!px)[a-z%]+$", "i" );
 
+var rcustomProp = /^--/;
+
+
 var getStyles = function( elem ) {
 
-		// Support: IE <=11 only, Firefox <=30 (#15098, #14150)
+		// Support: IE <=11 only, Firefox <=30 (trac-15098, trac-14150)
 		// IE throws on elements created in popups
 		// FF meanwhile throws on frame elements through "defaultView.getComputedStyle"
 		var view = elem.ownerDocument.defaultView;
@@ -15245,7 +14933,7 @@ var rboxStyle = new RegExp( cssExpand.join( "|" ), "i" );
 	}
 
 	// Support: IE <=9 - 11 only
-	// Style of cloned element affects source element cloned (#8908)
+	// Style of cloned element affects source element cloned (trac-8908)
 	div.style.backgroundClip = "content-box";
 	div.cloneNode( true ).style.backgroundClip = "";
 	support.clearCloneStyle = div.style.backgroundClip === "content-box";
@@ -15289,7 +14977,7 @@ var rboxStyle = new RegExp( cssExpand.join( "|" ), "i" );
 				trChild = document.createElement( "div" );
 
 				table.style.cssText = "position:absolute;left:-11111px;border-collapse:separate";
-				tr.style.cssText = "border:1px solid";
+				tr.style.cssText = "box-sizing:content-box;border:1px solid";
 
 				// Support: Chrome 86+
 				// Height set through cssText does not get applied.
@@ -15301,7 +14989,7 @@ var rboxStyle = new RegExp( cssExpand.join( "|" ), "i" );
 				// In our bodyBackground.html iframe,
 				// display for all div elements is set to "inline",
 				// which causes a problem only in Android 8 Chrome 86.
-				// Ensuring the div is display: block
+				// Ensuring the div is `display: block`
 				// gets around this issue.
 				trChild.style.display = "block";
 
@@ -15325,6 +15013,7 @@ var rboxStyle = new RegExp( cssExpand.join( "|" ), "i" );
 
 function curCSS( elem, name, computed ) {
 	var width, minWidth, maxWidth, ret,
+		isCustomProp = rcustomProp.test( name ),
 
 		// Support: Firefox 51+
 		// Retrieving style before computed somehow
@@ -15335,10 +15024,41 @@ function curCSS( elem, name, computed ) {
 	computed = computed || getStyles( elem );
 
 	// getPropertyValue is needed for:
-	//   .css('filter') (IE 9 only, #12537)
-	//   .css('--customProperty) (#3144)
+	//   .css('filter') (IE 9 only, trac-12537)
+	//   .css('--customProperty) (gh-3144)
 	if ( computed ) {
+
+		// Support: IE <=9 - 11+
+		// IE only supports `"float"` in `getPropertyValue`; in computed styles
+		// it's only available as `"cssFloat"`. We no longer modify properties
+		// sent to `.css()` apart from camelCasing, so we need to check both.
+		// Normally, this would create difference in behavior: if
+		// `getPropertyValue` returns an empty string, the value returned
+		// by `.css()` would be `undefined`. This is usually the case for
+		// disconnected elements. However, in IE even disconnected elements
+		// with no styles return `"none"` for `getPropertyValue( "float" )`
 		ret = computed.getPropertyValue( name ) || computed[ name ];
+
+		if ( isCustomProp && ret ) {
+
+			// Support: Firefox 105+, Chrome <=105+
+			// Spec requires trimming whitespace for custom properties (gh-4926).
+			// Firefox only trims leading whitespace. Chrome just collapses
+			// both leading & trailing whitespace to a single space.
+			//
+			// Fall back to `undefined` if empty string returned.
+			// This collapses a missing definition with property defined
+			// and set to an empty string but there's no standard API
+			// allowing us to differentiate them without a performance penalty
+			// and returning `undefined` aligns with older jQuery.
+			//
+			// rtrimCSS treats U+000D CARRIAGE RETURN and U+000C FORM FEED
+			// as whitespace while CSS does not, but this is not a problem
+			// because CSS preprocessing replaces them with U+000A LINE FEED
+			// (which *is* CSS whitespace)
+			// https://www.w3.org/TR/css-syntax-3/#input-preprocessing
+			ret = ret.replace( rtrimCSS, "$1" ) || undefined;
+		}
 
 		if ( ret === "" && !isAttached( elem ) ) {
 			ret = jQuery.style( elem, name );
@@ -15435,7 +15155,6 @@ var
 	// except "table", "table-cell", or "table-caption"
 	// See here for display values: https://developer.mozilla.org/en-US/docs/CSS/display
 	rdisplayswap = /^(none|table(?!-c[ea]).+)/,
-	rcustomProp = /^--/,
 	cssShow = { position: "absolute", visibility: "hidden", display: "block" },
 	cssNormalTransform = {
 		letterSpacing: "0",
@@ -15457,7 +15176,8 @@ function setPositiveNumber( _elem, value, subtract ) {
 function boxModelAdjustment( elem, dimension, box, isBorderBox, styles, computedVal ) {
 	var i = dimension === "width" ? 1 : 0,
 		extra = 0,
-		delta = 0;
+		delta = 0,
+		marginDelta = 0;
 
 	// Adjustment may not be necessary
 	if ( box === ( isBorderBox ? "border" : "content" ) ) {
@@ -15467,8 +15187,10 @@ function boxModelAdjustment( elem, dimension, box, isBorderBox, styles, computed
 	for ( ; i < 4; i += 2 ) {
 
 		// Both box models exclude margin
+		// Count margin delta separately to only add it after scroll gutter adjustment.
+		// This is needed to make negative margins work with `outerHeight( true )` (gh-3982).
 		if ( box === "margin" ) {
-			delta += jQuery.css( elem, box + cssExpand[ i ], true, styles );
+			marginDelta += jQuery.css( elem, box + cssExpand[ i ], true, styles );
 		}
 
 		// If we get here with a content-box, we're seeking "padding" or "border" or "margin"
@@ -15519,7 +15241,7 @@ function boxModelAdjustment( elem, dimension, box, isBorderBox, styles, computed
 		) ) || 0;
 	}
 
-	return delta;
+	return delta + marginDelta;
 }
 
 function getWidthOrHeight( elem, dimension, extra ) {
@@ -15617,26 +15339,35 @@ jQuery.extend( {
 
 	// Don't automatically add "px" to these possibly-unitless properties
 	cssNumber: {
-		"animationIterationCount": true,
-		"columnCount": true,
-		"fillOpacity": true,
-		"flexGrow": true,
-		"flexShrink": true,
-		"fontWeight": true,
-		"gridArea": true,
-		"gridColumn": true,
-		"gridColumnEnd": true,
-		"gridColumnStart": true,
-		"gridRow": true,
-		"gridRowEnd": true,
-		"gridRowStart": true,
-		"lineHeight": true,
-		"opacity": true,
-		"order": true,
-		"orphans": true,
-		"widows": true,
-		"zIndex": true,
-		"zoom": true
+		animationIterationCount: true,
+		aspectRatio: true,
+		borderImageSlice: true,
+		columnCount: true,
+		flexGrow: true,
+		flexShrink: true,
+		fontWeight: true,
+		gridArea: true,
+		gridColumn: true,
+		gridColumnEnd: true,
+		gridColumnStart: true,
+		gridRow: true,
+		gridRowEnd: true,
+		gridRowStart: true,
+		lineHeight: true,
+		opacity: true,
+		order: true,
+		orphans: true,
+		scale: true,
+		widows: true,
+		zIndex: true,
+		zoom: true,
+
+		// SVG-related
+		fillOpacity: true,
+		floodOpacity: true,
+		stopOpacity: true,
+		strokeMiterlimit: true,
+		strokeOpacity: true
 	},
 
 	// Add in properties whose names you wish to fix before
@@ -15671,15 +15402,15 @@ jQuery.extend( {
 		if ( value !== undefined ) {
 			type = typeof value;
 
-			// Convert "+=" or "-=" to relative numbers (#7345)
+			// Convert "+=" or "-=" to relative numbers (trac-7345)
 			if ( type === "string" && ( ret = rcssNum.exec( value ) ) && ret[ 1 ] ) {
 				value = adjustCSS( elem, name, ret );
 
-				// Fixes bug #9237
+				// Fixes bug trac-9237
 				type = "number";
 			}
 
-			// Make sure that null and NaN values aren't set (#7116)
+			// Make sure that null and NaN values aren't set (trac-7116)
 			if ( value == null || value !== value ) {
 				return;
 			}
@@ -16303,7 +16034,7 @@ function Animation( elem, properties, options ) {
 				remaining = Math.max( 0, animation.startTime + animation.duration - currentTime ),
 
 				// Support: Android 2.3 only
-				// Archaic crash bug won't allow us to use `1 - ( 0.5 || 0 )` (#12497)
+				// Archaic crash bug won't allow us to use `1 - ( 0.5 || 0 )` (trac-12497)
 				temp = remaining / animation.duration || 0,
 				percent = 1 - temp,
 				index = 0,
@@ -16693,7 +16424,6 @@ jQuery.fx.speeds = {
 
 
 // Based off of the plugin by Clint Helfers, with permission.
-// https://web.archive.org/web/20100324014747/http://blindsignals.com/index.php/2009/07/jquery-delay/
 jQuery.fn.delay = function( time, type ) {
 	time = jQuery.fx ? jQuery.fx.speeds[ time ] || time : time;
 	type = type || "fx";
@@ -16918,8 +16648,7 @@ jQuery.extend( {
 				// Support: IE <=9 - 11 only
 				// elem.tabIndex doesn't always return the
 				// correct value when it hasn't been explicitly set
-				// https://web.archive.org/web/20141116233347/http://fluidproject.org/blog/2008/01/09/getting-setting-and-removing-tabindex-values-with-javascript/
-				// Use proper attribute retrieval(#12072)
+				// Use proper attribute retrieval (trac-12072)
 				var tabindex = jQuery.find.attr( elem, "tabindex" );
 
 				if ( tabindex ) {
@@ -17023,8 +16752,7 @@ function classesToArray( value ) {
 
 jQuery.fn.extend( {
 	addClass: function( value ) {
-		var classes, elem, cur, curValue, clazz, j, finalValue,
-			i = 0;
+		var classNames, cur, curValue, className, i, finalValue;
 
 		if ( isFunction( value ) ) {
 			return this.each( function( j ) {
@@ -17032,36 +16760,35 @@ jQuery.fn.extend( {
 			} );
 		}
 
-		classes = classesToArray( value );
+		classNames = classesToArray( value );
 
-		if ( classes.length ) {
-			while ( ( elem = this[ i++ ] ) ) {
-				curValue = getClass( elem );
-				cur = elem.nodeType === 1 && ( " " + stripAndCollapse( curValue ) + " " );
+		if ( classNames.length ) {
+			return this.each( function() {
+				curValue = getClass( this );
+				cur = this.nodeType === 1 && ( " " + stripAndCollapse( curValue ) + " " );
 
 				if ( cur ) {
-					j = 0;
-					while ( ( clazz = classes[ j++ ] ) ) {
-						if ( cur.indexOf( " " + clazz + " " ) < 0 ) {
-							cur += clazz + " ";
+					for ( i = 0; i < classNames.length; i++ ) {
+						className = classNames[ i ];
+						if ( cur.indexOf( " " + className + " " ) < 0 ) {
+							cur += className + " ";
 						}
 					}
 
 					// Only assign if different to avoid unneeded rendering.
 					finalValue = stripAndCollapse( cur );
 					if ( curValue !== finalValue ) {
-						elem.setAttribute( "class", finalValue );
+						this.setAttribute( "class", finalValue );
 					}
 				}
-			}
+			} );
 		}
 
 		return this;
 	},
 
 	removeClass: function( value ) {
-		var classes, elem, cur, curValue, clazz, j, finalValue,
-			i = 0;
+		var classNames, cur, curValue, className, i, finalValue;
 
 		if ( isFunction( value ) ) {
 			return this.each( function( j ) {
@@ -17073,44 +16800,41 @@ jQuery.fn.extend( {
 			return this.attr( "class", "" );
 		}
 
-		classes = classesToArray( value );
+		classNames = classesToArray( value );
 
-		if ( classes.length ) {
-			while ( ( elem = this[ i++ ] ) ) {
-				curValue = getClass( elem );
+		if ( classNames.length ) {
+			return this.each( function() {
+				curValue = getClass( this );
 
 				// This expression is here for better compressibility (see addClass)
-				cur = elem.nodeType === 1 && ( " " + stripAndCollapse( curValue ) + " " );
+				cur = this.nodeType === 1 && ( " " + stripAndCollapse( curValue ) + " " );
 
 				if ( cur ) {
-					j = 0;
-					while ( ( clazz = classes[ j++ ] ) ) {
+					for ( i = 0; i < classNames.length; i++ ) {
+						className = classNames[ i ];
 
 						// Remove *all* instances
-						while ( cur.indexOf( " " + clazz + " " ) > -1 ) {
-							cur = cur.replace( " " + clazz + " ", " " );
+						while ( cur.indexOf( " " + className + " " ) > -1 ) {
+							cur = cur.replace( " " + className + " ", " " );
 						}
 					}
 
 					// Only assign if different to avoid unneeded rendering.
 					finalValue = stripAndCollapse( cur );
 					if ( curValue !== finalValue ) {
-						elem.setAttribute( "class", finalValue );
+						this.setAttribute( "class", finalValue );
 					}
 				}
-			}
+			} );
 		}
 
 		return this;
 	},
 
 	toggleClass: function( value, stateVal ) {
-		var type = typeof value,
+		var classNames, className, i, self,
+			type = typeof value,
 			isValidValue = type === "string" || Array.isArray( value );
-
-		if ( typeof stateVal === "boolean" && isValidValue ) {
-			return stateVal ? this.addClass( value ) : this.removeClass( value );
-		}
 
 		if ( isFunction( value ) ) {
 			return this.each( function( i ) {
@@ -17121,17 +16845,20 @@ jQuery.fn.extend( {
 			} );
 		}
 
-		return this.each( function() {
-			var className, i, self, classNames;
+		if ( typeof stateVal === "boolean" && isValidValue ) {
+			return stateVal ? this.addClass( value ) : this.removeClass( value );
+		}
 
+		classNames = classesToArray( value );
+
+		return this.each( function() {
 			if ( isValidValue ) {
 
 				// Toggle individual class names
-				i = 0;
 				self = jQuery( this );
-				classNames = classesToArray( value );
 
-				while ( ( className = classNames[ i++ ] ) ) {
+				for ( i = 0; i < classNames.length; i++ ) {
+					className = classNames[ i ];
 
 					// Check each className given, space separated list
 					if ( self.hasClass( className ) ) {
@@ -17265,7 +16992,7 @@ jQuery.extend( {
 					val :
 
 					// Support: IE <=10 - 11 only
-					// option.text throws exceptions (#14686, #14858)
+					// option.text throws exceptions (trac-14686, trac-14858)
 					// Strip and collapse whitespace
 					// https://html.spec.whatwg.org/#strip-and-collapse-whitespace
 					stripAndCollapse( jQuery.text( elem ) );
@@ -17292,7 +17019,7 @@ jQuery.extend( {
 					option = options[ i ];
 
 					// Support: IE <=9 only
-					// IE8-9 doesn't update selected after form reset (#2551)
+					// IE8-9 doesn't update selected after form reset (trac-2551)
 					if ( ( option.selected || i === index ) &&
 
 							// Don't return options that are disabled or in a disabled optgroup
@@ -17366,9 +17093,39 @@ jQuery.each( [ "radio", "checkbox" ], function() {
 
 
 // Return jQuery for attributes-only inclusion
+var location = window.location;
+
+var nonce = { guid: Date.now() };
+
+var rquery = ( /\?/ );
 
 
-support.focusin = "onfocusin" in window;
+
+// Cross-browser xml parsing
+jQuery.parseXML = function( data ) {
+	var xml, parserErrorElem;
+	if ( !data || typeof data !== "string" ) {
+		return null;
+	}
+
+	// Support: IE 9 - 11 only
+	// IE throws on parseFromString with invalid input.
+	try {
+		xml = ( new window.DOMParser() ).parseFromString( data, "text/xml" );
+	} catch ( e ) {}
+
+	parserErrorElem = xml && xml.getElementsByTagName( "parsererror" )[ 0 ];
+	if ( !xml || parserErrorElem ) {
+		jQuery.error( "Invalid XML: " + (
+			parserErrorElem ?
+				jQuery.map( parserErrorElem.childNodes, function( el ) {
+					return el.textContent;
+				} ).join( "\n" ) :
+				data
+		) );
+	}
+	return xml;
+};
 
 
 var rfocusMorph = /^(?:focusinfocus|focusoutblur)$/,
@@ -17435,8 +17192,8 @@ jQuery.extend( jQuery.event, {
 			return;
 		}
 
-		// Determine event propagation path in advance, per W3C events spec (#9951)
-		// Bubble up to document, then to window; watch for a global ownerDocument var (#9724)
+		// Determine event propagation path in advance, per W3C events spec (trac-9951)
+		// Bubble up to document, then to window; watch for a global ownerDocument var (trac-9724)
 		if ( !onlyHandlers && !special.noBubble && !isWindow( elem ) ) {
 
 			bubbleType = special.delegateType || type;
@@ -17488,7 +17245,7 @@ jQuery.extend( jQuery.event, {
 				acceptData( elem ) ) {
 
 				// Call a native DOM method on the target with the same name as the event.
-				// Don't do default actions on window, that's where global variables be (#6170)
+				// Don't do default actions on window, that's where global variables be (trac-6170)
 				if ( ontype && isFunction( elem[ type ] ) && !isWindow( elem ) ) {
 
 					// Don't re-trigger an onFOO event when we call its FOO() method
@@ -17554,85 +17311,6 @@ jQuery.fn.extend( {
 		}
 	}
 } );
-
-
-// Support: Firefox <=44
-// Firefox doesn't have focus(in | out) events
-// Related ticket - https://bugzilla.mozilla.org/show_bug.cgi?id=687787
-//
-// Support: Chrome <=48 - 49, Safari <=9.0 - 9.1
-// focus(in | out) events fire after focus & blur events,
-// which is spec violation - http://www.w3.org/TR/DOM-Level-3-Events/#events-focusevent-event-order
-// Related ticket - https://bugs.chromium.org/p/chromium/issues/detail?id=449857
-if ( !support.focusin ) {
-	jQuery.each( { focus: "focusin", blur: "focusout" }, function( orig, fix ) {
-
-		// Attach a single capturing handler on the document while someone wants focusin/focusout
-		var handler = function( event ) {
-			jQuery.event.simulate( fix, event.target, jQuery.event.fix( event ) );
-		};
-
-		jQuery.event.special[ fix ] = {
-			setup: function() {
-
-				// Handle: regular nodes (via `this.ownerDocument`), window
-				// (via `this.document`) & document (via `this`).
-				var doc = this.ownerDocument || this.document || this,
-					attaches = dataPriv.access( doc, fix );
-
-				if ( !attaches ) {
-					doc.addEventListener( orig, handler, true );
-				}
-				dataPriv.access( doc, fix, ( attaches || 0 ) + 1 );
-			},
-			teardown: function() {
-				var doc = this.ownerDocument || this.document || this,
-					attaches = dataPriv.access( doc, fix ) - 1;
-
-				if ( !attaches ) {
-					doc.removeEventListener( orig, handler, true );
-					dataPriv.remove( doc, fix );
-
-				} else {
-					dataPriv.access( doc, fix, attaches );
-				}
-			}
-		};
-	} );
-}
-var location = window.location;
-
-var nonce = { guid: Date.now() };
-
-var rquery = ( /\?/ );
-
-
-
-// Cross-browser xml parsing
-jQuery.parseXML = function( data ) {
-	var xml, parserErrorElem;
-	if ( !data || typeof data !== "string" ) {
-		return null;
-	}
-
-	// Support: IE 9 - 11 only
-	// IE throws on parseFromString with invalid input.
-	try {
-		xml = ( new window.DOMParser() ).parseFromString( data, "text/xml" );
-	} catch ( e ) {}
-
-	parserErrorElem = xml && xml.getElementsByTagName( "parsererror" )[ 0 ];
-	if ( !xml || parserErrorElem ) {
-		jQuery.error( "Invalid XML: " + (
-			parserErrorElem ?
-				jQuery.map( parserErrorElem.childNodes, function( el ) {
-					return el.textContent;
-				} ).join( "\n" ) :
-				data
-		) );
-	}
-	return xml;
-};
 
 
 var
@@ -17762,7 +17440,7 @@ var
 	rantiCache = /([?&])_=[^&]*/,
 	rheaders = /^(.*?):[ \t]*([^\r\n]*)$/mg,
 
-	// #7653, #8125, #8152: local protocol detection
+	// trac-7653, trac-8125, trac-8152: local protocol detection
 	rlocalProtocol = /^(?:about|app|app-storage|.+-extension|file|res|widget):$/,
 	rnoContent = /^(?:GET|HEAD)$/,
 	rprotocol = /^\/\//,
@@ -17785,7 +17463,7 @@ var
 	 */
 	transports = {},
 
-	// Avoid comment-prolog char sequence (#10098); must appease lint and evade compression
+	// Avoid comment-prolog char sequence (trac-10098); must appease lint and evade compression
 	allTypes = "*/".concat( "*" ),
 
 	// Anchor tag for parsing the document origin
@@ -17856,7 +17534,7 @@ function inspectPrefiltersOrTransports( structure, options, originalOptions, jqX
 
 // A special extend for ajax options
 // that takes "flat" options (not to be deep extended)
-// Fixes #9887
+// Fixes trac-9887
 function ajaxExtend( target, src ) {
 	var key, deep,
 		flatOptions = jQuery.ajaxSettings.flatOptions || {};
@@ -18267,12 +17945,12 @@ jQuery.extend( {
 		deferred.promise( jqXHR );
 
 		// Add protocol if not provided (prefilters might expect it)
-		// Handle falsy url in the settings object (#10093: consistency with old signature)
+		// Handle falsy url in the settings object (trac-10093: consistency with old signature)
 		// We also use the url parameter if available
 		s.url = ( ( url || s.url || location.href ) + "" )
 			.replace( rprotocol, location.protocol + "//" );
 
-		// Alias method option to type as per ticket #12004
+		// Alias method option to type as per ticket trac-12004
 		s.type = options.method || options.type || s.method || s.type;
 
 		// Extract dataTypes list
@@ -18315,7 +17993,7 @@ jQuery.extend( {
 		}
 
 		// We can fire global events as of now if asked to
-		// Don't fire events if jQuery.event is undefined in an AMD-usage scenario (#15118)
+		// Don't fire events if jQuery.event is undefined in an AMD-usage scenario (trac-15118)
 		fireGlobals = jQuery.event && s.global;
 
 		// Watch for a new set of requests
@@ -18344,7 +18022,7 @@ jQuery.extend( {
 			if ( s.data && ( s.processData || typeof s.data === "string" ) ) {
 				cacheURL += ( rquery.test( cacheURL ) ? "&" : "?" ) + s.data;
 
-				// #9682: remove data so that it's not used in an eventual retry
+				// trac-9682: remove data so that it's not used in an eventual retry
 				delete s.data;
 			}
 
@@ -18617,7 +18295,7 @@ jQuery._evalUrl = function( url, options, doc ) {
 	return jQuery.ajax( {
 		url: url,
 
-		// Make this explicit, since user can override this through ajaxSetup (#11264)
+		// Make this explicit, since user can override this through ajaxSetup (trac-11264)
 		type: "GET",
 		dataType: "script",
 		cache: true,
@@ -18726,7 +18404,7 @@ var xhrSuccessStatus = {
 		0: 200,
 
 		// Support: IE <=9 only
-		// #1450: sometimes IE returns 1223 when it should be 204
+		// trac-1450: sometimes IE returns 1223 when it should be 204
 		1223: 204
 	},
 	xhrSupported = jQuery.ajaxSettings.xhr();
@@ -18798,7 +18476,7 @@ jQuery.ajaxTransport( function( options ) {
 								} else {
 									complete(
 
-										// File: protocol always yields status 0; see #8605, #14207
+										// File: protocol always yields status 0; see trac-8605, trac-14207
 										xhr.status,
 										xhr.statusText
 									);
@@ -18859,7 +18537,7 @@ jQuery.ajaxTransport( function( options ) {
 					xhr.send( options.hasContent && options.data || null );
 				} catch ( e ) {
 
-					// #14683: Only rethrow if this hasn't been notified as an error yet
+					// trac-14683: Only rethrow if this hasn't been notified as an error yet
 					if ( callback ) {
 						throw e;
 					}
@@ -19479,7 +19157,9 @@ jQuery.fn.extend( {
 	},
 
 	hover: function( fnOver, fnOut ) {
-		return this.mouseenter( fnOver ).mouseleave( fnOut || fnOver );
+		return this
+			.on( "mouseenter", fnOver )
+			.on( "mouseleave", fnOut || fnOver );
 	}
 } );
 
@@ -19503,7 +19183,9 @@ jQuery.each(
 
 // Support: Android <=4.0 only
 // Make sure we trim BOM and NBSP
-var rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+// Require that the "whitespace run" starts from a non-whitespace
+// to avoid O(N^2) behavior when the engine would try matching "\s+$" at each space position.
+var rtrim = /^[\s\uFEFF\xA0]+|([^\s\uFEFF\xA0])[\s\uFEFF\xA0]+$/g;
 
 // Bind a function to a context, optionally partially applying any
 // arguments.
@@ -19570,7 +19252,7 @@ jQuery.isNumeric = function( obj ) {
 jQuery.trim = function( text ) {
 	return text == null ?
 		"" :
-		( text + "" ).replace( rtrim, "" );
+		( text + "" ).replace( rtrim, "$1" );
 };
 
 
@@ -19618,8 +19300,8 @@ jQuery.noConflict = function( deep ) {
 };
 
 // Expose jQuery and $ identifiers, even in AMD
-// (#7102#comment:10, https://github.com/jquery/jquery/pull/557)
-// and CommonJS for browser emulators (#13566)
+// (trac-7102#comment:10, https://github.com/jquery/jquery/pull/557)
+// and CommonJS for browser emulators (trac-13566)
 if ( typeof noGlobal === "undefined" ) {
 	window.jQuery = window.$ = jQuery;
 }
@@ -19630,7 +19312,7 @@ if ( typeof noGlobal === "undefined" ) {
 return jQuery;
 } );
 
-},{}],156:[function(require,module,exports){
+},{}],157:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -22750,7 +22432,7 @@ function extractRFC2822(match) {
 
 function preprocessRFC2822(s) {
   // Remove comments and folding whitespace and replace multiple-spaces with a single space
-  return s.replace(/\([^)]*\)|[\n\t]/g, " ").replace(/(\s\s+)/g, " ").trim();
+  return s.replace(/\([^()]*\)|[\n\t]/g, " ").replace(/(\s\s+)/g, " ").trim();
 } // http date
 
 
@@ -28104,7 +27786,7 @@ function friendlyDateTime(dateTimeish) {
   }
 }
 
-var VERSION = "1.28.0";
+var VERSION = "1.28.1";
 
 exports.DateTime = DateTime;
 exports.Duration = Duration;
@@ -28119,7 +27801,7 @@ exports.VERSION = VERSION;
 exports.Zone = Zone;
 
 
-},{}],157:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 'use strict';
 
 var ArrayProto = Array.prototype;
@@ -28129,50 +27811,41 @@ var escapeMap = {
   '"': '&quot;',
   '\'': '&#39;',
   '<': '&lt;',
-  '>': '&gt;'
+  '>': '&gt;',
+  '\\': '&#92;'
 };
-var escapeRegex = /[&"'<>]/g;
-
+var escapeRegex = /[&"'<>\\]/g;
 var _exports = module.exports = {};
-
 function hasOwnProp(obj, k) {
   return ObjProto.hasOwnProperty.call(obj, k);
 }
-
 _exports.hasOwnProp = hasOwnProp;
-
 function lookupEscape(ch) {
   return escapeMap[ch];
 }
-
 function _prettifyError(path, withInternals, err) {
   if (!err.Update) {
     // not one of ours, cast it
     err = new _exports.TemplateError(err);
   }
+  err.Update(path);
 
-  err.Update(path); // Unless they marked the dev flag, show them a trace from here
-
+  // Unless they marked the dev flag, show them a trace from here
   if (!withInternals) {
     var old = err;
     err = new Error(old.message);
     err.name = old.name;
   }
-
   return err;
 }
-
 _exports._prettifyError = _prettifyError;
-
 function TemplateError(message, lineno, colno) {
   var err;
   var cause;
-
   if (message instanceof Error) {
     cause = message;
     message = cause.name + ": " + cause.message;
   }
-
   if (Object.setPrototypeOf) {
     err = new Error(message);
     Object.setPrototypeOf(err, TemplateError.prototype);
@@ -28184,24 +27857,18 @@ function TemplateError(message, lineno, colno) {
       value: message
     });
   }
-
   Object.defineProperty(err, 'name', {
     value: 'Template render error'
   });
-
   if (Error.captureStackTrace) {
     Error.captureStackTrace(err, this.constructor);
   }
-
   var getStack;
-
   if (cause) {
     var stackDescriptor = Object.getOwnPropertyDescriptor(cause, 'stack');
-
     getStack = stackDescriptor && (stackDescriptor.get || function () {
       return stackDescriptor.value;
     });
-
     if (!getStack) {
       getStack = function getStack() {
         return cause.stack;
@@ -28209,12 +27876,10 @@ function TemplateError(message, lineno, colno) {
     }
   } else {
     var stack = new Error(message).stack;
-
     getStack = function getStack() {
       return stack;
     };
   }
-
   Object.defineProperty(err, 'stack', {
     get: function get() {
       return getStack.call(err);
@@ -28226,11 +27891,11 @@ function TemplateError(message, lineno, colno) {
   err.lineno = lineno;
   err.colno = colno;
   err.firstUpdate = true;
-
   err.Update = function Update(path) {
-    var msg = '(' + (path || 'unknown path') + ')'; // only show lineno + colno next to path of template
-    // where error occurred
+    var msg = '(' + (path || 'unknown path') + ')';
 
+    // only show lineno + colno next to path of template
+    // where error occurred
     if (this.firstUpdate) {
       if (this.lineno && this.colno) {
         msg += " [Line " + this.lineno + ", Column " + this.colno + "]";
@@ -28238,21 +27903,16 @@ function TemplateError(message, lineno, colno) {
         msg += " [Line " + this.lineno + "]";
       }
     }
-
     msg += '\n ';
-
     if (this.firstUpdate) {
       msg += ' ';
     }
-
     this.message = msg + (this.message || '');
     this.firstUpdate = false;
     return this;
   };
-
   return err;
 }
-
 if (Object.setPrototypeOf) {
   Object.setPrototypeOf(TemplateError.prototype, Error.prototype);
 } else {
@@ -28262,149 +27922,112 @@ if (Object.setPrototypeOf) {
     }
   });
 }
-
 _exports.TemplateError = TemplateError;
-
 function escape(val) {
   return val.replace(escapeRegex, lookupEscape);
 }
-
 _exports.escape = escape;
-
 function isFunction(obj) {
   return ObjProto.toString.call(obj) === '[object Function]';
 }
-
 _exports.isFunction = isFunction;
-
 function isArray(obj) {
   return ObjProto.toString.call(obj) === '[object Array]';
 }
-
 _exports.isArray = isArray;
-
 function isString(obj) {
   return ObjProto.toString.call(obj) === '[object String]';
 }
-
 _exports.isString = isString;
-
 function isObject(obj) {
   return ObjProto.toString.call(obj) === '[object Object]';
 }
-
 _exports.isObject = isObject;
+
 /**
  * @param {string|number} attr
  * @returns {(string|number)[]}
  * @private
  */
-
 function _prepareAttributeParts(attr) {
   if (!attr) {
     return [];
   }
-
   if (typeof attr === 'string') {
     return attr.split('.');
   }
-
   return [attr];
 }
+
 /**
  * @param {string}   attribute      Attribute value. Dots allowed.
  * @returns {function(Object): *}
  */
-
-
 function getAttrGetter(attribute) {
   var parts = _prepareAttributeParts(attribute);
-
   return function attrGetter(item) {
     var _item = item;
-
     for (var i = 0; i < parts.length; i++) {
-      var part = parts[i]; // If item is not an object, and we still got parts to handle, it means
-      // that something goes wrong. Just roll out to undefined in that case.
+      var part = parts[i];
 
+      // If item is not an object, and we still got parts to handle, it means
+      // that something goes wrong. Just roll out to undefined in that case.
       if (hasOwnProp(_item, part)) {
         _item = _item[part];
       } else {
         return undefined;
       }
     }
-
     return _item;
   };
 }
-
 _exports.getAttrGetter = getAttrGetter;
-
 function groupBy(obj, val, throwOnUndefined) {
   var result = {};
   var iterator = isFunction(val) ? val : getAttrGetter(val);
-
   for (var i = 0; i < obj.length; i++) {
     var value = obj[i];
     var key = iterator(value, i);
-
     if (key === undefined && throwOnUndefined === true) {
       throw new TypeError("groupby: attribute \"" + val + "\" resolved to undefined");
     }
-
     (result[key] || (result[key] = [])).push(value);
   }
-
   return result;
 }
-
 _exports.groupBy = groupBy;
-
 function toArray(obj) {
   return Array.prototype.slice.call(obj);
 }
-
 _exports.toArray = toArray;
-
 function without(array) {
   var result = [];
-
   if (!array) {
     return result;
   }
-
   var length = array.length;
   var contains = toArray(arguments).slice(1);
   var index = -1;
-
   while (++index < length) {
     if (indexOf(contains, array[index]) === -1) {
       result.push(array[index]);
     }
   }
-
   return result;
 }
-
 _exports.without = without;
-
 function repeat(char_, n) {
   var str = '';
-
   for (var i = 0; i < n; i++) {
     str += char_;
   }
-
   return str;
 }
-
 _exports.repeat = repeat;
-
 function each(obj, func, context) {
   if (obj == null) {
     return;
   }
-
   if (ArrayProto.forEach && obj.forEach === ArrayProto.forEach) {
     obj.forEach(func, context);
   } else if (obj.length === +obj.length) {
@@ -28413,109 +28036,80 @@ function each(obj, func, context) {
     }
   }
 }
-
 _exports.each = each;
-
 function map(obj, func) {
   var results = [];
-
   if (obj == null) {
     return results;
   }
-
   if (ArrayProto.map && obj.map === ArrayProto.map) {
     return obj.map(func);
   }
-
   for (var i = 0; i < obj.length; i++) {
     results[results.length] = func(obj[i], i);
   }
-
   if (obj.length === +obj.length) {
     results.length = obj.length;
   }
-
   return results;
 }
-
 _exports.map = map;
-
 function asyncIter(arr, iter, cb) {
   var i = -1;
-
   function next() {
     i++;
-
     if (i < arr.length) {
       iter(arr[i], i, next, cb);
     } else {
       cb();
     }
   }
-
   next();
 }
-
 _exports.asyncIter = asyncIter;
-
 function asyncFor(obj, iter, cb) {
   var keys = keys_(obj || {});
   var len = keys.length;
   var i = -1;
-
   function next() {
     i++;
     var k = keys[i];
-
     if (i < len) {
       iter(k, obj[k], i, len, next);
     } else {
       cb();
     }
   }
-
   next();
 }
-
 _exports.asyncFor = asyncFor;
-
 function indexOf(arr, searchElement, fromIndex) {
   return Array.prototype.indexOf.call(arr || [], searchElement, fromIndex);
 }
-
 _exports.indexOf = indexOf;
-
 function keys_(obj) {
   /* eslint-disable no-restricted-syntax */
   var arr = [];
-
   for (var k in obj) {
     if (hasOwnProp(obj, k)) {
       arr.push(k);
     }
   }
-
   return arr;
 }
-
 _exports.keys = keys_;
-
 function _entries(obj) {
   return keys_(obj).map(function (k) {
     return [k, obj[k]];
   });
 }
-
 _exports._entries = _entries;
-
 function _values(obj) {
   return keys_(obj).map(function (k) {
     return obj[k];
   });
 }
-
 _exports._values = _values;
-
 function extend(obj1, obj2) {
   obj1 = obj1 || {};
   keys_(obj2).forEach(function (k) {
@@ -28523,126 +28117,101 @@ function extend(obj1, obj2) {
   });
   return obj1;
 }
-
 _exports._assign = _exports.extend = extend;
-
 function inOperator(key, val) {
   if (isArray(val) || isString(val)) {
     return val.indexOf(key) !== -1;
   } else if (isObject(val)) {
     return key in val;
   }
-
   throw new Error('Cannot use "in" operator to search for "' + key + '" in unexpected types.');
 }
-
 _exports.inOperator = inOperator;
-},{}],158:[function(require,module,exports){
+},{}],159:[function(require,module,exports){
 'use strict';
 
 var lib = require('./lib');
-
 var arrayFrom = Array.from;
-var supportsIterators = typeof Symbol === 'function' && Symbol.iterator && typeof arrayFrom === 'function'; // Frames keep track of scoping both at compile-time and run-time so
+var supportsIterators = typeof Symbol === 'function' && Symbol.iterator && typeof arrayFrom === 'function';
+
+// Frames keep track of scoping both at compile-time and run-time so
 // we know how to access variables. Block tags can introduce special
 // variables, for example.
-
 var Frame = /*#__PURE__*/function () {
   function Frame(parent, isolateWrites) {
     this.variables = Object.create(null);
     this.parent = parent;
-    this.topLevel = false; // if this is true, writes (set) should never propagate upwards past
+    this.topLevel = false;
+    // if this is true, writes (set) should never propagate upwards past
     // this frame to its parent (though reads may).
-
     this.isolateWrites = isolateWrites;
   }
-
   var _proto = Frame.prototype;
-
   _proto.set = function set(name, val, resolveUp) {
     // Allow variables with dots by automatically creating the
     // nested structure
     var parts = name.split('.');
     var obj = this.variables;
     var frame = this;
-
     if (resolveUp) {
       if (frame = this.resolve(parts[0], true)) {
         frame.set(name, val);
         return;
       }
     }
-
     for (var i = 0; i < parts.length - 1; i++) {
       var id = parts[i];
-
       if (!obj[id]) {
         obj[id] = {};
       }
-
       obj = obj[id];
     }
-
     obj[parts[parts.length - 1]] = val;
   };
-
   _proto.get = function get(name) {
     var val = this.variables[name];
-
     if (val !== undefined) {
       return val;
     }
-
     return null;
   };
-
   _proto.lookup = function lookup(name) {
     var p = this.parent;
     var val = this.variables[name];
-
     if (val !== undefined) {
       return val;
     }
-
     return p && p.lookup(name);
   };
-
   _proto.resolve = function resolve(name, forWrite) {
     var p = forWrite && this.isolateWrites ? undefined : this.parent;
     var val = this.variables[name];
-
     if (val !== undefined) {
       return this;
     }
-
     return p && p.resolve(name);
   };
-
   _proto.push = function push(isolateWrites) {
     return new Frame(this, isolateWrites);
   };
-
   _proto.pop = function pop() {
     return this.parent;
   };
-
   return Frame;
 }();
-
 function makeMacro(argNames, kwargNames, func) {
   return function macro() {
     for (var _len = arguments.length, macroArgs = new Array(_len), _key = 0; _key < _len; _key++) {
       macroArgs[_key] = arguments[_key];
     }
-
     var argCount = numArgs(macroArgs);
     var args;
     var kwargs = getKeywordArgs(macroArgs);
-
     if (argCount > argNames.length) {
-      args = macroArgs.slice(0, argNames.length); // Positional arguments that should be passed in as
-      // keyword arguments (essentially default values)
+      args = macroArgs.slice(0, argNames.length);
 
+      // Positional arguments that should be passed in as
+      // keyword arguments (essentially default values)
       macroArgs.slice(args.length, argCount).forEach(function (val, i) {
         if (i < kwargNames.length) {
           kwargs[kwargNames[i]] = val;
@@ -28651,76 +28220,62 @@ function makeMacro(argNames, kwargNames, func) {
       args.push(kwargs);
     } else if (argCount < argNames.length) {
       args = macroArgs.slice(0, argCount);
-
       for (var i = argCount; i < argNames.length; i++) {
-        var arg = argNames[i]; // Keyword arguments that should be passed as
+        var arg = argNames[i];
+
+        // Keyword arguments that should be passed as
         // positional arguments, i.e. the caller explicitly
         // used the name of a positional arg
-
         args.push(kwargs[arg]);
         delete kwargs[arg];
       }
-
       args.push(kwargs);
     } else {
       args = macroArgs;
     }
-
     return func.apply(this, args);
   };
 }
-
 function makeKeywordArgs(obj) {
   obj.__keywords = true;
   return obj;
 }
-
 function isKeywordArgs(obj) {
   return obj && Object.prototype.hasOwnProperty.call(obj, '__keywords');
 }
-
 function getKeywordArgs(args) {
   var len = args.length;
-
   if (len) {
     var lastArg = args[len - 1];
-
     if (isKeywordArgs(lastArg)) {
       return lastArg;
     }
   }
-
   return {};
 }
-
 function numArgs(args) {
   var len = args.length;
-
   if (len === 0) {
     return 0;
   }
-
   var lastArg = args[len - 1];
-
   if (isKeywordArgs(lastArg)) {
     return len - 1;
   } else {
     return len;
   }
-} // A SafeString object indicates that the string should not be
+}
+
+// A SafeString object indicates that the string should not be
 // autoescaped. This happens magically because autoescaping only
 // occurs on primitive string objects.
-
-
 function SafeString(val) {
   if (typeof val !== 'string') {
     return val;
   }
-
   this.val = val;
   this.length = val.length;
 }
-
 SafeString.prototype = Object.create(String.prototype, {
   length: {
     writable: true,
@@ -28728,26 +28283,20 @@ SafeString.prototype = Object.create(String.prototype, {
     value: 0
   }
 });
-
 SafeString.prototype.valueOf = function valueOf() {
   return this.val;
 };
-
 SafeString.prototype.toString = function toString() {
   return this.val;
 };
-
 function copySafeness(dest, target) {
   if (dest instanceof SafeString) {
     return new SafeString(target);
   }
-
   return target.toString();
 }
-
 function markSafe(val) {
   var type = typeof val;
-
   if (type === 'string') {
     return new SafeString(val);
   } else if (type !== 'function') {
@@ -28755,67 +28304,52 @@ function markSafe(val) {
   } else {
     return function wrapSafe(args) {
       var ret = val.apply(this, arguments);
-
       if (typeof ret === 'string') {
         return new SafeString(ret);
       }
-
       return ret;
     };
   }
 }
-
 function suppressValue(val, autoescape) {
   val = val !== undefined && val !== null ? val : '';
-
   if (autoescape && !(val instanceof SafeString)) {
     val = lib.escape(val.toString());
   }
-
   return val;
 }
-
 function ensureDefined(val, lineno, colno) {
   if (val === null || val === undefined) {
     throw new lib.TemplateError('attempted to output null or undefined value', lineno + 1, colno + 1);
   }
-
   return val;
 }
-
 function memberLookup(obj, val) {
   if (obj === undefined || obj === null) {
     return undefined;
   }
-
   if (typeof obj[val] === 'function') {
     return function () {
       for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
         args[_key2] = arguments[_key2];
       }
-
       return obj[val].apply(obj, args);
     };
   }
-
   return obj[val];
 }
-
 function callWrap(obj, name, context, args) {
   if (!obj) {
     throw new Error('Unable to call `' + name + '`, which is undefined or falsey');
   } else if (typeof obj !== 'function') {
     throw new Error('Unable to call `' + name + '`, which is not a function');
   }
-
   return obj.apply(context, args);
 }
-
 function contextOrFrameLookup(context, frame, name) {
   var val = frame.lookup(name);
   return val !== undefined ? val : context.lookup(name);
 }
-
 function handleError(error, lineno, colno) {
   if (error.lineno) {
     return error;
@@ -28823,7 +28357,6 @@ function handleError(error, lineno, colno) {
     return new lib.TemplateError(error, lineno, colno);
   }
 }
-
 function asyncEach(arr, dimen, iter, cb) {
   if (lib.isArray(arr)) {
     var len = arr.length;
@@ -28832,15 +28365,12 @@ function asyncEach(arr, dimen, iter, cb) {
         case 1:
           iter(item, i, len, next);
           break;
-
         case 2:
           iter(item[0], item[1], i, len, next);
           break;
-
         case 3:
           iter(item[0], item[1], item[2], i, len, next);
           break;
-
         default:
           item.push(i, len, next);
           iter.apply(this, item);
@@ -28852,44 +28382,35 @@ function asyncEach(arr, dimen, iter, cb) {
     }, cb);
   }
 }
-
 function asyncAll(arr, dimen, func, cb) {
   var finished = 0;
   var len;
   var outputArr;
-
   function done(i, output) {
     finished++;
     outputArr[i] = output;
-
     if (finished === len) {
       cb(null, outputArr.join(''));
     }
   }
-
   if (lib.isArray(arr)) {
     len = arr.length;
     outputArr = new Array(len);
-
     if (len === 0) {
       cb(null, '');
     } else {
       for (var i = 0; i < arr.length; i++) {
         var item = arr[i];
-
         switch (dimen) {
           case 1:
             func(item, i, len, done);
             break;
-
           case 2:
             func(item[0], item[1], i, len, done);
             break;
-
           case 3:
             func(item[0], item[1], item[2], i, len, done);
             break;
-
           default:
             item.push(i, len, done);
             func.apply(this, item);
@@ -28900,7 +28421,6 @@ function asyncAll(arr, dimen, func, cb) {
     var keys = lib.keys(arr || {});
     len = keys.length;
     outputArr = new Array(len);
-
     if (len === 0) {
       cb(null, '');
     } else {
@@ -28911,7 +28431,6 @@ function asyncAll(arr, dimen, func, cb) {
     }
   }
 }
-
 function fromIterator(arr) {
   if (typeof arr !== 'object' || arr === null || lib.isArray(arr)) {
     return arr;
@@ -28921,7 +28440,6 @@ function fromIterator(arr) {
     return arr;
   }
 }
-
 module.exports = {
   Frame: Frame,
   makeMacro: makeMacro,
@@ -28943,33 +28461,31 @@ module.exports = {
   inOperator: lib.inOperator,
   fromIterator: fromIterator
 };
-},{"./lib":157}],159:[function(require,module,exports){
+},{"./lib":158}],160:[function(require,module,exports){
 'use strict';
 
 var SafeString = require('./runtime').SafeString;
+
 /**
  * Returns `true` if the object is a function, otherwise `false`.
  * @param { any } value
  * @returns { boolean }
  */
-
-
 function callable(value) {
   return typeof value === 'function';
 }
-
 exports.callable = callable;
+
 /**
  * Returns `true` if the object is strictly not `undefined`.
  * @param { any } value
  * @returns { boolean }
  */
-
 function defined(value) {
   return value !== undefined;
 }
-
 exports.defined = defined;
+
 /**
  * Returns `true` if the operand (one) is divisble by the test's argument
  * (two).
@@ -28977,48 +28493,45 @@ exports.defined = defined;
  * @param { number } two
  * @returns { boolean }
  */
-
 function divisibleby(one, two) {
   return one % two === 0;
 }
-
 exports.divisibleby = divisibleby;
+
 /**
  * Returns true if the string has been escaped (i.e., is a SafeString).
  * @param { any } value
  * @returns { boolean }
  */
-
 function escaped(value) {
   return value instanceof SafeString;
 }
-
 exports.escaped = escaped;
+
 /**
  * Returns `true` if the arguments are strictly equal.
  * @param { any } one
  * @param { any } two
  */
-
 function equalto(one, two) {
   return one === two;
 }
+exports.equalto = equalto;
 
-exports.equalto = equalto; // Aliases
-
+// Aliases
 exports.eq = exports.equalto;
 exports.sameas = exports.equalto;
+
 /**
  * Returns `true` if the value is evenly divisible by 2.
  * @param { number } value
  * @returns { boolean }
  */
-
 function even(value) {
   return value % 2 === 0;
 }
-
 exports.even = even;
+
 /**
  * Returns `true` if the value is falsy - if I recall correctly, '', 0, false,
  * undefined, NaN or null. I don't know if we should stick to the default JS
@@ -29027,12 +28540,11 @@ exports.even = even;
  * @param { any } value
  * @returns { boolean }
  */
-
 function falsy(value) {
   return !value;
 }
-
 exports.falsy = falsy;
+
 /**
  * Returns `true` if the operand (one) is greater or equal to the test's
  * argument (two).
@@ -29040,12 +28552,11 @@ exports.falsy = falsy;
  * @param { number } two
  * @returns { boolean }
  */
-
 function ge(one, two) {
   return one >= two;
 }
-
 exports.ge = ge;
+
 /**
  * Returns `true` if the operand (one) is greater than the test's argument
  * (two).
@@ -29053,14 +28564,14 @@ exports.ge = ge;
  * @param { number } two
  * @returns { boolean }
  */
-
 function greaterthan(one, two) {
   return one > two;
 }
+exports.greaterthan = greaterthan;
 
-exports.greaterthan = greaterthan; // alias
-
+// alias
 exports.gt = exports.greaterthan;
+
 /**
  * Returns `true` if the operand (one) is less than or equal to the test's
  * argument (two).
@@ -29068,12 +28579,11 @@ exports.gt = exports.greaterthan;
  * @param { number } two
  * @returns { boolean }
  */
-
 function le(one, two) {
   return one <= two;
 }
-
 exports.le = le;
+
 /**
  * Returns `true` if the operand (one) is less than the test's passed argument
  * (two).
@@ -29081,25 +28591,24 @@ exports.le = le;
  * @param { number } two
  * @returns { boolean }
  */
-
 function lessthan(one, two) {
   return one < two;
 }
+exports.lessthan = lessthan;
 
-exports.lessthan = lessthan; // alias
-
+// alias
 exports.lt = exports.lessthan;
+
 /**
  * Returns `true` if the string is lowercased.
  * @param { string } value
  * @returns { boolean }
  */
-
 function lower(value) {
   return value.toLowerCase() === value;
 }
-
 exports.lower = lower;
+
 /**
  * Returns `true` if the operand (one) is less than or equal to the test's
  * argument (two).
@@ -29107,90 +28616,82 @@ exports.lower = lower;
  * @param { number } two
  * @returns { boolean }
  */
-
 function ne(one, two) {
   return one !== two;
 }
-
 exports.ne = ne;
+
 /**
  * Returns true if the value is strictly equal to `null`.
  * @param { any }
  * @returns { boolean }
  */
-
 function nullTest(value) {
   return value === null;
 }
-
 exports.null = nullTest;
+
 /**
  * Returns true if value is a number.
  * @param { any }
  * @returns { boolean }
  */
-
 function number(value) {
   return typeof value === 'number';
 }
-
 exports.number = number;
+
 /**
  * Returns `true` if the value is *not* evenly divisible by 2.
  * @param { number } value
  * @returns { boolean }
  */
-
 function odd(value) {
   return value % 2 === 1;
 }
-
 exports.odd = odd;
+
 /**
  * Returns `true` if the value is a string, `false` if not.
  * @param { any } value
  * @returns { boolean }
  */
-
 function string(value) {
   return typeof value === 'string';
 }
-
 exports.string = string;
+
 /**
  * Returns `true` if the value is not in the list of things considered falsy:
  * '', null, undefined, 0, NaN and false.
  * @param { any } value
  * @returns { boolean }
  */
-
 function truthy(value) {
   return !!value;
 }
-
 exports.truthy = truthy;
+
 /**
  * Returns `true` if the value is undefined.
  * @param { any } value
  * @returns { boolean }
  */
-
 function undefinedTest(value) {
   return value === undefined;
 }
-
 exports.undefined = undefinedTest;
+
 /**
  * Returns `true` if the string is uppercased.
  * @param { string } value
  * @returns { boolean }
  */
-
 function upper(value) {
   return value.toUpperCase() === value;
 }
-
 exports.upper = upper;
+
 /**
  * If ES6 features are available, returns `true` if the value implements the
  * `Symbol.iterator` method. If not, it's a string or Array.
@@ -29201,7 +28702,6 @@ exports.upper = upper;
  * @param { any } value
  * @returns { boolean }
  */
-
 function iterable(value) {
   if (typeof Symbol !== 'undefined') {
     return !!value[Symbol.iterator];
@@ -29209,28 +28709,25 @@ function iterable(value) {
     return Array.isArray(value) || typeof value === 'string';
   }
 }
-
 exports.iterable = iterable;
+
 /**
  * If ES6 features are available, returns `true` if the value is an object hash
  * or an ES6 Map. Otherwise just return if it's an object hash.
  * @param { any } value
  * @returns { boolean }
  */
-
 function mapping(value) {
   // only maps and object hashes
   var bool = value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value);
-
   if (Set) {
     return bool && !(value instanceof Set);
   } else {
     return bool;
   }
 }
-
 exports.mapping = mapping;
-},{"./runtime":158}],160:[function(require,module,exports){
+},{"./runtime":159}],161:[function(require,module,exports){
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -29240,105 +28737,70 @@ exports.mapping = mapping;
 		exports["rrule"] = factory();
 	else
 		root["rrule"] = factory();
-})(typeof self !== 'undefined' ? self : this, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = function(exports) {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/
-/******/ 	// create a fake namespace object
-/******/ 	// mode & 1: value is a module id, require it
-/******/ 	// mode & 2: merge all properties of value into the ns
-/******/ 	// mode & 4: return value when already ns object
-/******/ 	// mode & 8|1: behave like require
-/******/ 	__webpack_require__.t = function(value, mode) {
-/******/ 		if(mode & 1) value = __webpack_require__(value);
-/******/ 		if(mode & 8) return value;
-/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
-/******/ 		var ns = Object.create(null);
-/******/ 		__webpack_require__.r(ns);
-/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
-/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
-/******/ 		return ns;
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
-/******/ })
+})(typeof self !== 'undefined' ? self : this, () => {
+return /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	// The require scope
+/******/ 	var __webpack_require__ = {};
+/******/ 	
 /************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
-// CONCATENATED MODULE: ./src/weekday.ts
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "ALL_WEEKDAYS": () => (/* reexport */ ALL_WEEKDAYS),
+  "Frequency": () => (/* reexport */ Frequency),
+  "RRule": () => (/* reexport */ RRule),
+  "RRuleSet": () => (/* reexport */ RRuleSet),
+  "Weekday": () => (/* reexport */ Weekday),
+  "datetime": () => (/* reexport */ datetime),
+  "rrulestr": () => (/* reexport */ rrulestr)
+});
+
+;// CONCATENATED MODULE: ./src/weekday.ts
 // =============================================================================
 // Weekday
 // =============================================================================
-var ALL_WEEKDAYS = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+var ALL_WEEKDAYS = [
+    'MO',
+    'TU',
+    'WE',
+    'TH',
+    'FR',
+    'SA',
+    'SU',
+];
 var Weekday = /** @class */ (function () {
     function Weekday(weekday, n) {
         if (n === 0)
@@ -29372,7 +28834,7 @@ var Weekday = /** @class */ (function () {
 }());
 
 
-// CONCATENATED MODULE: ./src/helpers.ts
+;// CONCATENATED MODULE: ./src/helpers.ts
 // =============================================================================
 // Helper functions
 // =============================================================================
@@ -29384,7 +28846,7 @@ var isNumber = function (value) {
     return typeof value === 'number';
 };
 var isWeekdayStr = function (value) {
-    return ALL_WEEKDAYS.indexOf(value) >= 0;
+    return typeof value === 'string' && ALL_WEEKDAYS.includes(value);
 };
 var isArray = Array.isArray;
 /**
@@ -29458,7 +28920,7 @@ var split = function (str, sep, num) {
  * @param {number} a The dividend.
  * @param {number} b The divisor.
  * @return {number} a % b where the result is between 0 and b (either 0 <= x < b
- *     or b < x <= 0, depending on the sign of b).
+ * or b < x <= 0, depending on the sign of b).
  */
 var pymod = function (a, b) {
     var r = a % b;
@@ -29476,6 +28938,7 @@ var empty = function (obj) {
 };
 /**
  * Python-like boolean
+ *
  * @return {Boolean} value of an object/primitive, taking into account
  * the fact that in Python an empty list's/tuple's
  * boolean value is False, whereas in JS it's true
@@ -29490,154 +28953,169 @@ var includes = function (arr, val) {
     return notEmpty(arr) && arr.indexOf(val) !== -1;
 };
 
-// CONCATENATED MODULE: ./src/dateutil.ts
+;// CONCATENATED MODULE: ./src/dateutil.ts
 
+var datetime = function (y, m, d, h, i, s) {
+    if (h === void 0) { h = 0; }
+    if (i === void 0) { i = 0; }
+    if (s === void 0) { s = 0; }
+    return new Date(Date.UTC(y, m - 1, d, h, i, s));
+};
 /**
  * General date-related utilities.
  * Also handles several incompatibilities between JavaScript and Python
  *
  */
-var dateutil_dateutil;
-(function (dateutil) {
-    dateutil.MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    /**
-     * Number of milliseconds of one day
-     */
-    dateutil.ONE_DAY = 1000 * 60 * 60 * 24;
-    /**
-     * @see: <http://docs.python.org/library/datetime.html#datetime.MAXYEAR>
-     */
-    dateutil.MAXYEAR = 9999;
-    /**
-     * Python uses 1-Jan-1 as the base for calculating ordinals but we don't
-     * want to confuse the JS engine with milliseconds > Number.MAX_NUMBER,
-     * therefore we use 1-Jan-1970 instead
-     */
-    dateutil.ORDINAL_BASE = new Date(Date.UTC(1970, 0, 1));
-    /**
-     * Python: MO-SU: 0 - 6
-     * JS: SU-SAT 0 - 6
-     */
-    dateutil.PY_WEEKDAYS = [6, 0, 1, 2, 3, 4, 5];
-    /**
-     * py_date.timetuple()[7]
-     */
-    dateutil.getYearDay = function (date) {
-        var dateNoTime = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-        return (Math.ceil((dateNoTime.valueOf() -
-            new Date(date.getUTCFullYear(), 0, 1).valueOf()) /
-            dateutil.ONE_DAY) + 1);
-    };
-    dateutil.isLeapYear = function (year) {
-        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-    };
-    dateutil.isDate = function (value) {
-        return value instanceof Date;
-    };
-    dateutil.isValidDate = function (value) {
-        return dateutil.isDate(value) && !isNaN(value.getTime());
-    };
-    /**
-     * @return {Number} the date's timezone offset in ms
-     */
-    dateutil.tzOffset = function (date) {
-        return date.getTimezoneOffset() * 60 * 1000;
-    };
-    /**
-     * @see: <http://www.mcfedries.com/JavaScript/DaysBetween.asp>
-     */
-    dateutil.daysBetween = function (date1, date2) {
-        // The number of milliseconds in one day
-        // Convert both dates to milliseconds
-        var date1ms = date1.getTime() - dateutil.tzOffset(date1);
-        var date2ms = date2.getTime() - dateutil.tzOffset(date2);
-        // Calculate the difference in milliseconds
-        var differencems = date1ms - date2ms;
-        // Convert back to days and return
-        return Math.round(differencems / dateutil.ONE_DAY);
-    };
-    /**
-     * @see: <http://docs.python.org/library/datetime.html#datetime.date.toordinal>
-     */
-    dateutil.toOrdinal = function (date) {
-        return dateutil.daysBetween(date, dateutil.ORDINAL_BASE);
-    };
-    /**
-     * @see - <http://docs.python.org/library/datetime.html#datetime.date.fromordinal>
-     */
-    dateutil.fromOrdinal = function (ordinal) {
-        return new Date(dateutil.ORDINAL_BASE.getTime() + ordinal * dateutil.ONE_DAY);
-    };
-    dateutil.getMonthDays = function (date) {
-        var month = date.getUTCMonth();
-        return month === 1 && dateutil.isLeapYear(date.getUTCFullYear())
-            ? 29
-            : dateutil.MONTH_DAYS[month];
-    };
-    /**
-     * @return {Number} python-like weekday
-     */
-    dateutil.getWeekday = function (date) {
-        return dateutil.PY_WEEKDAYS[date.getUTCDay()];
-    };
-    /**
-     * @see: <http://docs.python.org/library/calendar.html#calendar.monthrange>
-     */
-    dateutil.monthRange = function (year, month) {
-        var date = new Date(Date.UTC(year, month, 1));
-        return [dateutil.getWeekday(date), dateutil.getMonthDays(date)];
-    };
-    /**
-     * @see: <http://docs.python.org/library/datetime.html#datetime.datetime.combine>
-     */
-    dateutil.combine = function (date, time) {
-        time = time || date;
-        return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds()));
-    };
-    dateutil.clone = function (date) {
-        var dolly = new Date(date.getTime());
-        return dolly;
-    };
-    dateutil.cloneDates = function (dates) {
-        var clones = [];
-        for (var i = 0; i < dates.length; i++) {
-            clones.push(dateutil.clone(dates[i]));
-        }
-        return clones;
-    };
-    /**
-     * Sorts an array of Date or dateutil.Time objects
-     */
-    dateutil.sort = function (dates) {
-        dates.sort(function (a, b) {
-            return a.getTime() - b.getTime();
-        });
-    };
-    dateutil.timeToUntilString = function (time, utc) {
-        if (utc === void 0) { utc = true; }
-        var date = new Date(time);
-        return [
-            padStart(date.getUTCFullYear().toString(), 4, '0'),
-            padStart(date.getUTCMonth() + 1, 2, '0'),
-            padStart(date.getUTCDate(), 2, '0'),
-            'T',
-            padStart(date.getUTCHours(), 2, '0'),
-            padStart(date.getUTCMinutes(), 2, '0'),
-            padStart(date.getUTCSeconds(), 2, '0'),
-            utc ? 'Z' : ''
-        ].join('');
-    };
-    dateutil.untilStringToDate = function (until) {
-        var re = /^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})Z?)?$/;
-        var bits = re.exec(until);
-        if (!bits)
-            throw new Error("Invalid UNTIL value: " + until);
-        return new Date(Date.UTC(parseInt(bits[1], 10), parseInt(bits[2], 10) - 1, parseInt(bits[3], 10), parseInt(bits[5], 10) || 0, parseInt(bits[6], 10) || 0, parseInt(bits[7], 10) || 0));
-    };
-})(dateutil_dateutil || (dateutil_dateutil = {}));
-/* harmony default export */ var src_dateutil = (dateutil_dateutil);
+var MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+/**
+ * Number of milliseconds of one day
+ */
+var ONE_DAY = 1000 * 60 * 60 * 24;
+/**
+ * @see: <http://docs.python.org/library/datetime.html#datetime.MAXYEAR>
+ */
+var MAXYEAR = 9999;
+/**
+ * Python uses 1-Jan-1 as the base for calculating ordinals but we don't
+ * want to confuse the JS engine with milliseconds > Number.MAX_NUMBER,
+ * therefore we use 1-Jan-1970 instead
+ */
+var ORDINAL_BASE = datetime(1970, 1, 1);
+/**
+ * Python: MO-SU: 0 - 6
+ * JS: SU-SAT 0 - 6
+ */
+var PY_WEEKDAYS = [6, 0, 1, 2, 3, 4, 5];
+/**
+ * py_date.timetuple()[7]
+ */
+var getYearDay = function (date) {
+    var dateNoTime = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    return (Math.ceil((dateNoTime.valueOf() - new Date(date.getUTCFullYear(), 0, 1).valueOf()) /
+        ONE_DAY) + 1);
+};
+var isLeapYear = function (year) {
+    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+};
+var isDate = function (value) {
+    return value instanceof Date;
+};
+var isValidDate = function (value) {
+    return isDate(value) && !isNaN(value.getTime());
+};
+/**
+ * @return {Number} the date's timezone offset in ms
+ */
+var tzOffset = function (date) {
+    return date.getTimezoneOffset() * 60 * 1000;
+};
+/**
+ * @see: <http://www.mcfedries.com/JavaScript/DaysBetween.asp>
+ */
+var daysBetween = function (date1, date2) {
+    // The number of milliseconds in one day
+    // Convert both dates to milliseconds
+    var date1ms = date1.getTime();
+    var date2ms = date2.getTime();
+    // Calculate the difference in milliseconds
+    var differencems = date1ms - date2ms;
+    // Convert back to days and return
+    return Math.round(differencems / ONE_DAY);
+};
+/**
+ * @see: <http://docs.python.org/library/datetime.html#datetime.date.toordinal>
+ */
+var toOrdinal = function (date) {
+    return daysBetween(date, ORDINAL_BASE);
+};
+/**
+ * @see - <http://docs.python.org/library/datetime.html#datetime.date.fromordinal>
+ */
+var fromOrdinal = function (ordinal) {
+    return new Date(ORDINAL_BASE.getTime() + ordinal * ONE_DAY);
+};
+var getMonthDays = function (date) {
+    var month = date.getUTCMonth();
+    return month === 1 && isLeapYear(date.getUTCFullYear())
+        ? 29
+        : MONTH_DAYS[month];
+};
+/**
+ * @return {Number} python-like weekday
+ */
+var getWeekday = function (date) {
+    return PY_WEEKDAYS[date.getUTCDay()];
+};
+/**
+ * @see: <http://docs.python.org/library/calendar.html#calendar.monthrange>
+ */
+var monthRange = function (year, month) {
+    var date = datetime(year, month + 1, 1);
+    return [getWeekday(date), getMonthDays(date)];
+};
+/**
+ * @see: <http://docs.python.org/library/datetime.html#datetime.datetime.combine>
+ */
+var combine = function (date, time) {
+    time = time || date;
+    return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds()));
+};
+var dateutil_clone = function (date) {
+    var dolly = new Date(date.getTime());
+    return dolly;
+};
+var cloneDates = function (dates) {
+    var clones = [];
+    for (var i = 0; i < dates.length; i++) {
+        clones.push(dateutil_clone(dates[i]));
+    }
+    return clones;
+};
+/**
+ * Sorts an array of Date or Time objects
+ */
+var sort = function (dates) {
+    dates.sort(function (a, b) {
+        return a.getTime() - b.getTime();
+    });
+};
+var timeToUntilString = function (time, utc) {
+    if (utc === void 0) { utc = true; }
+    var date = new Date(time);
+    return [
+        padStart(date.getUTCFullYear().toString(), 4, '0'),
+        padStart(date.getUTCMonth() + 1, 2, '0'),
+        padStart(date.getUTCDate(), 2, '0'),
+        'T',
+        padStart(date.getUTCHours(), 2, '0'),
+        padStart(date.getUTCMinutes(), 2, '0'),
+        padStart(date.getUTCSeconds(), 2, '0'),
+        utc ? 'Z' : '',
+    ].join('');
+};
+var untilStringToDate = function (until) {
+    var re = /^(\d{4})(\d{2})(\d{2})(T(\d{2})(\d{2})(\d{2})Z?)?$/;
+    var bits = re.exec(until);
+    if (!bits)
+        throw new Error("Invalid UNTIL value: ".concat(until));
+    return new Date(Date.UTC(parseInt(bits[1], 10), parseInt(bits[2], 10) - 1, parseInt(bits[3], 10), parseInt(bits[5], 10) || 0, parseInt(bits[6], 10) || 0, parseInt(bits[7], 10) || 0));
+};
+var dateTZtoISO8601 = function (date, timeZone) {
+    // date format for sv-SE is almost ISO8601
+    var dateStr = date.toLocaleString('sv-SE', { timeZone: timeZone });
+    // '2023-02-07 10:41:36'
+    return dateStr.replace(' ', 'T') + 'Z';
+};
+var dateInTimeZone = function (date, timeZone) {
+    var localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // Date constructor can only reliably parse dates in ISO8601 format
+    var dateInLocalTZ = new Date(dateTZtoISO8601(date, localTimeZone));
+    var dateInTargetTZ = new Date(dateTZtoISO8601(date, timeZone !== null && timeZone !== void 0 ? timeZone : 'UTC'));
+    var tzOffset = dateInTargetTZ.getTime() - dateInLocalTZ.getTime();
+    return new Date(date.getTime() - tzOffset);
+};
 
-// CONCATENATED MODULE: ./src/iterresult.ts
+;// CONCATENATED MODULE: ./src/iterresult.ts
 /**
  * This class helps us to emulate python's generators, sorta.
  */
@@ -29666,9 +29144,9 @@ var IterResult = /** @class */ (function () {
      * Possibly adds a date into the result.
      *
      * @param {Date} date - the date isn't necessarly added to the result
-     *                      list (if it is too late/too early)
+     * list (if it is too late/too early)
      * @return {Boolean} true if it makes sense to continue the iteration
-     *                   false if we're done.
+     * false if we're done.
      */
     IterResult.prototype.accept = function (date) {
         ++this.total;
@@ -29704,6 +29182,7 @@ var IterResult = /** @class */ (function () {
     /**
      * 'before' and 'after' return only one date, whereas 'all'
      * and 'between' an array.
+     *
      * @return {Date,Array?}
      */
     IterResult.prototype.getValue = function () {
@@ -29723,33 +29202,35 @@ var IterResult = /** @class */ (function () {
     };
     return IterResult;
 }());
-/* harmony default export */ var iterresult = (IterResult);
+/* harmony default export */ const iterresult = (IterResult);
 
-// CONCATENATED MODULE: ./node_modules/tslib/tslib.es6.js
-/*! *****************************************************************************
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this file except in compliance with the License. You may obtain a copy of the
-License at http://www.apache.org/licenses/LICENSE-2.0
+;// CONCATENATED MODULE: ./node_modules/tslib/tslib.es6.js
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
 
-THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-MERCHANTABLITY OR NON-INFRINGEMENT.
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
 
-See the Apache Version 2.0 License for specific language governing permissions
-and limitations under the License.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
 ***************************************************************************** */
 /* global Reflect, Promise */
 
 var extendStatics = function(d, b) {
     extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
     return extendStatics(d, b);
 };
 
 function __extends(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
     extendStatics(d, b);
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -29794,10 +29275,11 @@ function __metadata(metadataKey, metadataValue) {
 }
 
 function __awaiter(thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 }
@@ -29830,19 +29312,32 @@ function __generator(thisArg, body) {
     }
 }
 
-function __exportStar(m, exports) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+var __createBinding = Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+        desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+});
+
+function __exportStar(m, o) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
 }
 
 function __values(o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
-    return {
+    if (o && typeof o.length === "number") return {
         next: function () {
             if (o && i >= o.length) o = void 0;
             return { value: o && o[i++], done: !o };
         }
     };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 }
 
 function __read(o, n) {
@@ -29862,19 +29357,31 @@ function __read(o, n) {
     return ar;
 }
 
+/** @deprecated */
 function __spread() {
     for (var ar = [], i = 0; i < arguments.length; i++)
         ar = ar.concat(__read(arguments[i]));
     return ar;
 }
 
+/** @deprecated */
 function __spreadArrays() {
     for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
     for (var r = Array(s), k = 0, i = 0; i < il; i++)
         for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
             r[k] = a[j];
     return r;
-};
+}
+
+function __spreadArray(to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+}
 
 function __await(v) {
     return this instanceof __await ? (this.v = v, this) : new __await(v);
@@ -29911,11 +29418,17 @@ function __makeTemplateObject(cooked, raw) {
     return cooked;
 };
 
+var __setModuleDefault = Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+};
+
 function __importStar(mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result.default = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 }
 
@@ -29923,14 +29436,32 @@ function __importDefault(mod) {
     return (mod && mod.__esModule) ? mod : { default: mod };
 }
 
-// CONCATENATED MODULE: ./src/callbackiterresult.ts
+function __classPrivateFieldGet(receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+}
+
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+}
+
+function __classPrivateFieldIn(state, receiver) {
+    if (receiver === null || (typeof receiver !== "object" && typeof receiver !== "function")) throw new TypeError("Cannot use 'in' operator on non-object");
+    return typeof state === "function" ? receiver === state : state.has(receiver);
+}
+
+;// CONCATENATED MODULE: ./src/callbackiterresult.ts
 
 
 /**
  * IterResult subclass that calls a callback function on each add,
  * and stops iterating when the callback returns false.
  */
-var callbackiterresult_CallbackIterResult = /** @class */ (function (_super) {
+var CallbackIterResult = /** @class */ (function (_super) {
     __extends(CallbackIterResult, _super);
     function CallbackIterResult(method, args, iterator) {
         var _this = _super.call(this, method, args) || this;
@@ -29946,27 +29477,41 @@ var callbackiterresult_CallbackIterResult = /** @class */ (function (_super) {
     };
     return CallbackIterResult;
 }(iterresult));
-/* harmony default export */ var callbackiterresult = (callbackiterresult_CallbackIterResult);
+/* harmony default export */ const callbackiterresult = (CallbackIterResult);
 
-// CONCATENATED MODULE: ./src/nlp/i18n.ts
+;// CONCATENATED MODULE: ./src/nlp/i18n.ts
 // =============================================================================
 // i18n
 // =============================================================================
 var ENGLISH = {
     dayNames: [
-        'Sunday', 'Monday', 'Tuesday', 'Wednesday',
-        'Thursday', 'Friday', 'Saturday'
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
     ],
     monthNames: [
-        'January', 'February', 'March', 'April', 'May',
-        'June', 'July', 'August', 'September', 'October',
-        'November', 'December'
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
     ],
     tokens: {
-        'SKIP': /^[ \r\n\t]+|^\.$/,
-        'number': /^[1-9][0-9]*/,
-        'numberAsText': /^(one|two|three)/i,
-        'every': /^every/i,
+        SKIP: /^[ \r\n\t]+|^\.$/,
+        number: /^[1-9][0-9]*/,
+        numberAsText: /^(one|two|three)/i,
+        every: /^every/i,
         'day(s)': /^days?/i,
         'weekday(s)': /^weekdays?/i,
         'week(s)': /^weeks?/i,
@@ -29974,42 +29519,42 @@ var ENGLISH = {
         'minute(s)': /^minutes?/i,
         'month(s)': /^months?/i,
         'year(s)': /^years?/i,
-        'on': /^(on|in)/i,
-        'at': /^(at)/i,
-        'the': /^the/i,
-        'first': /^first/i,
-        'second': /^second/i,
-        'third': /^third/i,
-        'nth': /^([1-9][0-9]*)(\.|th|nd|rd|st)/i,
-        'last': /^last/i,
-        'for': /^for/i,
+        on: /^(on|in)/i,
+        at: /^(at)/i,
+        the: /^the/i,
+        first: /^first/i,
+        second: /^second/i,
+        third: /^third/i,
+        nth: /^([1-9][0-9]*)(\.|th|nd|rd|st)/i,
+        last: /^last/i,
+        for: /^for/i,
         'time(s)': /^times?/i,
-        'until': /^(un)?til/i,
-        'monday': /^mo(n(day)?)?/i,
-        'tuesday': /^tu(e(s(day)?)?)?/i,
-        'wednesday': /^we(d(n(esday)?)?)?/i,
-        'thursday': /^th(u(r(sday)?)?)?/i,
-        'friday': /^fr(i(day)?)?/i,
-        'saturday': /^sa(t(urday)?)?/i,
-        'sunday': /^su(n(day)?)?/i,
-        'january': /^jan(uary)?/i,
-        'february': /^feb(ruary)?/i,
-        'march': /^mar(ch)?/i,
-        'april': /^apr(il)?/i,
-        'may': /^may/i,
-        'june': /^june?/i,
-        'july': /^july?/i,
-        'august': /^aug(ust)?/i,
-        'september': /^sep(t(ember)?)?/i,
-        'october': /^oct(ober)?/i,
-        'november': /^nov(ember)?/i,
-        'december': /^dec(ember)?/i,
-        'comma': /^(,\s*|(and|or)\s*)+/i
-    }
+        until: /^(un)?til/i,
+        monday: /^mo(n(day)?)?/i,
+        tuesday: /^tu(e(s(day)?)?)?/i,
+        wednesday: /^we(d(n(esday)?)?)?/i,
+        thursday: /^th(u(r(sday)?)?)?/i,
+        friday: /^fr(i(day)?)?/i,
+        saturday: /^sa(t(urday)?)?/i,
+        sunday: /^su(n(day)?)?/i,
+        january: /^jan(uary)?/i,
+        february: /^feb(ruary)?/i,
+        march: /^mar(ch)?/i,
+        april: /^apr(il)?/i,
+        may: /^may/i,
+        june: /^june?/i,
+        july: /^july?/i,
+        august: /^aug(ust)?/i,
+        september: /^sep(t(ember)?)?/i,
+        october: /^oct(ober)?/i,
+        november: /^nov(ember)?/i,
+        december: /^dec(ember)?/i,
+        comma: /^(,\s*|(and|or)\s*)+/i,
+    },
 };
-/* harmony default export */ var i18n = (ENGLISH);
+/* harmony default export */ const i18n = (ENGLISH);
 
-// CONCATENATED MODULE: ./src/nlp/totext.ts
+;// CONCATENATED MODULE: ./src/nlp/totext.ts
 
 
 
@@ -30023,7 +29568,7 @@ var contains = function (arr, val) {
     return arr.indexOf(val) !== -1;
 };
 var defaultGetText = function (id) { return id.toString(); };
-var defaultDateFormatter = function (year, month, day) { return month + " " + day + ", " + year; };
+var defaultDateFormatter = function (year, month, day) { return "".concat(month, " ").concat(day, ", ").concat(year); };
 /**
  *
  * @param {RRule} rrule
@@ -30032,7 +29577,7 @@ var defaultDateFormatter = function (year, month, day) { return month + " " + da
  * @param {Object} language definition
  * @constructor
  */
-var totext_ToText = /** @class */ (function () {
+var ToText = /** @class */ (function () {
     function ToText(rrule, gettext, language, dateFormatter) {
         if (gettext === void 0) { gettext = defaultGetText; }
         if (language === void 0) { language = i18n; }
@@ -30079,7 +29624,7 @@ var totext_ToText = /** @class */ (function () {
                     days.indexOf('TH') !== -1 &&
                     days.indexOf('FR') !== -1 &&
                     days.indexOf('SA') !== -1 &&
-                    days.indexOf('SU') !== -1
+                    days.indexOf('SU') !== -1,
             };
             var sortWeekDays = function (a, b) {
                 return a.weekday - b.weekday;
@@ -30097,6 +29642,7 @@ var totext_ToText = /** @class */ (function () {
     }
     /**
      * Test whether the rrule can be fully converted to text.
+     *
      * @param {RRule} rrule
      * @return {Boolean}
      */
@@ -30107,7 +29653,7 @@ var totext_ToText = /** @class */ (function () {
         if (rrule.origOptions.until && rrule.origOptions.count)
             return false;
         for (var key in rrule.origOptions) {
-            if (contains(['dtstart', 'wkst', 'freq'], key))
+            if (contains(['dtstart', 'tzid', 'wkst', 'freq'], key))
                 return true;
             if (!contains(ToText.IMPLEMENTED[rrule.options.freq], key))
                 return false;
@@ -30121,6 +29667,7 @@ var totext_ToText = /** @class */ (function () {
      * Perform the conversion. Only some of the frequencies are supported.
      * If some of the rrule's options aren't supported, they'll
      * be omitted from the output an "(~ approximate)" will be appended.
+     *
      * @return {*}
      */
     ToText.prototype.toString = function () {
@@ -30129,8 +29676,9 @@ var totext_ToText = /** @class */ (function () {
             return gettext('RRule error: Unable to fully convert this rrule to text');
         }
         this.text = [gettext('every')];
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        this[src.FREQUENCIES[this.options.freq]]();
+        this[RRule.FREQUENCIES[this.options.freq]]();
         if (this.options.until) {
             this.add(gettext('until'));
             var until = this.options.until;
@@ -30216,6 +29764,9 @@ var totext_ToText = /** @class */ (function () {
             else if (this.byweekday) {
                 this._byweekday();
             }
+            if (this.origOptions.byhour) {
+                this._byhour();
+            }
         }
     };
     ToText.prototype.MONTHLY = function () {
@@ -30232,8 +29783,9 @@ var totext_ToText = /** @class */ (function () {
             this._bymonth();
         }
         else {
-            if (this.options.interval !== 1)
+            if (this.options.interval !== 1) {
                 this.add(this.options.interval.toString());
+            }
             this.add(this.plural(this.options.interval)
                 ? gettext('months')
                 : gettext('month'));
@@ -30261,8 +29813,9 @@ var totext_ToText = /** @class */ (function () {
             this._bymonth();
         }
         else {
-            if (this.options.interval !== 1)
+            if (this.options.interval !== 1) {
                 this.add(this.options.interval.toString());
+            }
             this.add(this.plural(this.options.interval) ? gettext('years') : gettext('year'));
         }
         if (this.bymonthday) {
@@ -30318,11 +29871,10 @@ var totext_ToText = /** @class */ (function () {
     ToText.prototype.nth = function (n) {
         n = parseInt(n.toString(), 10);
         var nth;
-        var npos;
         var gettext = this.gettext;
         if (n === -1)
             return gettext('last');
-        npos = Math.abs(n);
+        var npos = Math.abs(n);
         switch (npos) {
             case 1:
             case 21:
@@ -30347,7 +29899,8 @@ var totext_ToText = /** @class */ (function () {
     };
     ToText.prototype.weekdaytext = function (wday) {
         var weekday = isNumber(wday) ? (wday + 1) % 7 : wday.getJsWeekday();
-        return ((wday.n ? this.nth(wday.n) + ' ' : '') + this.language.dayNames[weekday]);
+        return ((wday.n ? this.nth(wday.n) + ' ' : '') +
+            this.language.dayNames[weekday]);
     };
     ToText.prototype.plural = function (n) {
         return n % 100 !== 1;
@@ -30358,6 +29911,7 @@ var totext_ToText = /** @class */ (function () {
         return this;
     };
     ToText.prototype.list = function (arr, callback, finalDelim, delim) {
+        var _this = this;
         if (delim === void 0) { delim = ','; }
         if (!isArray(arr)) {
             arr = [arr];
@@ -30382,9 +29936,8 @@ var totext_ToText = /** @class */ (function () {
                 function (o) {
                     return o.toString();
                 };
-        var self = this;
         var realCallback = function (arg) {
-            return callback && callback.call(self, arg);
+            return callback && callback.call(_this, arg);
         };
         if (finalDelim) {
             return delimJoin(arr.map(realCallback), delim, finalDelim);
@@ -30395,9 +29948,9 @@ var totext_ToText = /** @class */ (function () {
     };
     return ToText;
 }());
-/* harmony default export */ var totext = (totext_ToText);
+/* harmony default export */ const totext = (ToText);
 
-// CONCATENATED MODULE: ./src/nlp/parsetext.ts
+;// CONCATENATED MODULE: ./src/nlp/parsetext.ts
 
 
 // =============================================================================
@@ -30419,7 +29972,6 @@ var Parser = /** @class */ (function () {
     Parser.prototype.nextSymbol = function () {
         var best;
         var bestSymbol;
-        var p = this;
         this.symbol = null;
         this.value = null;
         do {
@@ -30429,7 +29981,7 @@ var Parser = /** @class */ (function () {
             best = null;
             for (var name_1 in this.rules) {
                 rule = this.rules[name_1];
-                var match = rule.exec(p.text);
+                var match = rule.exec(this.text);
                 if (match) {
                     if (best === null || match[0].length > best[0].length) {
                         best = match;
@@ -30448,9 +30000,7 @@ var Parser = /** @class */ (function () {
                 this.value = null;
                 return;
             }
-            // @ts-ignore
         } while (bestSymbol === 'SKIP');
-        // @ts-ignore
         this.symbol = bestSymbol;
         this.value = best;
         return true;
@@ -30495,7 +30045,7 @@ function parseText(text, language) {
             throw new Error('Unexpected end');
         switch (ttr.symbol) {
             case 'day(s)':
-                options.freq = src.DAILY;
+                options.freq = RRule.DAILY;
                 if (ttr.nextSymbol()) {
                     AT();
                     F();
@@ -30504,47 +30054,43 @@ function parseText(text, language) {
             // FIXME Note: every 2 weekdays != every two weeks on weekdays.
             // DAILY on weekdays is not a valid rule
             case 'weekday(s)':
-                options.freq = src.WEEKLY;
-                options.byweekday = [
-                    src.MO,
-                    src.TU,
-                    src.WE,
-                    src.TH,
-                    src.FR
-                ];
+                options.freq = RRule.WEEKLY;
+                options.byweekday = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR];
                 ttr.nextSymbol();
+                AT();
                 F();
                 break;
             case 'week(s)':
-                options.freq = src.WEEKLY;
+                options.freq = RRule.WEEKLY;
                 if (ttr.nextSymbol()) {
                     ON();
+                    AT();
                     F();
                 }
                 break;
             case 'hour(s)':
-                options.freq = src.HOURLY;
+                options.freq = RRule.HOURLY;
                 if (ttr.nextSymbol()) {
                     ON();
                     F();
                 }
                 break;
             case 'minute(s)':
-                options.freq = src.MINUTELY;
+                options.freq = RRule.MINUTELY;
                 if (ttr.nextSymbol()) {
                     ON();
                     F();
                 }
                 break;
             case 'month(s)':
-                options.freq = src.MONTHLY;
+                options.freq = RRule.MONTHLY;
                 if (ttr.nextSymbol()) {
                     ON();
                     F();
                 }
                 break;
             case 'year(s)':
-                options.freq = src.YEARLY;
+                options.freq = RRule.YEARLY;
                 if (ttr.nextSymbol()) {
                     ON();
                     F();
@@ -30557,9 +30103,11 @@ function parseText(text, language) {
             case 'friday':
             case 'saturday':
             case 'sunday':
-                options.freq = src.WEEKLY;
-                var key = ttr.symbol.substr(0, 2).toUpperCase();
-                options.byweekday = [src[key]];
+                options.freq = RRule.WEEKLY;
+                var key = ttr.symbol
+                    .substr(0, 2)
+                    .toUpperCase();
+                options.byweekday = [RRule[key]];
                 if (!ttr.nextSymbol())
                     return;
                 // TODO check for duplicates
@@ -30570,10 +30118,10 @@ function parseText(text, language) {
                     if (!wkd) {
                         throw new Error('Unexpected symbol ' + ttr.symbol + ', expected weekday');
                     }
-                    // @ts-ignore
-                    options.byweekday.push(src[wkd]);
+                    options.byweekday.push(RRule[wkd]);
                     ttr.nextSymbol();
                 }
+                AT();
                 MDAYs();
                 F();
                 break;
@@ -30589,7 +30137,7 @@ function parseText(text, language) {
             case 'october':
             case 'november':
             case 'december':
-                options.freq = src.YEARLY;
+                options.freq = RRule.YEARLY;
                 options.bymonth = [decodeM()];
                 if (!ttr.nextSymbol())
                     return;
@@ -30627,13 +30175,11 @@ function parseText(text, language) {
                     ttr.nextSymbol();
                     if (!options.byweekday)
                         options.byweekday = [];
-                    // @ts-ignore
-                    options.byweekday.push(src[wkd].nth(nth));
+                    options.byweekday.push(RRule[wkd].nth(nth));
                 }
                 else {
                     if (!options.bymonthday)
                         options.bymonthday = [];
-                    // @ts-ignore
                     options.bymonthday.push(nth);
                     ttr.accept('day(s)');
                 }
@@ -30643,19 +30189,12 @@ function parseText(text, language) {
                 ttr.nextSymbol();
                 if (!options.byweekday)
                     options.byweekday = [];
-                // @ts-ignore
-                options.byweekday.push(src[wkd]);
+                options.byweekday.push(RRule[wkd]);
             }
             else if (ttr.symbol === 'weekday(s)') {
                 ttr.nextSymbol();
                 if (!options.byweekday) {
-                    options.byweekday = [
-                        src.MO,
-                        src.TU,
-                        src.WE,
-                        src.TH,
-                        src.FR
-                    ];
+                    options.byweekday = [RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR];
                 }
             }
             else if (ttr.symbol === 'week(s)') {
@@ -30677,7 +30216,6 @@ function parseText(text, language) {
                 ttr.nextSymbol();
                 if (!options.bymonth)
                     options.bymonth = [];
-                // @ts-ignore
                 options.bymonth.push(m);
             }
             else {
@@ -30804,7 +30342,7 @@ function parseText(text, language) {
     }
 }
 
-// CONCATENATED MODULE: ./src/types.ts
+;// CONCATENATED MODULE: ./src/types.ts
 var Frequency;
 (function (Frequency) {
     Frequency[Frequency["YEARLY"] = 0] = "YEARLY";
@@ -30819,21 +30357,21 @@ function freqIsDailyOrGreater(freq) {
     return freq < Frequency.HOURLY;
 }
 
-// CONCATENATED MODULE: ./src/nlp/index.ts
+;// CONCATENATED MODULE: ./src/nlp/index.ts
 
 
 
 
 
-/*!
-* rrule.js - Library for working with recurrence rules for calendar dates.
-* https://github.com/jakubroztocil/rrule
-*
-* Copyright 2010, Jakub Roztocil and Lars Schoning
-* Licenced under the BSD licence.
-* https://github.com/jakubroztocil/rrule/blob/master/LICENCE
-*
-*/
+/* !
+ * rrule.js - Library for working with recurrence rules for calendar dates.
+ * https://github.com/jakubroztocil/rrule
+ *
+ * Copyright 2010, Jakub Roztocil and Lars Schoning
+ * Licenced under the BSD licence.
+ * https://github.com/jakubroztocil/rrule/blob/master/LICENCE
+ *
+ */
 /**
  *
  * Implementation of RRule.fromText() and RRule::toText().
@@ -30854,13 +30392,13 @@ function freqIsDailyOrGreater(freq) {
  * RULES
  *
  * Every ([n])
- *       day(s)
- *     | [weekday], ..., (and) [weekday]
- *     | weekday(s)
- *     | week(s)
- *     | month(s)
- *     | [month], ..., (and) [month]
- *     | year(s)
+ * day(s)
+ * | [weekday], ..., (and) [weekday]
+ * | weekday(s)
+ * | week(s)
+ * | month(s)
+ * | [month], ..., (and) [month]
+ * | year(s)
  *
  *
  * Plus 0, 1, or multiple of these:
@@ -30886,10 +30424,10 @@ function freqIsDailyOrGreater(freq) {
  * Definitely no supported for parsing:
  *
  * (for year):
- *     in week(s) [n], ..., (and) [n]
+ * in week(s) [n], ..., (and) [n]
  *
- *     on the [yearday], ..., (and) [n] day of the year
- *     on day [yearday], ..., (and) [n]
+ * on the [yearday], ..., (and) [n] day of the year
+ * on day [yearday], ..., (and) [n]
  *
  *
  * NON-TERMINALS
@@ -30900,10 +30438,10 @@ function freqIsDailyOrGreater(freq) {
  * [nth-weekday]: first [weekday], 2nd [weekday], ... last [weekday], ...
  * [monthday]: first, 1., 2., 1st, 2nd, second, ... 31st, last day, 2nd last day, ..
  * [date]:
- *     [month] (0-31(,) ([year])),
- *     (the) 0-31.(1-12.([year])),
- *     (the) 0-31/(1-12/([year])),
- *     [weekday]
+ * - [month] (0-31(,) ([year])),
+ * - (the) 0-31.(1-12.([year])),
+ * - (the) 0-31/(1-12/([year])),
+ * - [weekday]
  *
  * [year]: 0000, 0001, ... 01, 02, ..
  *
@@ -30916,7 +30454,7 @@ function freqIsDailyOrGreater(freq) {
  */
 var fromText = function (text, language) {
     if (language === void 0) { language = i18n; }
-    return new src(parseText(text, language) || undefined);
+    return new RRule(parseText(text, language) || undefined);
 };
 var common = [
     'count',
@@ -30924,7 +30462,7 @@ var common = [
     'interval',
     'byweekday',
     'bymonthday',
-    'bymonth'
+    'bymonth',
 ];
 totext.IMPLEMENTED = [];
 totext.IMPLEMENTED[Frequency.HOURLY] = common;
@@ -30942,7 +30480,7 @@ var toText = function (rrule, gettext, language, dateFormatter) {
 var isFullyConvertible = totext.isFullyConvertible;
 
 
-// CONCATENATED MODULE: ./src/datetime.ts
+;// CONCATENATED MODULE: ./src/datetime.ts
 
 
 
@@ -30973,7 +30511,7 @@ var Time = /** @class */ (function () {
     return Time;
 }());
 
-var datetime_DateTime = /** @class */ (function (_super) {
+var DateTime = /** @class */ (function (_super) {
     __extends(DateTime, _super);
     function DateTime(year, month, day, hour, minute, second, millisecond) {
         var _this = _super.call(this, hour, minute, second, millisecond) || this;
@@ -30986,7 +30524,7 @@ var datetime_DateTime = /** @class */ (function (_super) {
         return new this(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds(), date.valueOf() % 1000);
     };
     DateTime.prototype.getWeekday = function () {
-        return dateutil_dateutil.getWeekday(new Date(this.getTime()));
+        return getWeekday(new Date(this.getTime()));
     };
     DateTime.prototype.getTime = function () {
         return new Date(Date.UTC(this.year, this.month - 1, this.day, this.hour, this.minute, this.second, this.millisecond)).getTime();
@@ -31034,7 +30572,7 @@ var datetime_DateTime = /** @class */ (function (_super) {
             // Jump to one iteration before next day
             this.hour += Math.floor((23 - this.hour) / hours) * hours;
         }
-        while (true) {
+        for (;;) {
             this.hour += hours;
             var _a = divmod(this.hour, 24), dayDiv = _a.div, hourMod = _a.mod;
             if (dayDiv) {
@@ -31051,7 +30589,7 @@ var datetime_DateTime = /** @class */ (function (_super) {
             this.minute +=
                 Math.floor((1439 - (this.hour * 60 + this.minute)) / minutes) * minutes;
         }
-        while (true) {
+        for (;;) {
             this.minute += minutes;
             var _a = divmod(this.minute, 60), hourDiv = _a.div, minuteMod = _a.mod;
             if (hourDiv) {
@@ -31068,9 +30606,10 @@ var datetime_DateTime = /** @class */ (function (_super) {
         if (filtered) {
             // Jump to one iteration before next day
             this.second +=
-                Math.floor((86399 - (this.hour * 3600 + this.minute * 60 + this.second)) / seconds) * seconds;
+                Math.floor((86399 - (this.hour * 3600 + this.minute * 60 + this.second)) /
+                    seconds) * seconds;
         }
-        while (true) {
+        for (;;) {
             this.second += seconds;
             var _a = divmod(this.second, 60), minuteDiv = _a.div, secondMod = _a.mod;
             if (minuteDiv) {
@@ -31088,7 +30627,7 @@ var datetime_DateTime = /** @class */ (function (_super) {
         if (this.day <= 28) {
             return;
         }
-        var daysinmonth = dateutil_dateutil.monthRange(this.year, this.month - 1)[1];
+        var daysinmonth = monthRange(this.year, this.month - 1)[1];
         if (this.day <= daysinmonth) {
             return;
         }
@@ -31098,30 +30637,37 @@ var datetime_DateTime = /** @class */ (function (_super) {
             if (this.month === 13) {
                 this.month = 1;
                 ++this.year;
-                if (this.year > dateutil_dateutil.MAXYEAR) {
+                if (this.year > MAXYEAR) {
                     return;
                 }
             }
-            daysinmonth = dateutil_dateutil.monthRange(this.year, this.month - 1)[1];
+            daysinmonth = monthRange(this.year, this.month - 1)[1];
         }
     };
     DateTime.prototype.add = function (options, filtered) {
         var freq = options.freq, interval = options.interval, wkst = options.wkst, byhour = options.byhour, byminute = options.byminute, bysecond = options.bysecond;
         switch (freq) {
-            case Frequency.YEARLY: return this.addYears(interval);
-            case Frequency.MONTHLY: return this.addMonths(interval);
-            case Frequency.WEEKLY: return this.addWeekly(interval, wkst);
-            case Frequency.DAILY: return this.addDaily(interval);
-            case Frequency.HOURLY: return this.addHours(interval, filtered, byhour);
-            case Frequency.MINUTELY: return this.addMinutes(interval, filtered, byhour, byminute);
-            case Frequency.SECONDLY: return this.addSeconds(interval, filtered, byhour, byminute, bysecond);
+            case Frequency.YEARLY:
+                return this.addYears(interval);
+            case Frequency.MONTHLY:
+                return this.addMonths(interval);
+            case Frequency.WEEKLY:
+                return this.addWeekly(interval, wkst);
+            case Frequency.DAILY:
+                return this.addDaily(interval);
+            case Frequency.HOURLY:
+                return this.addHours(interval, filtered, byhour);
+            case Frequency.MINUTELY:
+                return this.addMinutes(interval, filtered, byhour, byminute);
+            case Frequency.SECONDLY:
+                return this.addSeconds(interval, filtered, byhour, byminute, bysecond);
         }
     };
     return DateTime;
 }(Time));
 
 
-// CONCATENATED MODULE: ./src/parseoptions.ts
+;// CONCATENATED MODULE: ./src/parseoptions.ts
 
 
 
@@ -31135,10 +30681,11 @@ function initializeOptions(options) {
     // Shallow copy for options and origOptions and check for invalid
     for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
         var key = keys_1[_i];
-        if (!includes(rrule_defaultKeys, key))
+        if (!includes(defaultKeys, key))
             invalid.push(key);
-        if (src_dateutil.isDate(options[key]) && !src_dateutil.isValidDate(options[key]))
+        if (isDate(options[key]) && !isValidDate(options[key])) {
             invalid.push(key);
+        }
     }
     if (invalid.length) {
         throw new Error('Invalid options: ' + invalid.join(', '));
@@ -31148,14 +30695,14 @@ function initializeOptions(options) {
 function parseOptions(options) {
     var opts = __assign(__assign({}, DEFAULT_OPTIONS), initializeOptions(options));
     if (isPresent(opts.byeaster))
-        opts.freq = src_rrule.YEARLY;
-    if (!(isPresent(opts.freq) && src_rrule.FREQUENCIES[opts.freq])) {
-        throw new Error("Invalid frequency: " + opts.freq + " " + options.freq);
+        opts.freq = RRule.YEARLY;
+    if (!(isPresent(opts.freq) && RRule.FREQUENCIES[opts.freq])) {
+        throw new Error("Invalid frequency: ".concat(opts.freq, " ").concat(options.freq));
     }
     if (!opts.dtstart)
         opts.dtstart = new Date(new Date().setMilliseconds(0));
     if (!isPresent(opts.wkst)) {
-        opts.wkst = src_rrule.MO.weekday;
+        opts.wkst = RRule.MO.weekday;
     }
     else if (isNumber(opts.wkst)) {
         // cool, just keep it like that
@@ -31181,16 +30728,16 @@ function parseOptions(options) {
         isPresent(opts.byweekday) ||
         isPresent(opts.byeaster))) {
         switch (opts.freq) {
-            case src_rrule.YEARLY:
+            case RRule.YEARLY:
                 if (!opts.bymonth)
                     opts.bymonth = opts.dtstart.getUTCMonth() + 1;
                 opts.bymonthday = opts.dtstart.getUTCDate();
                 break;
-            case src_rrule.MONTHLY:
+            case RRule.MONTHLY:
                 opts.bymonthday = opts.dtstart.getUTCDate();
                 break;
-            case src_rrule.WEEKLY:
-                opts.byweekday = [src_dateutil.getWeekday(opts.dtstart)];
+            case RRule.WEEKLY:
+                opts.byweekday = [getWeekday(opts.dtstart)];
                 break;
         }
     }
@@ -31249,7 +30796,7 @@ function parseOptions(options) {
         opts.bynweekday = null;
     }
     else if (opts.byweekday instanceof Weekday) {
-        if (!opts.byweekday.n || opts.freq > src_rrule.MONTHLY) {
+        if (!opts.byweekday.n || opts.freq > RRule.MONTHLY) {
             opts.byweekday = [opts.byweekday.weekday];
             opts.bynweekday = null;
         }
@@ -31271,7 +30818,7 @@ function parseOptions(options) {
                 byweekday.push(Weekday.fromStr(wday).weekday);
                 continue;
             }
-            if (!wday.n || opts.freq > src_rrule.MONTHLY) {
+            if (!wday.n || opts.freq > RRule.MONTHLY) {
                 byweekday.push(wday.weekday);
             }
             else {
@@ -31283,8 +30830,7 @@ function parseOptions(options) {
     }
     // byhour
     if (!isPresent(opts.byhour)) {
-        opts.byhour =
-            opts.freq < src_rrule.HOURLY ? [opts.dtstart.getUTCHours()] : null;
+        opts.byhour = opts.freq < RRule.HOURLY ? [opts.dtstart.getUTCHours()] : null;
     }
     else if (isNumber(opts.byhour)) {
         opts.byhour = [opts.byhour];
@@ -31292,7 +30838,7 @@ function parseOptions(options) {
     // byminute
     if (!isPresent(opts.byminute)) {
         opts.byminute =
-            opts.freq < src_rrule.MINUTELY ? [opts.dtstart.getUTCMinutes()] : null;
+            opts.freq < RRule.MINUTELY ? [opts.dtstart.getUTCMinutes()] : null;
     }
     else if (isNumber(opts.byminute)) {
         opts.byminute = [opts.byminute];
@@ -31300,7 +30846,7 @@ function parseOptions(options) {
     // bysecond
     if (!isPresent(opts.bysecond)) {
         opts.bysecond =
-            opts.freq < src_rrule.SECONDLY ? [opts.dtstart.getUTCSeconds()] : null;
+            opts.freq < RRule.SECONDLY ? [opts.dtstart.getUTCSeconds()] : null;
     }
     else if (isNumber(opts.bysecond)) {
         opts.bysecond = [opts.bysecond];
@@ -31323,14 +30869,17 @@ function buildTimeset(opts) {
     return timeset;
 }
 
-// CONCATENATED MODULE: ./src/parsestring.ts
+;// CONCATENATED MODULE: ./src/parsestring.ts
 
 
 
 
 
 function parseString(rfcString) {
-    var options = rfcString.split('\n').map(parseLine).filter(function (x) { return x !== null; });
+    var options = rfcString
+        .split('\n')
+        .map(parseLine)
+        .filter(function (x) { return x !== null; });
     return __assign(__assign({}, options[0]), options[1]);
 }
 function parseDtstart(line) {
@@ -31339,11 +30888,11 @@ function parseDtstart(line) {
     if (!dtstartWithZone) {
         return options;
     }
-    var _ = dtstartWithZone[0], tzid = dtstartWithZone[1], dtstart = dtstartWithZone[2];
+    var tzid = dtstartWithZone[1], dtstart = dtstartWithZone[2];
     if (tzid) {
         options.tzid = tzid;
     }
-    options.dtstart = src_dateutil.untilStringToDate(dtstart);
+    options.dtstart = untilStringToDate(dtstart);
     return options;
 }
 function parseLine(rfcString) {
@@ -31354,7 +30903,7 @@ function parseLine(rfcString) {
     if (!header) {
         return parseRrule(rfcString);
     }
-    var _ = header[0], key = header[1];
+    var key = header[1];
     switch (key.toUpperCase()) {
         case 'RRULE':
         case 'EXRULE':
@@ -31362,7 +30911,7 @@ function parseLine(rfcString) {
         case 'DTSTART':
             return parseDtstart(rfcString);
         default:
-            throw new Error("Unsupported RFC prop " + key + " in " + rfcString);
+            throw new Error("Unsupported RFC prop ".concat(key, " in ").concat(rfcString));
     }
 }
 function parseRrule(line) {
@@ -31390,6 +30939,7 @@ function parseRrule(line) {
             case 'BYSECOND':
                 var num = parseNumber(value);
                 var optionKey = key.toLowerCase();
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 options[optionKey] = num;
                 break;
@@ -31405,7 +30955,7 @@ function parseRrule(line) {
                 options.dtstart = dtstart.dtstart;
                 break;
             case 'UNTIL':
-                options.until = src_dateutil.untilStringToDate(value);
+                options.until = untilStringToDate(value);
                 break;
             case 'BYEASTER':
                 options.byeaster = Number(value);
@@ -31438,6 +30988,9 @@ function parseWeekday(value) {
         }
         // -1MO, +3FR, 1SO, 13TU ...
         var parts = day.match(/^([+-]?\d{1,2})([A-Z]{2})$/);
+        if (!parts || parts.length < 3) {
+            throw new SyntaxError("Invalid weekday string: ".concat(day));
+        }
         var n = Number(parts[1]);
         var wdaypart = parts[2];
         var wday = Days[wdaypart].weekday;
@@ -31445,18 +30998,13 @@ function parseWeekday(value) {
     });
 }
 
-// CONCATENATED MODULE: ./src/fake-luxon.ts
-var fake_luxon_DateTime = {
-    fromJSDate: function () {
-        throw new TypeError();
-    }
-};
+;// CONCATENATED MODULE: ./src/datewithzone.ts
 
-// CONCATENATED MODULE: ./src/datewithzone.ts
-
-
-var datewithzone_DateWithZone = /** @class */ (function () {
+var DateWithZone = /** @class */ (function () {
     function DateWithZone(date, tzid) {
+        if (isNaN(date.getTime())) {
+            throw new RangeError('Invalid date passed to DateWithZone');
+        }
         this.date = date;
         this.tzid = tzid;
     }
@@ -31464,15 +31012,15 @@ var datewithzone_DateWithZone = /** @class */ (function () {
         get: function () {
             return !this.tzid || this.tzid.toUpperCase() === 'UTC';
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     DateWithZone.prototype.toString = function () {
-        var datestr = src_dateutil.timeToUntilString(this.date.getTime(), this.isUTC);
+        var datestr = timeToUntilString(this.date.getTime(), this.isUTC);
         if (!this.isUTC) {
-            return ";TZID=" + this.tzid + ":" + datestr;
+            return ";TZID=".concat(this.tzid, ":").concat(datestr);
         }
-        return ":" + datestr;
+        return ":".concat(datestr);
     };
     DateWithZone.prototype.getTime = function () {
         return this.date.getTime();
@@ -31481,24 +31029,13 @@ var datewithzone_DateWithZone = /** @class */ (function () {
         if (this.isUTC) {
             return this.date;
         }
-        try {
-            var datetime = fake_luxon_DateTime
-                .fromJSDate(this.date);
-            var rezoned = datetime.setZone(this.tzid, { keepLocalTime: true });
-            return rezoned.toJSDate();
-        }
-        catch (e) {
-            if (e instanceof TypeError) {
-                console.error('Using TZID without Luxon available is unsupported. Returned times are in UTC, not the requested time zone');
-            }
-            return this.date;
-        }
+        return dateInTimeZone(this.date, this.tzid);
     };
     return DateWithZone;
 }());
 
 
-// CONCATENATED MODULE: ./src/optionstostring.ts
+;// CONCATENATED MODULE: ./src/optionstostring.ts
 
 
 
@@ -31521,7 +31058,7 @@ function optionsToString(options) {
             continue;
         switch (key) {
             case 'FREQ':
-                outValue = src_rrule.FREQUENCIES[options.freq];
+                outValue = RRule.FREQUENCIES[options.freq];
                 break;
             case 'WKST':
                 if (isNumber(value)) {
@@ -31533,18 +31070,19 @@ function optionsToString(options) {
                 break;
             case 'BYWEEKDAY':
                 /*
-                NOTE: BYWEEKDAY is a special case.
-                RRule() deconstructs the rule.options.byweekday array
-                into an array of Weekday arguments.
-                On the other hand, rule.origOptions is an array of Weekdays.
-                We need to handle both cases here.
-                It might be worth change RRule to keep the Weekdays.
-      
-                Also, BYWEEKDAY (used by RRule) vs. BYDAY (RFC)
-      
-                */
+                  NOTE: BYWEEKDAY is a special case.
+                  RRule() deconstructs the rule.options.byweekday array
+                  into an array of Weekday arguments.
+                  On the other hand, rule.origOptions is an array of Weekdays.
+                  We need to handle both cases here.
+                  It might be worth change RRule to keep the Weekdays.
+        
+                  Also, BYWEEKDAY (used by RRule) vs. BYDAY (RFC)
+        
+                  */
                 key = 'BYDAY';
-                outValue = toArray(value).map(function (wday) {
+                outValue = toArray(value)
+                    .map(function (wday) {
                     if (wday instanceof Weekday) {
                         return wday;
                     }
@@ -31552,13 +31090,14 @@ function optionsToString(options) {
                         return new Weekday(wday[0], wday[1]);
                     }
                     return new Weekday(wday);
-                }).toString();
+                })
+                    .toString();
                 break;
             case 'DTSTART':
                 dtstart = buildDtstart(value, options.tzid);
                 break;
             case 'UNTIL':
-                outValue = src_dateutil.timeToUntilString(value, !options.tzid);
+                outValue = timeToUntilString(value, !options.tzid);
                 break;
             default:
                 if (isArray(value)) {
@@ -31576,13 +31115,15 @@ function optionsToString(options) {
             rrule.push([key, outValue]);
         }
     }
-    var rules = rrule.map(function (_a) {
+    var rules = rrule
+        .map(function (_a) {
         var key = _a[0], value = _a[1];
-        return key + "=" + value.toString();
-    }).join(';');
+        return "".concat(key, "=").concat(value.toString());
+    })
+        .join(';');
     var ruleString = '';
     if (rules !== '') {
-        ruleString = "RRULE:" + rules;
+        ruleString = "RRULE:".concat(rules);
     }
     return [dtstart, ruleString].filter(function (x) { return !!x; }).join('\n');
 }
@@ -31590,14 +31131,27 @@ function buildDtstart(dtstart, tzid) {
     if (!dtstart) {
         return '';
     }
-    return 'DTSTART' + new datewithzone_DateWithZone(new Date(dtstart), tzid).toString();
+    return 'DTSTART' + new DateWithZone(new Date(dtstart), tzid).toString();
 }
 
-// CONCATENATED MODULE: ./src/cache.ts
+;// CONCATENATED MODULE: ./src/cache.ts
 
 
 
-var cache_Cache = /** @class */ (function () {
+function argsMatch(left, right) {
+    if (Array.isArray(left)) {
+        if (!Array.isArray(right))
+            return false;
+        if (left.length !== right.length)
+            return false;
+        return left.every(function (date, i) { return date.getTime() === right[i].getTime(); });
+    }
+    if (left instanceof Date) {
+        return right instanceof Date && left.getTime() === right.getTime();
+    }
+    return left === right;
+}
+var Cache = /** @class */ (function () {
     function Cache() {
         this.all = false;
         this.before = [];
@@ -31611,10 +31165,7 @@ var cache_Cache = /** @class */ (function () {
      */
     Cache.prototype._cacheAdd = function (what, value, args) {
         if (value) {
-            value =
-                value instanceof Date
-                    ? src_dateutil.clone(value)
-                    : src_dateutil.cloneDates(value);
+            value = value instanceof Date ? dateutil_clone(value) : cloneDates(value);
         }
         if (what === 'all') {
             this.all = value;
@@ -31626,10 +31177,10 @@ var cache_Cache = /** @class */ (function () {
     };
     /**
      * @return false - not in the cache
-     *         null  - cached, but zero occurrences (before/after)
-     *         Date  - cached (before/after)
-     *         []    - cached, but zero occurrences (all/between)
-     *         [Date1, DateN] - cached (all/between)
+     * @return null  - cached, but zero occurrences (before/after)
+     * @return Date  - cached (before/after)
+     * @return []    - cached, but zero occurrences (all/between)
+     * @return [Date1, DateN] - cached (all/between)
      */
     Cache.prototype._cacheGet = function (what, args) {
         var cached = false;
@@ -31637,7 +31188,7 @@ var cache_Cache = /** @class */ (function () {
         var findCacheDiff = function (item) {
             for (var i = 0; i < argsKeys.length; i++) {
                 var key = argsKeys[i];
-                if (String(args[key]) !== String(item[key])) {
+                if (!argsMatch(args[key], item[key])) {
                     return true;
                 }
             }
@@ -31670,36 +31221,36 @@ var cache_Cache = /** @class */ (function () {
             this._cacheAdd(what, cached, args);
         }
         return isArray(cached)
-            ? src_dateutil.cloneDates(cached)
+            ? cloneDates(cached)
             : cached instanceof Date
-                ? src_dateutil.clone(cached)
+                ? dateutil_clone(cached)
                 : cached;
     };
     return Cache;
 }());
 
 
-// CONCATENATED MODULE: ./src/masks.ts
+;// CONCATENATED MODULE: ./src/masks.ts
 
 
 // =============================================================================
 // Date masks
 // =============================================================================
 // Every mask is 7 days longer to handle cross-year weekly periods.
-var M365MASK = __spreadArrays(repeat(1, 31), repeat(2, 28), repeat(3, 31), repeat(4, 30), repeat(5, 31), repeat(6, 30), repeat(7, 31), repeat(8, 31), repeat(9, 30), repeat(10, 31), repeat(11, 30), repeat(12, 31), repeat(1, 7));
-var M366MASK = __spreadArrays(repeat(1, 31), repeat(2, 29), repeat(3, 31), repeat(4, 30), repeat(5, 31), repeat(6, 30), repeat(7, 31), repeat(8, 31), repeat(9, 30), repeat(10, 31), repeat(11, 30), repeat(12, 31), repeat(1, 7));
+var M365MASK = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], repeat(1, 31), true), repeat(2, 28), true), repeat(3, 31), true), repeat(4, 30), true), repeat(5, 31), true), repeat(6, 30), true), repeat(7, 31), true), repeat(8, 31), true), repeat(9, 30), true), repeat(10, 31), true), repeat(11, 30), true), repeat(12, 31), true), repeat(1, 7), true);
+var M366MASK = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], repeat(1, 31), true), repeat(2, 29), true), repeat(3, 31), true), repeat(4, 30), true), repeat(5, 31), true), repeat(6, 30), true), repeat(7, 31), true), repeat(8, 31), true), repeat(9, 30), true), repeat(10, 31), true), repeat(11, 30), true), repeat(12, 31), true), repeat(1, 7), true);
 var M28 = range(1, 29);
 var M29 = range(1, 30);
 var M30 = range(1, 31);
 var M31 = range(1, 32);
-var MDAY366MASK = __spreadArrays(M31, M29, M31, M30, M31, M30, M31, M31, M30, M31, M30, M31, M31.slice(0, 7));
-var MDAY365MASK = __spreadArrays(M31, M28, M31, M30, M31, M30, M31, M31, M30, M31, M30, M31, M31.slice(0, 7));
+var MDAY366MASK = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], M31, true), M29, true), M31, true), M30, true), M31, true), M30, true), M31, true), M31, true), M30, true), M31, true), M30, true), M31, true), M31.slice(0, 7), true);
+var MDAY365MASK = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], M31, true), M28, true), M31, true), M30, true), M31, true), M30, true), M31, true), M31, true), M30, true), M31, true), M30, true), M31, true), M31.slice(0, 7), true);
 var NM28 = range(-28, 0);
 var NM29 = range(-29, 0);
 var NM30 = range(-30, 0);
 var NM31 = range(-31, 0);
-var NMDAY366MASK = __spreadArrays(NM31, NM29, NM31, NM30, NM31, NM30, NM31, NM31, NM30, NM31, NM30, NM31, NM31.slice(0, 7));
-var NMDAY365MASK = __spreadArrays(NM31, NM28, NM31, NM30, NM31, NM30, NM31, NM31, NM30, NM31, NM30, NM31, NM31.slice(0, 7));
+var NMDAY366MASK = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], NM31, true), NM29, true), NM31, true), NM30, true), NM31, true), NM30, true), NM31, true), NM31, true), NM30, true), NM31, true), NM30, true), NM31, true), NM31.slice(0, 7), true);
+var NMDAY365MASK = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], NM31, true), NM28, true), NM31, true), NM30, true), NM31, true), NM30, true), NM31, true), NM31, true), NM30, true), NM31, true), NM30, true), NM31, true), NM31.slice(0, 7), true);
 var M366RANGE = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
 var M365RANGE = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365];
 var WDAYMASK = (function () {
@@ -31710,34 +31261,30 @@ var WDAYMASK = (function () {
 })();
 
 
-// CONCATENATED MODULE: ./src/iterinfo/yearinfo.ts
+;// CONCATENATED MODULE: ./src/iterinfo/yearinfo.ts
 
 
 
 
 function rebuildYear(year, options) {
-    var firstyday = new Date(Date.UTC(year, 0, 1));
-    var yearlen = src_dateutil.isLeapYear(year) ? 366 : 365;
-    var nextyearlen = src_dateutil.isLeapYear(year + 1) ? 366 : 365;
-    var yearordinal = src_dateutil.toOrdinal(firstyday);
-    var yearweekday = src_dateutil.getWeekday(firstyday);
-    var result = __assign(__assign({ yearlen: yearlen,
-        nextyearlen: nextyearlen,
-        yearordinal: yearordinal,
-        yearweekday: yearweekday }, baseYearMasks(year)), { wnomask: null });
+    var firstyday = datetime(year, 1, 1);
+    var yearlen = isLeapYear(year) ? 366 : 365;
+    var nextyearlen = isLeapYear(year + 1) ? 366 : 365;
+    var yearordinal = toOrdinal(firstyday);
+    var yearweekday = getWeekday(firstyday);
+    var result = __assign(__assign({ yearlen: yearlen, nextyearlen: nextyearlen, yearordinal: yearordinal, yearweekday: yearweekday }, baseYearMasks(year)), { wnomask: null });
     if (empty(options.byweekno)) {
         return result;
     }
     result.wnomask = repeat(0, yearlen + 7);
     var firstwkst;
     var wyearlen;
-    var no1wkst = firstwkst = pymod(7 - yearweekday + options.wkst, 7);
+    var no1wkst = (firstwkst = pymod(7 - yearweekday + options.wkst, 7));
     if (no1wkst >= 4) {
         no1wkst = 0;
         // Number of days in the year, plus the days we got
         // from last year.
-        wyearlen =
-            result.yearlen + pymod(yearweekday - options.wkst, 7);
+        wyearlen = result.yearlen + pymod(yearweekday - options.wkst, 7);
     }
     else {
         // Number of days in the year, minus the days we
@@ -31798,9 +31345,9 @@ function rebuildYear(year, options) {
         // this year.
         var lnumweeks = void 0;
         if (!includes(options.byweekno, -1)) {
-            var lyearweekday = src_dateutil.getWeekday(new Date(Date.UTC(year - 1, 0, 1)));
+            var lyearweekday = getWeekday(datetime(year - 1, 1, 1));
             var lno1wkst = pymod(7 - lyearweekday.valueOf() + options.wkst, 7);
-            var lyearlen = src_dateutil.isLeapYear(year - 1) ? 366 : 365;
+            var lyearlen = isLeapYear(year - 1) ? 366 : 365;
             var weekst = void 0;
             if (lno1wkst >= 4) {
                 lno1wkst = 0;
@@ -31822,16 +31369,16 @@ function rebuildYear(year, options) {
     return result;
 }
 function baseYearMasks(year) {
-    var yearlen = src_dateutil.isLeapYear(year) ? 366 : 365;
-    var firstyday = new Date(Date.UTC(year, 0, 1));
-    var wday = src_dateutil.getWeekday(firstyday);
+    var yearlen = isLeapYear(year) ? 366 : 365;
+    var firstyday = datetime(year, 1, 1);
+    var wday = getWeekday(firstyday);
     if (yearlen === 365) {
         return {
             mmask: M365MASK,
             mdaymask: MDAY365MASK,
             nmdaymask: NMDAY365MASK,
             wdaymask: WDAYMASK.slice(wday),
-            mrange: M365RANGE
+            mrange: M365RANGE,
         };
     }
     return {
@@ -31839,21 +31386,21 @@ function baseYearMasks(year) {
         mdaymask: MDAY366MASK,
         nmdaymask: NMDAY366MASK,
         wdaymask: WDAYMASK.slice(wday),
-        mrange: M366RANGE
+        mrange: M366RANGE,
     };
 }
 
-// CONCATENATED MODULE: ./src/iterinfo/monthinfo.ts
+;// CONCATENATED MODULE: ./src/iterinfo/monthinfo.ts
 
 
 function rebuildMonth(year, month, yearlen, mrange, wdaymask, options) {
     var result = {
         lastyear: year,
         lastmonth: month,
-        nwdaymask: []
+        nwdaymask: [],
     };
     var ranges = [];
-    if (options.freq === src_rrule.YEARLY) {
+    if (options.freq === RRule.YEARLY) {
         if (empty(options.bymonth)) {
             ranges = [[0, yearlen]];
         }
@@ -31864,7 +31411,7 @@ function rebuildMonth(year, month, yearlen, mrange, wdaymask, options) {
             }
         }
     }
-    else if (options.freq === src_rrule.MONTHLY) {
+    else if (options.freq === RRule.MONTHLY) {
         ranges = [mrange.slice(month - 1, month + 1)];
     }
     if (empty(ranges)) {
@@ -31895,7 +31442,7 @@ function rebuildMonth(year, month, yearlen, mrange, wdaymask, options) {
     return result;
 }
 
-// CONCATENATED MODULE: ./src/iterinfo/easter.ts
+;// CONCATENATED MODULE: ./src/iterinfo/easter.ts
 function easter(y, offset) {
     if (offset === void 0) { offset = 0; }
     var a = y % 19;
@@ -31917,7 +31464,7 @@ function easter(y, offset) {
     return [Math.ceil((date - yearStart) / (1000 * 60 * 60 * 24))];
 }
 
-// CONCATENATED MODULE: ./src/iterinfo/index.ts
+;// CONCATENATED MODULE: ./src/iterinfo/index.ts
 
 
 
@@ -31928,7 +31475,8 @@ function easter(y, offset) {
 // =============================================================================
 // Iterinfo
 // =============================================================================
-var iterinfo_Iterinfo = /** @class */ (function () {
+var Iterinfo = /** @class */ (function () {
+    // eslint-disable-next-line no-empty-function
     function Iterinfo(options) {
         this.options = options;
     }
@@ -31950,90 +31498,90 @@ var iterinfo_Iterinfo = /** @class */ (function () {
         get: function () {
             return this.monthinfo ? this.monthinfo.lastyear : null;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "lastmonth", {
         get: function () {
             return this.monthinfo ? this.monthinfo.lastmonth : null;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "yearlen", {
         get: function () {
             return this.yearinfo.yearlen;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "yearordinal", {
         get: function () {
             return this.yearinfo.yearordinal;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "mrange", {
         get: function () {
             return this.yearinfo.mrange;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "wdaymask", {
         get: function () {
             return this.yearinfo.wdaymask;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "mmask", {
         get: function () {
             return this.yearinfo.mmask;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "wnomask", {
         get: function () {
             return this.yearinfo.wnomask;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "nwdaymask", {
         get: function () {
             return this.monthinfo ? this.monthinfo.nwdaymask : [];
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "nextyearlen", {
         get: function () {
             return this.yearinfo.nextyearlen;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "mdaymask", {
         get: function () {
             return this.yearinfo.mdaymask;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Object.defineProperty(Iterinfo.prototype, "nmdaymask", {
         get: function () {
             return this.yearinfo.nmdaymask;
         },
-        enumerable: true,
+        enumerable: false,
         configurable: true
     });
     Iterinfo.prototype.ydayset = function () {
         return [range(this.yearlen), 0, this.yearlen];
     };
-    Iterinfo.prototype.mdayset = function (_, month, __) {
+    Iterinfo.prototype.mdayset = function (_, month) {
         var start = this.mrange[month - 1];
         var end = this.mrange[month];
         var set = repeat(null, this.yearlen);
@@ -32044,8 +31592,7 @@ var iterinfo_Iterinfo = /** @class */ (function () {
     Iterinfo.prototype.wdayset = function (year, month, day) {
         // We need to handle cross-year weeks here.
         var set = repeat(null, this.yearlen + 7);
-        var i = src_dateutil.toOrdinal(new Date(Date.UTC(year, month - 1, day))) -
-            this.yearordinal;
+        var i = toOrdinal(datetime(year, month, day)) - this.yearordinal;
         var start = i;
         for (var j = 0; j < 7; j++) {
             set[i] = i;
@@ -32057,8 +31604,7 @@ var iterinfo_Iterinfo = /** @class */ (function () {
     };
     Iterinfo.prototype.ddayset = function (year, month, day) {
         var set = repeat(null, this.yearlen);
-        var i = src_dateutil.toOrdinal(new Date(Date.UTC(year, month - 1, day))) -
-            this.yearordinal;
+        var i = toOrdinal(datetime(year, month, day)) - this.yearordinal;
         set[i] = i;
         return [set, i, i + 1];
     };
@@ -32068,14 +31614,12 @@ var iterinfo_Iterinfo = /** @class */ (function () {
         this.options.byminute.forEach(function (minute) {
             set = set.concat(_this.mtimeset(hour, minute, second, millisecond));
         });
-        src_dateutil.sort(set);
+        sort(set);
         return set;
     };
     Iterinfo.prototype.mtimeset = function (hour, minute, _, millisecond) {
-        var set = this.options.bysecond.map(function (second) {
-            return new Time(hour, minute, second, millisecond);
-        });
-        src_dateutil.sort(set);
+        var set = this.options.bysecond.map(function (second) { return new Time(hour, minute, second, millisecond); });
+        sort(set);
         return set;
     };
     Iterinfo.prototype.stimeset = function (hour, minute, second, millisecond) {
@@ -32083,25 +31627,33 @@ var iterinfo_Iterinfo = /** @class */ (function () {
     };
     Iterinfo.prototype.getdayset = function (freq) {
         switch (freq) {
-            case Frequency.YEARLY: return this.ydayset.bind(this);
-            case Frequency.MONTHLY: return this.mdayset.bind(this);
-            case Frequency.WEEKLY: return this.wdayset.bind(this);
-            case Frequency.DAILY: return this.ddayset.bind(this);
-            default: return this.ddayset.bind(this);
+            case Frequency.YEARLY:
+                return this.ydayset.bind(this);
+            case Frequency.MONTHLY:
+                return this.mdayset.bind(this);
+            case Frequency.WEEKLY:
+                return this.wdayset.bind(this);
+            case Frequency.DAILY:
+                return this.ddayset.bind(this);
+            default:
+                return this.ddayset.bind(this);
         }
     };
     Iterinfo.prototype.gettimeset = function (freq) {
         switch (freq) {
-            case Frequency.HOURLY: return this.htimeset.bind(this);
-            case Frequency.MINUTELY: return this.mtimeset.bind(this);
-            case Frequency.SECONDLY: return this.stimeset.bind(this);
+            case Frequency.HOURLY:
+                return this.htimeset.bind(this);
+            case Frequency.MINUTELY:
+                return this.mtimeset.bind(this);
+            case Frequency.SECONDLY:
+                return this.stimeset.bind(this);
         }
     };
     return Iterinfo;
 }());
-/* harmony default export */ var iterinfo = (iterinfo_Iterinfo);
+/* harmony default export */ const iterinfo = (Iterinfo);
 
-// CONCATENATED MODULE: ./src/iter/poslist.ts
+;// CONCATENATED MODULE: ./src/iter/poslist.ts
 
 
 function buildPoslist(bysetpos, timeset, start, end, ii, dayset) {
@@ -32133,18 +31685,18 @@ function buildPoslist(bysetpos, timeset, start, end, ii, dayset) {
             i = tmp[daypos];
         }
         var time = timeset[timepos];
-        var date = src_dateutil.fromOrdinal(ii.yearordinal + i);
-        var res = src_dateutil.combine(date, time);
+        var date = fromOrdinal(ii.yearordinal + i);
+        var res = combine(date, time);
         // XXX: can this ever be in the array?
         // - compare the actual date instead?
         if (!includes(poslist, res))
             poslist.push(res);
     }
-    src_dateutil.sort(poslist);
+    sort(poslist);
     return poslist;
 }
 
-// CONCATENATED MODULE: ./src/iter/index.ts
+;// CONCATENATED MODULE: ./src/iter/index.ts
 
 
 
@@ -32160,11 +31712,11 @@ function iter(iterResult, options) {
     if (count === 0 || interval === 0) {
         return emitResult(iterResult);
     }
-    var counterDate = datetime_DateTime.fromDate(dtstart);
+    var counterDate = DateTime.fromDate(dtstart);
     var ii = new iterinfo(options);
     ii.rebuild(counterDate.year, counterDate.month);
     var timeset = makeTimeset(ii, counterDate, options);
-    while (true) {
+    for (;;) {
         var _a = ii.getdayset(freq)(counterDate.year, counterDate.month, counterDate.day), dayset = _a[0], start = _a[1], end = _a[2];
         var filtered = removeFilteredDays(dayset, start, end, ii, options);
         if (notEmpty(bysetpos)) {
@@ -32194,10 +31746,10 @@ function iter(iterResult, options) {
                 if (!isPresent(currentDay)) {
                     continue;
                 }
-                var date = src_dateutil.fromOrdinal(ii.yearordinal + currentDay);
+                var date = fromOrdinal(ii.yearordinal + currentDay);
                 for (var k = 0; k < timeset.length; k++) {
                     var time = timeset[k];
-                    var res = src_dateutil.combine(date, time);
+                    var res = combine(date, time);
                     if (until && res > until) {
                         return emitResult(iterResult);
                     }
@@ -32221,7 +31773,7 @@ function iter(iterResult, options) {
         }
         // Handle frequency and interval
         counterDate.add(options, filtered);
-        if (counterDate.year > src_dateutil.MAXYEAR) {
+        if (counterDate.year > MAXYEAR) {
             return emitResult(iterResult);
         }
         if (!freqIsDailyOrGreater(freq)) {
@@ -32249,7 +31801,7 @@ function isFiltered(ii, currentDay, options) {
                     !includes(byyearday, -ii.nextyearlen + currentDay - ii.yearlen)))));
 }
 function rezoneIfNeeded(date, options) {
-    return new datewithzone_DateWithZone(date, options.tzid).rezonedDate();
+    return new DateWithZone(date, options.tzid).rezonedDate();
 }
 function emitResult(iterResult) {
     return iterResult.getValue();
@@ -32269,13 +31821,13 @@ function makeTimeset(ii, counterDate, options) {
     if (freqIsDailyOrGreater(freq)) {
         return buildTimeset(options);
     }
-    if ((freq >= src_rrule.HOURLY &&
+    if ((freq >= RRule.HOURLY &&
         notEmpty(byhour) &&
         !includes(byhour, counterDate.hour)) ||
-        (freq >= src_rrule.MINUTELY &&
+        (freq >= RRule.MINUTELY &&
             notEmpty(byminute) &&
             !includes(byminute, counterDate.minute)) ||
-        (freq >= src_rrule.SECONDLY &&
+        (freq >= RRule.SECONDLY &&
             notEmpty(bysecond) &&
             !includes(bysecond, counterDate.second))) {
         return [];
@@ -32283,7 +31835,7 @@ function makeTimeset(ii, counterDate, options) {
     return ii.gettimeset(freq)(counterDate.hour, counterDate.minute, counterDate.second, counterDate.millisecond);
 }
 
-// CONCATENATED MODULE: ./src/rrule.ts
+;// CONCATENATED MODULE: ./src/rrule.ts
 
 
 
@@ -32305,7 +31857,7 @@ var Days = {
     TH: new Weekday(3),
     FR: new Weekday(4),
     SA: new Weekday(5),
-    SU: new Weekday(6)
+    SU: new Weekday(6),
 };
 var DEFAULT_OPTIONS = {
     freq: Frequency.YEARLY,
@@ -32326,21 +31878,21 @@ var DEFAULT_OPTIONS = {
     byhour: null,
     byminute: null,
     bysecond: null,
-    byeaster: null
+    byeaster: null,
 };
-var rrule_defaultKeys = Object.keys(DEFAULT_OPTIONS);
+var defaultKeys = Object.keys(DEFAULT_OPTIONS);
 /**
  *
  * @param {Options?} options - see <http://labix.org/python-dateutil/#head-cf004ee9a75592797e076752b2a889c10f445418>
- *        The only required option is `freq`, one of RRule.YEARLY, RRule.MONTHLY, ...
+ * - The only required option is `freq`, one of RRule.YEARLY, RRule.MONTHLY, ...
  * @constructor
  */
-var rrule_RRule = /** @class */ (function () {
+var RRule = /** @class */ (function () {
     function RRule(options, noCache) {
         if (options === void 0) { options = {}; }
         if (noCache === void 0) { noCache = false; }
         // RFC string
-        this._cache = noCache ? null : new cache_Cache();
+        this._cache = noCache ? null : new Cache();
         // used by toString()
         this.origOptions = initializeOptions(options);
         var parsedOptions = parseOptions(options).parsedOptions;
@@ -32370,8 +31922,8 @@ var rrule_RRule = /** @class */ (function () {
     };
     /**
      * @param {Function} iterator - optional function that will be called
-     *                   on each date that is added. It can return false
-     *                   to stop the iteration.
+     * on each date that is added. It can return false
+     * to stop the iteration.
      * @return Array containing all recurrences.
      */
     RRule.prototype.all = function (iterator) {
@@ -32390,16 +31942,18 @@ var rrule_RRule = /** @class */ (function () {
      * The inc keyword defines what happens if after and/or before are
      * themselves occurrences. With inc == True, they will be included in the
      * list, if they are found in the recurrence set.
+     *
      * @return Array
      */
     RRule.prototype.between = function (after, before, inc, iterator) {
         if (inc === void 0) { inc = false; }
-        if (!src_dateutil.isValidDate(after) || !src_dateutil.isValidDate(before))
+        if (!isValidDate(after) || !isValidDate(before)) {
             throw new Error('Invalid date passed in to RRule.between');
+        }
         var args = {
             before: before,
             after: after,
-            inc: inc
+            inc: inc,
         };
         if (iterator) {
             return this._iter(new callbackiterresult('between', args, iterator));
@@ -32415,12 +31969,14 @@ var rrule_RRule = /** @class */ (function () {
      * Returns the last recurrence before the given datetime instance.
      * The inc keyword defines what happens if dt is an occurrence.
      * With inc == True, if dt itself is an occurrence, it will be returned.
+     *
      * @return Date or null
      */
     RRule.prototype.before = function (dt, inc) {
         if (inc === void 0) { inc = false; }
-        if (!src_dateutil.isValidDate(dt))
+        if (!isValidDate(dt)) {
             throw new Error('Invalid date passed in to RRule.before');
+        }
         var args = { dt: dt, inc: inc };
         var result = this._cacheGet('before', args);
         if (result === false) {
@@ -32433,12 +31989,14 @@ var rrule_RRule = /** @class */ (function () {
      * Returns the first recurrence after the given datetime instance.
      * The inc keyword defines what happens if dt is an occurrence.
      * With inc == True, if dt itself is an occurrence, it will be returned.
+     *
      * @return Date or null
      */
     RRule.prototype.after = function (dt, inc) {
         if (inc === void 0) { inc = false; }
-        if (!src_dateutil.isValidDate(dt))
+        if (!isValidDate(dt)) {
             throw new Error('Invalid date passed in to RRule.after');
+        }
         var args = { dt: dt, inc: inc };
         var result = this._cacheGet('after', args);
         if (result === false) {
@@ -32456,6 +32014,7 @@ var rrule_RRule = /** @class */ (function () {
     };
     /**
      * Converts the rrule into its string representation
+     *
      * @see <http://www.ietf.org/rfc/rfc2445.txt>
      * @return String
      */
@@ -32474,7 +32033,7 @@ var rrule_RRule = /** @class */ (function () {
     };
     /**
      * @return a RRule instance with the same freq and options
-     *          as this one (cache is not cloned)
+     * as this one (cache is not cloned)
      */
     RRule.prototype.clone = function () {
         return new RRule(this.origOptions);
@@ -32487,7 +32046,7 @@ var rrule_RRule = /** @class */ (function () {
         'DAILY',
         'HOURLY',
         'MINUTELY',
-        'SECONDLY'
+        'SECONDLY',
     ];
     RRule.YEARLY = Frequency.YEARLY;
     RRule.MONTHLY = Frequency.MONTHLY;
@@ -32507,9 +32066,9 @@ var rrule_RRule = /** @class */ (function () {
     RRule.optionsToString = optionsToString;
     return RRule;
 }());
-/* harmony default export */ var src_rrule = (rrule_RRule);
 
-// CONCATENATED MODULE: ./src/iterset.ts
+
+;// CONCATENATED MODULE: ./src/iterset.ts
 
 
 
@@ -32524,7 +32083,7 @@ function iterSet(iterResult, _rrule, _exrule, _rdate, _exdate, tzid) {
         });
     }
     _exdate.forEach(function (date) {
-        var zonedDate = new datewithzone_DateWithZone(date, tzid).rezonedDate();
+        var zonedDate = new DateWithZone(date, tzid).rezonedDate();
         _exdateHash[Number(zonedDate)] = true;
     });
     iterResult.accept = function (date) {
@@ -32552,7 +32111,7 @@ function iterSet(iterResult, _rrule, _exrule, _rdate, _exdate, tzid) {
         };
     }
     for (var i = 0; i < _rdate.length; i++) {
-        var zonedDate = new datewithzone_DateWithZone(_rdate[i], tzid).rezonedDate();
+        var zonedDate = new DateWithZone(_rdate[i], tzid).rezonedDate();
         if (!iterResult.accept(new Date(zonedDate.getTime())))
             break;
     }
@@ -32560,7 +32119,7 @@ function iterSet(iterResult, _rrule, _exrule, _rdate, _exdate, tzid) {
         iter(iterResult, rrule.options);
     });
     var res = iterResult._result;
-    src_dateutil.sort(res);
+    sort(res);
     switch (iterResult.method) {
         case 'all':
         case 'between':
@@ -32573,7 +32132,7 @@ function iterSet(iterResult, _rrule, _exrule, _rdate, _exdate, tzid) {
     }
 }
 
-// CONCATENATED MODULE: ./src/rrulestr.ts
+;// CONCATENATED MODULE: ./src/rrulestr.ts
 
 
 
@@ -32582,7 +32141,7 @@ function iterSet(iterResult, _rrule, _exrule, _rdate, _exdate, tzid) {
 
 /**
  * RRuleStr
- *  To parse a set of rrule strings
+ * To parse a set of rrule strings
  */
 var rrulestr_DEFAULT_OPTIONS = {
     dtstart: null,
@@ -32590,28 +32149,31 @@ var rrulestr_DEFAULT_OPTIONS = {
     unfold: false,
     forceset: false,
     compatible: false,
-    tzid: null
+    tzid: null,
 };
 function parseInput(s, options) {
     var rrulevals = [];
     var rdatevals = [];
     var exrulevals = [];
     var exdatevals = [];
-    var _a = parseDtstart(s), dtstart = _a.dtstart, tzid = _a.tzid;
+    var parsedDtstart = parseDtstart(s);
+    var dtstart = parsedDtstart.dtstart;
+    var tzid = parsedDtstart.tzid;
     var lines = splitIntoLines(s, options.unfold);
     lines.forEach(function (line) {
+        var _a;
         if (!line)
             return;
-        var _a = breakDownLine(line), name = _a.name, parms = _a.parms, value = _a.value;
+        var _b = breakDownLine(line), name = _b.name, parms = _b.parms, value = _b.value;
         switch (name.toUpperCase()) {
             case 'RRULE':
                 if (parms.length) {
-                    throw new Error("unsupported RRULE parm: " + parms.join(','));
+                    throw new Error("unsupported RRULE parm: ".concat(parms.join(',')));
                 }
                 rrulevals.push(parseString(line));
                 break;
             case 'RDATE':
-                var _b = /RDATE(?:;TZID=([^:=]+))?/i.exec(line), _ = _b[0], rdateTzid = _b[1];
+                var _c = (_a = /RDATE(?:;TZID=([^:=]+))?/i.exec(line)) !== null && _a !== void 0 ? _a : [], rdateTzid = _c[1];
                 if (rdateTzid && !tzid) {
                     tzid = rdateTzid;
                 }
@@ -32619,7 +32181,7 @@ function parseInput(s, options) {
                 break;
             case 'EXRULE':
                 if (parms.length) {
-                    throw new Error("unsupported EXRULE parm: " + parms.join(','));
+                    throw new Error("unsupported EXRULE parm: ".concat(parms.join(',')));
                 }
                 exrulevals.push(parseString(value));
                 break;
@@ -32638,7 +32200,7 @@ function parseInput(s, options) {
         rrulevals: rrulevals,
         rdatevals: rdatevals,
         exrulevals: exrulevals,
-        exdatevals: exdatevals
+        exdatevals: exdatevals,
     };
 }
 function buildRule(s, options) {
@@ -32653,17 +32215,17 @@ function buildRule(s, options) {
         rdatevals.length ||
         exrulevals.length ||
         exdatevals.length) {
-        var rset_1 = new rruleset(noCache);
+        var rset_1 = new RRuleSet(noCache);
         rset_1.dtstart(dtstart);
         rset_1.tzid(tzid || undefined);
         rrulevals.forEach(function (val) {
-            rset_1.rrule(new src_rrule(groomRruleOptions(val, dtstart, tzid), noCache));
+            rset_1.rrule(new RRule(groomRruleOptions(val, dtstart, tzid), noCache));
         });
         rdatevals.forEach(function (date) {
             rset_1.rdate(date);
         });
         exrulevals.forEach(function (val) {
-            rset_1.exrule(new src_rrule(groomRruleOptions(val, dtstart, tzid), noCache));
+            rset_1.exrule(new RRule(groomRruleOptions(val, dtstart, tzid), noCache));
         });
         exdatevals.forEach(function (date) {
             rset_1.exdate(date);
@@ -32673,15 +32235,14 @@ function buildRule(s, options) {
         return rset_1;
     }
     var val = rrulevals[0] || {};
-    return new src_rrule(groomRruleOptions(val, val.dtstart || options.dtstart || dtstart, val.tzid || options.tzid || tzid), noCache);
+    return new RRule(groomRruleOptions(val, val.dtstart || options.dtstart || dtstart, val.tzid || options.tzid || tzid), noCache);
 }
 function rrulestr(s, options) {
     if (options === void 0) { options = {}; }
     return buildRule(s, rrulestr_initializeOptions(options));
 }
 function groomRruleOptions(val, dtstart, tzid) {
-    return __assign(__assign({}, val), { dtstart: dtstart,
-        tzid: tzid });
+    return __assign(__assign({}, val), { dtstart: dtstart, tzid: tzid });
 }
 function rrulestr_initializeOptions(options) {
     var invalid = [];
@@ -32700,13 +32261,13 @@ function extractName(line) {
     if (line.indexOf(':') === -1) {
         return {
             name: 'RRULE',
-            value: line
+            value: line,
         };
     }
     var _a = split(line, ':', 1), name = _a[0], value = _a[1];
     return {
         name: name,
-        value: value
+        value: value,
     };
 }
 function breakDownLine(line) {
@@ -32717,7 +32278,7 @@ function breakDownLine(line) {
     return {
         name: parms[0].toUpperCase(),
         parms: parms.slice(1),
-        value: value
+        value: value,
     };
 }
 function splitIntoLines(s, unfold) {
@@ -32757,12 +32318,10 @@ function validateDateParm(parms) {
 }
 function parseRDate(rdateval, parms) {
     validateDateParm(parms);
-    return rdateval
-        .split(',')
-        .map(function (datestr) { return src_dateutil.untilStringToDate(datestr); });
+    return rdateval.split(',').map(function (datestr) { return untilStringToDate(datestr); });
 }
 
-// CONCATENATED MODULE: ./src/rruleset.ts
+;// CONCATENATED MODULE: ./src/rruleset.ts
 
 
 
@@ -32774,10 +32333,10 @@ function createGetterSetter(fieldName) {
     var _this = this;
     return function (field) {
         if (field !== undefined) {
-            _this["_" + fieldName] = field;
+            _this["_".concat(fieldName)] = field;
         }
-        if (_this["_" + fieldName] !== undefined) {
-            return _this["_" + fieldName];
+        if (_this["_".concat(fieldName)] !== undefined) {
+            return _this["_".concat(fieldName)];
         }
         for (var i = 0; i < _this._rrule.length; i++) {
             var field_1 = _this._rrule[i].origOptions[fieldName];
@@ -32787,12 +32346,12 @@ function createGetterSetter(fieldName) {
         }
     };
 }
-var rruleset_RRuleSet = /** @class */ (function (_super) {
+var RRuleSet = /** @class */ (function (_super) {
     __extends(RRuleSet, _super);
     /**
      *
      * @param {Boolean?} noCache
-     *  The same stratagy as RRule on cache, default to false
+     * The same stratagy as RRule on cache, default to false
      * @constructor
      */
     function RRuleSet(noCache) {
@@ -32882,7 +32441,9 @@ var rruleset_RRuleSet = /** @class */ (function (_super) {
             result = result.concat(rrule.toString().split('\n'));
         });
         this._exrule.forEach(function (exrule) {
-            result = result.concat(exrule.toString().split('\n')
+            result = result.concat(exrule
+                .toString()
+                .split('\n')
                 .map(function (line) { return line.replace(/^RRULE:/, 'EXRULE:'); })
                 .filter(function (line) { return !/^DTSTART/.test(line); }));
         });
@@ -32896,9 +32457,9 @@ var rruleset_RRuleSet = /** @class */ (function (_super) {
     };
     /**
      * to generate recurrence field such as:
-     *   DTSTART:19970902T010000Z
-     *   RRULE:FREQ=YEARLY;COUNT=2;BYDAY=TU
-     *   RRULE:FREQ=YEARLY;COUNT=1;BYDAY=TH
+     * DTSTART:19970902T010000Z
+     * RRULE:FREQ=YEARLY;COUNT=2;BYDAY=TU
+     * RRULE:FREQ=YEARLY;COUNT=1;BYDAY=TH
      */
     RRuleSet.prototype.toString = function () {
         return this.valueOf().join('\n');
@@ -32915,10 +32476,10 @@ var rruleset_RRuleSet = /** @class */ (function (_super) {
         return rrs;
     };
     return RRuleSet;
-}(src_rrule));
-/* harmony default export */ var rruleset = (rruleset_RRuleSet);
+}(RRule));
+
 function _addRule(rrule, collection) {
-    if (!(rrule instanceof src_rrule)) {
+    if (!(rrule instanceof RRule)) {
         throw new TypeError(String(rrule) + ' is not RRule instance');
     }
     if (!includes(collection.map(String), String(rrule))) {
@@ -32931,25 +32492,20 @@ function _addDate(date, collection) {
     }
     if (!includes(collection.map(Number), Number(date))) {
         collection.push(date);
-        src_dateutil.sort(collection);
+        sort(collection);
     }
 }
 function rdatesToString(param, rdates, tzid) {
     var isUTC = !tzid || tzid.toUpperCase() === 'UTC';
-    var header = isUTC ? param + ":" : param + ";TZID=" + tzid + ":";
+    var header = isUTC ? "".concat(param, ":") : "".concat(param, ";TZID=").concat(tzid, ":");
     var dateString = rdates
-        .map(function (rdate) { return src_dateutil.timeToUntilString(rdate.valueOf(), isUTC); })
+        .map(function (rdate) { return timeToUntilString(rdate.valueOf(), isUTC); })
         .join(',');
-    return "" + header + dateString;
+    return "".concat(header).concat(dateString);
 }
 
-// CONCATENATED MODULE: ./src/index.ts
-/* concated harmony reexport rrulestr */__webpack_require__.d(__webpack_exports__, "rrulestr", function() { return rrulestr; });
-/* concated harmony reexport Frequency */__webpack_require__.d(__webpack_exports__, "Frequency", function() { return Frequency; });
-/* concated harmony reexport Weekday */__webpack_require__.d(__webpack_exports__, "Weekday", function() { return Weekday; });
-/* concated harmony reexport RRule */__webpack_require__.d(__webpack_exports__, "RRule", function() { return src_rrule; });
-/* concated harmony reexport RRuleSet */__webpack_require__.d(__webpack_exports__, "RRuleSet", function() { return rruleset; });
-/*!
+;// CONCATENATED MODULE: ./src/index.ts
+/* !
  * rrule.js - Library for working with recurrence rules for calendar dates.
  * https://github.com/jakubroztocil/rrule
  *
@@ -32970,13 +32526,11 @@ function rdatesToString(param, rdates, tzid) {
 
 
 
-/* harmony default export */ var src = __webpack_exports__["default"] = (src_rrule);
 
-
-/***/ })
-/******/ ]);
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
 });
-
 },{}]},{},[1])
 
 //# sourceMappingURL=events_rebuild.js.map

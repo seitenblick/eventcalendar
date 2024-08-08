@@ -9,6 +9,18 @@
                             <div class="event-date">{{itemDateLong}}</div>
                         </div>
                         <div class="event-item-info">
+                        <div class="event-kicker">
+                            {{#if category}}
+                              {{category.title}}
+                            {{/if}}
+                            {{#if category.title}}
+                                {{#if series}}
+                                |
+                                {{/if}}
+                            {{/if}}
+                            {{series}}
+                        </div>
+
                             <div class="event-item-title">
                                 <div class="event-title">{{#if highlight}}<div class="highlight-icon"></div>{{/if}}{{title}}</div>
                             </div>
@@ -19,14 +31,14 @@
                             {{/if}}
                             <span class="event-location">{{location}}</span>
                         </div>
-
                     </a>
                     <div class="event-item-links">
-                    {{!--
-                        {{#ifCond status canceled}}
-                            <div class="rotation-wrapper-outer"><div class="buttonlink canceledevent rotation-wrapper-inner"><span class="linktext element-to-rotate">Abgesagt</span></div></div>
-                        {{/if}}
-                    --}}
+                    {{#eq status "canceled"}}
+                        <div class="rotation-wrapper-outer"><div class="buttonlink canceledevent rotation-wrapper-inner"><span class="linktext element-to-rotate">Abgesagt</span></div></div>
+                    {{/eq}}
+                    {{#if ticketurl}}
+                        <a href="{{ticketurl}}" class="rotation-wrapper-outer"><div class="buttonlink ticket rotation-wrapper-inner"><span class="linktext element-to-rotate">Tickets</span></div></a>
+                    {{/if}}
                     </div>
                 </div>
             {{/each}}

@@ -7,9 +7,10 @@ import { German } from "flatpickr/dist/l10n/de";
 import {ge} from "nunjucks/src/tests";
 // import handlebars from 'handlebars';
 // require ("./public/assets/js/handlebarsTemplates");
+// import "../../public/assets/js/handlebarsTemplates/hbstemplates";
 
 //Variablen
-let apiurl   = 'https://www.aalen.de/api/EventApiRules.php'; //can be overwritten by data-url of .rruleset
+let apiurl   = 'https://www.aalen.de/api/EventApiRulesTest.php'; //can be overwritten by data-url of .rruleset
 let showClass = 'showcontent';
 let origin   = window.location.origin;
 console.log(origin);
@@ -200,6 +201,7 @@ function recurrency(sliceStart, sliceEnd) {
         const timeValid       = item.timeValid;
         const ticketurl       = item.ticketUrl;
         const location        = item.location;
+        const mandators       = item.mandators;
         const highlight       = item.highlight;
         const topevent        = item.topevent;
         const status          = item.status;
@@ -256,10 +258,14 @@ function recurrency(sliceStart, sliceEnd) {
                 enddate: enddate,
                 ticketurl: ticketurl,
                 location: location,
+                mandators: mandators,
                 highlight: highlight,
                 topevent: topevent,
                 itemDate: eventdate, //Wed Jul 21 2021 17:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+                itemddMMMMyyyy: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMMM yyyy'),
+                itemDateComplete: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM yyyy'),
                 itemDateLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM ´yy'),
+                itemDateShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MM.'),
                 itemDateWeekdayDayMonth: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc. dd.MM.'),
                 itemHour: eventdate.getUTCHours(),
                 itemMinutes: DateTime.fromJSDate(eventdate).toFormat('mm'),
@@ -272,7 +278,8 @@ function recurrency(sliceStart, sliceEnd) {
                 itemYear: DateTime.fromJSDate(eventdate).toFormat('yyyy'), //2021
                 itemStartDate: DateTime.fromJSDate(startdate, {zone:'UTC'}).toFormat('DD T'),
                 itemEndDate: DateTime.fromJSDate(enddate, {zone: 'UTC'}).toFormat(' - DD HH:mm'),
-
+                itemStartTime: DateTime.fromJSDate(startdate, {zone:'UTC'}).toFormat('HH:mm'),
+                itemEndTime: DateTime.fromJSDate(enddate, {zone:'UTC'}).toFormat('HH:mm'),
             });
         }
     });
@@ -318,8 +325,50 @@ function contentfiltervalue(filterValue){
 
 }
 
+function mandatorfiltervalue(filterValue){
+    console.log("mfv: " + filterValue);
+    console.log(filterValue);
+
+    var veranstaltungsArray = allEventsResult;
+
+    console.log("veranstaltungsArray: ");
+    console.log (veranstaltungsArray);
+
+    var mandators   = filterValue;
+    console.log("Mandator: ");
+    console.log(mandators);
+
+    if (mandators != '') {
+        // Konvertiere mandators in ein Array von Zahlen
+        var mandatorArray = mandators.split(',').map(Number);
+
+        var gefiltertesArray = veranstaltungsArray.filter(function(element) {
+            if (!element.mandators) return false; // Filtere Elemente ohne Kategorien
+
+            var mandatorIds = element.mandators.split(',').map(Number); // Konvertiere Kategorie-Strings in Arrays von Zahlen
+            console.log(mandatorIds);
+
+            // Prüfe, ob eine der IDs in mandatorArray in mandatorIds enthalten ist
+            return mandatorArray.some(function(id) {
+                return mandatorIds.includes(id);
+            });
+        });
+
+        console.log("Länge des gefilterten Arrays: " + gefiltertesArray.length);
+
+        allEventsResult = gefiltertesArray;
+        /**/
+    }
+    else {
+        allEventsResult = eventsResultRangeFiltered;
+    }
+
+    console.log("Wert für allEventsResult nach contentfiltervalue: " + allEventsResult.length);
+}
+
 //Angeklickten eventfilter ausführen
 function eventfilter() {
+    /* Kategorie-Filter */
     console.log("4. eventfilter()");
     var filterValueArray = $('.category.active').map(function() {
         return [$.map($(this).data(), function(v) {
@@ -328,6 +377,15 @@ function eventfilter() {
     }).get();
     console.log("filtervalueArray:" + filterValueArray);
     contentfiltervalue(filterValueArray);
+
+    /* Mandator-Filter */
+    // console.log("4a. mandatorfilter");
+    var mandatorfilter = $('#districtval').val();
+    console.log(mandatorfilter);
+    if(mandatorfilter) {
+        mandatorfiltervalue(mandatorfilter);
+    }
+
 }
 
 //Ausgabe
@@ -347,6 +405,12 @@ function printEventsHandlebars() {
         $('#pagination').show();
         $('.service-messages').html("");
         //HBS-Template abhängig vom gewählten Modus (mode Parameter) auswählen
+
+        // Definiere den Helper
+        Handlebars.registerHelper('eq', function(arg1, arg2, options) {
+            return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+        });
+
         let template = Hbs[mode]; //Example: let template = Hbs['flexTable'];
         let quoteData = template(allEventsResult);
         // alert(quoteData);
@@ -885,9 +949,12 @@ $(document).ready(function() {
 //     districtSelect.on('change', function() {
     $('.event-filters .district-group select').on('change', function() {
         // url.searchParams.set('di', this.value );
-        url.searchParams.set('md', this.value );
-        executedOnce = false;
-        initCalendar(url, $('.rruleset'));
+        // url.searchParams.set('md', this.value );
+        // executedOnce = false;
+        // initCalendar(url, $('.rruleset'));
+        eventfilter();
+        printEventsHandlebars();
+        initPagination();
     });
 
 //Clear Searchfield if clear-button is clicked

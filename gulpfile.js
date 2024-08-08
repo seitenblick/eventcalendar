@@ -4,7 +4,8 @@
 const browserify = require('browserify');
 const gulp = require('gulp');
 const environments = require('gulp-environments');
-const sass = require('gulp-sass');
+// const sass = require('gulp-sass');
+const sass = require('gulp-sass')(require('sass'));
 const nodeTildeImporter = require('node-sass-tilde-importer');
 const autoprefixer = require('gulp-autoprefixer');
 const cleanCss = require('gulp-clean-css');
