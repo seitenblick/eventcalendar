@@ -22,11 +22,11 @@
         {{#each this}}
             <tr class="event-item showcontent" data-tags="{{category.id}}" >
                 <td>{{ id }}</td>
-                <td>{{itemDateLong}}</td>
+                <td>{{formatDate eventdate 'dd. MMM ´yy'}}</td>
                 <td>
                 {{#if timeValid}}
                     <span class="event-time">
-                        <time>{{itemHour}}.{{itemMinutes}} Uhr</time>
+                        <time>{{formatDate eventdate 'HH:mm'}} Uhr</time>
                     </span>
                 {{/if}}
               </td>

@@ -1,5 +1,9 @@
 /* Imports */
+// jquery, lazysizes, focuspoint - only in case it's not already included to the project
 import $ from './lib/jquery';
+import 'lazySizes';
+import 'jquery-focuspoint/js/jquery.focuspoint';
+
 import {DateTime} from 'luxon';
 import {RRule, RRuleSet} from 'rrule';
 import flatpickr from "flatpickr";
@@ -11,10 +15,7 @@ import {ge} from "nunjucks/src/tests";
 
 //Variablen
 let apiurl   = 'https://www.aalen.de/api/EventApiRulesTest.php'; //can be overwritten by data-url of .rruleset
-let showClass = 'showcontent';
 let origin   = window.location.origin;
-console.log(origin);
-// console.log("Window.location.origin:" +origin);
 if (origin.indexOf("eventcalendar") > -1){
     var iconpath        = '/assets/img/';
 }
@@ -73,7 +74,7 @@ function loadJSON(url) {
     });
 }
 
-//Check for execution only once
+// Check for execution only once
 var executedOnce;
 var onlyonce = (function() {
     executedOnce = false;
@@ -83,7 +84,7 @@ var onlyonce = (function() {
         }
     };
 })();
-//Check for execution only once
+// Check for execution only once
 var initialexecutedOnce;
 var initalonlyonce = (function() {
     initialexecutedOnce = false;
@@ -94,7 +95,7 @@ var initalonlyonce = (function() {
     };
 })();
 
-//Format Date
+// Format Date
 function formatDate(date) {
     var d = new Date(date),
         month = '' + (d.getMonth() + 1),
@@ -113,7 +114,12 @@ function formatDate(date) {
 
 /* FUNKTIONEN */
 
-//RRuleSet-Instanz unter Berücksichtiung eines Start-/Endzeitraums und ggf die gewünschte Anzahl an Terminen erzeugen
+/**
+ * buildrruleset(thisobj)
+ *
+ * RRuleSet-Instanz unter Berücksichtiung eines Start-/Endzeitraums und ggf
+ * die gewünschte Anzahl an Terminen erzeugen
+ */
 function buildrruleset(thisobj) {
     //clear vars
     allEvents = [];
@@ -243,7 +249,7 @@ function recurrency(sliceStart, sliceEnd) {
             allEvents.push({
                 eventdate: eventdate,
                 id: id,
-                url:url,
+                url: url,
                 title: title,
                 image: image,
                 category: category,
@@ -262,24 +268,24 @@ function recurrency(sliceStart, sliceEnd) {
                 highlight: highlight,
                 topevent: topevent,
                 itemDate: eventdate, //Wed Jul 21 2021 17:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
-                itemddMMMMyyyy: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMMM yyyy'),
-                itemDateComplete: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM yyyy'),
-                itemDateLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM ´yy'),
-                itemDateShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MM.'),
-                itemDateWeekdayDayMonth: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc. dd.MM.'),
-                itemHour: eventdate.getUTCHours(),
-                itemMinutes: DateTime.fromJSDate(eventdate).toFormat('mm'),
-                itemDay: eventdate.getDate(), //21
-                itemWeekdayShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc'), //Mi
-                itemWeekdayLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('cccc'), //Mittwoch
-                itemMonthNumeric: DateTime.fromJSDate(eventdate).toFormat('dd'), //6
-                itemMonthShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('LLL'), //Jul
-                itemMonthLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('LLLL'), //Juli
-                itemYear: DateTime.fromJSDate(eventdate).toFormat('yyyy'), //2021
-                itemStartDate: DateTime.fromJSDate(startdate, {zone:'UTC'}).toFormat('DD T'),
-                itemEndDate: DateTime.fromJSDate(enddate, {zone: 'UTC'}).toFormat(' - DD HH:mm'),
-                itemStartTime: DateTime.fromJSDate(startdate, {zone:'UTC'}).toFormat('HH:mm'),
-                itemEndTime: DateTime.fromJSDate(enddate, {zone:'UTC'}).toFormat('HH:mm'),
+                // itemddMMMMyyyy: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMMM yyyy'),
+                // itemDateComplete: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM yyyy'),
+                // itemDateLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM ´yy'),
+                // itemDateShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MM.'),
+                // itemDateWeekdayDayMonth: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc. dd.MM.'),
+                // itemHour: eventdate.getUTCHours(),
+                // itemMinutes: DateTime.fromJSDate(eventdate).toFormat('mm'),
+                // itemDay: eventdate.getDate(), //21
+                // itemWeekdayShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc'), //Mi
+                // itemWeekdayLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('cccc'), //Mittwoch
+                // itemMonthNumeric: DateTime.fromJSDate(eventdate).toFormat('dd'), //6
+                // itemMonthShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('LLL'), //Jul
+                // itemMonthLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('LLLL'), //Juli
+                // itemYear: DateTime.fromJSDate(eventdate).toFormat('yyyy'), //2021
+                // itemStartDate: DateTime.fromJSDate(startdate, {zone:'UTC'}).toFormat('DD T'),
+                // itemEndDate: DateTime.fromJSDate(enddate, {zone: 'UTC'}).toFormat(' - DD HH:mm'),
+                // itemStartTime: DateTime.fromJSDate(startdate, {zone:'UTC'}).toFormat('HH:mm'),
+                // itemEndTime: DateTime.fromJSDate(enddate, {zone:'UTC'}).toFormat('HH:mm'),
             });
         }
     });
@@ -406,9 +412,12 @@ function printEventsHandlebars() {
         $('.service-messages').html("");
         //HBS-Template abhängig vom gewählten Modus (mode Parameter) auswählen
 
-        // Definiere den Helper
+        // Definiere die Handlebars-Helper
         Handlebars.registerHelper('eq', function(arg1, arg2, options) {
             return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+        });
+        Handlebars.registerHelper('formatDate', function(eventdate, format) {
+            return DateTime.fromJSDate(new Date(eventdate)).setZone('utc').setLocale(lang).toFormat(format);
         });
 
         let template = Hbs[mode]; //Example: let template = Hbs['flexTable'];

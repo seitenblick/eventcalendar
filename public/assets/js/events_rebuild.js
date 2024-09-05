@@ -21,6 +21,8 @@ require("core-js/modules/web.url.js");
 require("core-js/modules/web.url.to-json.js");
 require("core-js/modules/web.url-search-params.js");
 var _jquery = _interopRequireDefault(require("./lib/jquery"));
+require("lazySizes");
+require("jquery-focuspoint/js/jquery.focuspoint");
 var _luxon = require("luxon");
 var _rrule = require("rrule");
 var _flatpickr = _interopRequireDefault(require("flatpickr"));
@@ -34,12 +36,8 @@ function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e
 // import "../../public/assets/js/handlebarsTemplates/hbstemplates";
 
 //Variablen
-// let apiurl   = 'https://www.aalen.de/api/EventApiRules.php'; //can be overwritten by data-url of .rruleset
 var apiurl = 'https://www.aalen.de/api/EventApiRulesTest.php'; //can be overwritten by data-url of .rruleset
-var showClass = 'showcontent';
 var origin = window.location.origin;
-console.log(origin);
-// console.log("Window.location.origin:" +origin);
 if (origin.indexOf("eventcalendar") > -1) {
   var iconpath = '/assets/img/';
 } else if (origin.indexOf("seitenblick") > -1) {
@@ -94,7 +92,7 @@ function loadJSON(url) {
   });
 }
 
-//Check for execution only once
+// Check for execution only once
 var executedOnce;
 var onlyonce = function () {
   executedOnce = false;
@@ -104,7 +102,7 @@ var onlyonce = function () {
     }
   };
 }();
-//Check for execution only once
+// Check for execution only once
 var initialexecutedOnce;
 var initalonlyonce = function () {
   initialexecutedOnce = false;
@@ -115,7 +113,7 @@ var initalonlyonce = function () {
   };
 }();
 
-//Format Date
+// Format Date
 function formatDate(date) {
   var d = new Date(date),
     month = '' + (d.getMonth() + 1),
@@ -128,7 +126,12 @@ function formatDate(date) {
 
 /* FUNKTIONEN */
 
-//RRuleSet-Instanz unter Berücksichtiung eines Start-/Endzeitraums und ggf die gewünschte Anzahl an Terminen erzeugen
+/**
+ * buildrruleset(thisobj)
+ *
+ * RRuleSet-Instanz unter Berücksichtiung eines Start-/Endzeitraums und ggf
+ * die gewünschte Anzahl an Terminen erzeugen
+ */
 function buildrruleset(thisobj) {
   //clear vars
   allEvents = [];
@@ -269,41 +272,25 @@ function recurrency(sliceStart, sliceEnd) {
         mandators: mandators,
         highlight: highlight,
         topevent: topevent,
-        itemDate: eventdate,
-        //Wed Jul 21 2021 17:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
-        itemddMMMMyyyy: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMMM yyyy'),
-        itemDateComplete: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM yyyy'),
-        itemDateLong: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM ´yy'),
-        itemDateShort: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MM.'),
-        itemDateWeekdayDayMonth: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc. dd.MM.'),
-        itemHour: eventdate.getUTCHours(),
-        itemMinutes: _luxon.DateTime.fromJSDate(eventdate).toFormat('mm'),
-        itemDay: eventdate.getDate(),
-        //21
-        itemWeekdayShort: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc'),
-        //Mi
-        itemWeekdayLong: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('cccc'),
-        //Mittwoch
-        itemMonthNumeric: _luxon.DateTime.fromJSDate(eventdate).toFormat('dd'),
-        //6
-        itemMonthShort: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('LLL'),
-        //Jul
-        itemMonthLong: _luxon.DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('LLLL'),
-        //Juli
-        itemYear: _luxon.DateTime.fromJSDate(eventdate).toFormat('yyyy'),
-        //2021
-        itemStartDate: _luxon.DateTime.fromJSDate(startdate, {
-          zone: 'UTC'
-        }).toFormat('DD T'),
-        itemEndDate: _luxon.DateTime.fromJSDate(enddate, {
-          zone: 'UTC'
-        }).toFormat(' - DD HH:mm'),
-        itemStartTime: _luxon.DateTime.fromJSDate(startdate, {
-          zone: 'UTC'
-        }).toFormat('HH:mm'),
-        itemEndTime: _luxon.DateTime.fromJSDate(enddate, {
-          zone: 'UTC'
-        }).toFormat('HH:mm')
+        itemDate: eventdate //Wed Jul 21 2021 17:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)
+        // itemddMMMMyyyy: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMMM yyyy'),
+        // itemDateComplete: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM yyyy'),
+        // itemDateLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MMM ´yy'),
+        // itemDateShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('dd. MM.'),
+        // itemDateWeekdayDayMonth: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc. dd.MM.'),
+        // itemHour: eventdate.getUTCHours(),
+        // itemMinutes: DateTime.fromJSDate(eventdate).toFormat('mm'),
+        // itemDay: eventdate.getDate(), //21
+        // itemWeekdayShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('ccc'), //Mi
+        // itemWeekdayLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('cccc'), //Mittwoch
+        // itemMonthNumeric: DateTime.fromJSDate(eventdate).toFormat('dd'), //6
+        // itemMonthShort: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('LLL'), //Jul
+        // itemMonthLong: DateTime.fromJSDate(eventdate).setLocale(lang).toFormat('LLLL'), //Juli
+        // itemYear: DateTime.fromJSDate(eventdate).toFormat('yyyy'), //2021
+        // itemStartDate: DateTime.fromJSDate(startdate, {zone:'UTC'}).toFormat('DD T'),
+        // itemEndDate: DateTime.fromJSDate(enddate, {zone: 'UTC'}).toFormat(' - DD HH:mm'),
+        // itemStartTime: DateTime.fromJSDate(startdate, {zone:'UTC'}).toFormat('HH:mm'),
+        // itemEndTime: DateTime.fromJSDate(enddate, {zone:'UTC'}).toFormat('HH:mm'),
       });
     }
   });
@@ -373,6 +360,7 @@ function mandatorfiltervalue(filterValue) {
 
 //Angeklickten eventfilter ausführen
 function eventfilter() {
+  /* Kategorie-Filter */
   console.log("4. eventfilter()");
   var filterValueArray = (0, _jquery.default)('.category.active').map(function () {
     return [_jquery.default.map((0, _jquery.default)(this).data(), function (v) {
@@ -383,7 +371,7 @@ function eventfilter() {
   contentfiltervalue(filterValueArray);
 
   /* Mandator-Filter */
-  console.log("4a. mandatorfilter");
+  // console.log("4a. mandatorfilter");
   var mandatorfilter = (0, _jquery.default)('#districtval').val();
   console.log(mandatorfilter);
   if (mandatorfilter) {
@@ -408,9 +396,12 @@ function printEventsHandlebars() {
     (0, _jquery.default)('.service-messages').html("");
     //HBS-Template abhängig vom gewählten Modus (mode Parameter) auswählen
 
-    // Definiere den Helper
+    // Definiere die Handlebars-Helper
     Handlebars.registerHelper('eq', function (arg1, arg2, options) {
       return arg1 == arg2 ? options.fn(this) : options.inverse(this);
+    });
+    Handlebars.registerHelper('formatDate', function (eventdate, format) {
+      return _luxon.DateTime.fromJSDate(new Date(eventdate)).setZone('utc').setLocale(lang).toFormat(format);
     });
     var template = Hbs[mode]; //Example: let template = Hbs['flexTable'];
     var quoteData = template(allEventsResult);
@@ -935,7 +926,7 @@ function initCalendar(url, thisobj) {
   });
 });
 
-},{"./lib/jquery":2,"core-js/modules/es.array.concat.js":133,"core-js/modules/es.array.filter.js":134,"core-js/modules/es.array.find.js":135,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.includes.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.join.js":139,"core-js/modules/es.array.map.js":140,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.array.sort.js":142,"core-js/modules/es.number.constructor.js":143,"core-js/modules/es.object.to-string.js":144,"core-js/modules/es.string.includes.js":145,"core-js/modules/es.string.iterator.js":146,"core-js/modules/web.dom-collections.for-each.js":147,"core-js/modules/web.dom-collections.iterator.js":148,"core-js/modules/web.url-search-params.js":150,"core-js/modules/web.url.js":152,"core-js/modules/web.url.to-json.js":153,"flatpickr":154,"flatpickr/dist/l10n/de":155,"luxon":157,"nunjucks/src/tests":160,"rrule":161}],2:[function(require,module,exports){
+},{"./lib/jquery":2,"core-js/modules/es.array.concat.js":133,"core-js/modules/es.array.filter.js":134,"core-js/modules/es.array.find.js":135,"core-js/modules/es.array.from.js":136,"core-js/modules/es.array.includes.js":137,"core-js/modules/es.array.iterator.js":138,"core-js/modules/es.array.join.js":139,"core-js/modules/es.array.map.js":140,"core-js/modules/es.array.slice.js":141,"core-js/modules/es.array.sort.js":142,"core-js/modules/es.number.constructor.js":143,"core-js/modules/es.object.to-string.js":144,"core-js/modules/es.string.includes.js":145,"core-js/modules/es.string.iterator.js":146,"core-js/modules/web.dom-collections.for-each.js":147,"core-js/modules/web.dom-collections.iterator.js":148,"core-js/modules/web.url-search-params.js":150,"core-js/modules/web.url.js":152,"core-js/modules/web.url.to-json.js":153,"flatpickr":154,"flatpickr/dist/l10n/de":155,"jquery-focuspoint/js/jquery.focuspoint":156,"lazySizes":158,"luxon":159,"nunjucks/src/tests":162,"rrule":163}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -947,7 +938,7 @@ function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e
 window.$ = window.jQuery = _jquery.default;
 var _default = exports.default = _jquery.default;
 
-},{"jquery":156}],3:[function(require,module,exports){
+},{"jquery":157}],3:[function(require,module,exports){
 'use strict';
 var isCallable = require('../internals/is-callable');
 var tryToString = require('../internals/try-to-string');
@@ -8595,6 +8586,198 @@ $({ target: 'URL', proto: true, enumerable: true }, {
 })));
 
 },{}],156:[function(require,module,exports){
+/**
+ * jQuery FocusPoint; version: 1.1.3
+ * Author: http://jonathonmenz.com
+ * Source: https://github.com/jonom/jquery-focuspoint
+ * Copyright (c) 2014 J. Menz; MIT License
+ * @preserve
+ */
+;
+(function($) {
+
+	var defaults = {
+		reCalcOnWindowResize: true,
+		throttleDuration: 17 //ms - set to 0 to disable throttling
+	};
+
+	//Setup a container instance
+	var setupContainer = function($el) {
+		var imageSrc = $el.find('img').attr('src');
+		$el.data('imageSrc', imageSrc);
+
+		resolveImageSize(imageSrc, function(err, dim) {
+			$el.data({
+				imageW: dim.width,
+				imageH: dim.height
+			});
+			adjustFocus($el);
+		});
+	};
+
+	//Get the width and the height of an image
+	//by creating a new temporary image
+	var resolveImageSize = function(src, cb) {
+		//Create a new image and set a
+		//handler which listens to the first
+		//call of the 'load' event.
+		$('<img />').one('load', function() {
+			//'this' references to the new
+			//created image
+			cb(null, {
+				width: this.width,
+				height: this.height
+			});
+		}).attr('src', src);
+	};
+
+	//Create a throttled version of a function
+	var throttle = function(fn, ms) {
+		var isRunning = false;
+		return function() {
+			var args = Array.prototype.slice.call(arguments, 0);
+			if (isRunning) return false;
+			isRunning = true;
+			setTimeout(function() {
+				isRunning = false;
+				fn.apply(null, args);
+			}, ms);
+		};
+	};
+
+	//Calculate the new left/top values of an image
+	var calcShift = function(conToImageRatio, containerSize, imageSize, focusSize, toMinus) {
+		var containerCenter = Math.floor(containerSize / 2); //Container center in px
+		var focusFactor = (focusSize + 1) / 2; //Focus point of resize image in px
+		var scaledImage = Math.floor(imageSize / conToImageRatio); //Can't use width() as images may be display:none
+		var focus =  Math.floor(focusFactor * scaledImage);
+		if (toMinus) focus = scaledImage - focus;
+		var focusOffset = focus - containerCenter; //Calculate difference between focus point and center
+		var remainder = scaledImage - focus; //Reduce offset if necessary so image remains filled
+		var containerRemainder = containerSize - containerCenter;
+		if (remainder < containerRemainder) focusOffset -= containerRemainder - remainder;
+		if (focusOffset < 0) focusOffset = 0;
+
+		return (focusOffset * -100 / containerSize)  + '%';
+	};
+
+	//Re-adjust the focus
+	var adjustFocus = function($el) {
+		var imageW = $el.data('imageW');
+		var imageH = $el.data('imageH');
+		var imageSrc = $el.data('imageSrc');
+
+		if (!imageW && !imageH && !imageSrc) {
+			return setupContainer($el); //Setup the container first
+		}
+
+		var containerW = $el.width();
+		var containerH = $el.height();
+		var focusX = parseFloat($el.data('focusX'));
+		var focusY = parseFloat($el.data('focusY'));
+		var $image = $el.find('img').first();
+
+		//Amount position will be shifted
+		var hShift = 0;
+		var vShift = 0;
+
+		if (!(containerW > 0 && containerH > 0 && imageW > 0 && imageH > 0)) {
+			return false; //Need dimensions to proceed
+		}
+
+		//Which is over by more?
+		var wR = imageW / containerW;
+		var hR = imageH / containerH;
+
+		//Reset max-width and -height
+		$image.css({
+			'max-width': '',
+			'max-height': ''
+		});
+
+		//Minimize image while still filling space
+		if (imageW > containerW && imageH > containerH) {
+			$image.css((wR > hR) ? 'max-height' : 'max-width', '100%');
+		}
+
+		if (wR > hR) {
+			hShift = calcShift(hR, containerW, imageW, focusX);
+		} else if (wR < hR) {
+			vShift = calcShift(wR, containerH, imageH, focusY, true);
+		}
+
+		$image.css({
+			top: vShift,
+			left: hShift
+		});
+	};
+
+	var $window = $(window);
+
+	var focusPoint = function($el, settings) {
+		var thrAdjustFocus = settings.throttleDuration ?
+			throttle(function(){adjustFocus($el);}, settings.throttleDuration)
+			: function(){adjustFocus($el);};//Only throttle when desired
+		var isListening = false;
+
+		adjustFocus($el); //Focus image in container
+
+		//Expose a public API
+		return {
+
+			adjustFocus: function() {
+				return adjustFocus($el);
+			},
+
+			windowOn: function() {
+				if (isListening) return;
+				//Recalculate each time the window is resized
+				$window.on('resize', thrAdjustFocus);
+				return isListening = true;
+			},
+
+			windowOff: function() {
+				if (!isListening) return;
+				//Stop listening to the resize event
+				$window.off('resize', thrAdjustFocus);
+				isListening = false;
+				return true;
+			}
+
+		};
+	};
+
+	$.fn.focusPoint = function(optionsOrMethod) {
+		//Shortcut to functions - if string passed assume method name and execute
+		if (typeof optionsOrMethod === 'string') {
+			return this.each(function() {
+				var $el = $(this);
+				$el.data('focusPoint')[optionsOrMethod]();
+			});
+		}
+		//Otherwise assume options being passed and setup
+		var settings = $.extend({}, defaults, optionsOrMethod);
+		return this.each(function() {
+			var $el = $(this);
+			var fp = focusPoint($el, settings);
+			//Stop the resize event of any previous attached
+			//focusPoint instances
+			if ($el.data('focusPoint')) $el.data('focusPoint').windowOff();
+			$el.data('focusPoint', fp);
+			if (settings.reCalcOnWindowResize) fp.windowOn();
+		});
+
+	};
+
+	$.fn.adjustFocus = function() {
+		//Deprecated v1.2
+		return this.each(function() {
+			adjustFocus($(this));
+		});
+	};
+
+})(jQuery);
+},{}],157:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v3.7.1
  * https://jquery.com/
@@ -19312,7 +19495,823 @@ if ( typeof noGlobal === "undefined" ) {
 return jQuery;
 } );
 
-},{}],157:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
+(function(window, factory) {
+	var lazySizes = factory(window, window.document, Date);
+	window.lazySizes = lazySizes;
+	if(typeof module == 'object' && module.exports){
+		module.exports = lazySizes;
+	}
+}(typeof window != 'undefined' ?
+      window : {}, 
+/**
+ * import("./types/global")
+ * @typedef { import("./types/lazysizes-config").LazySizesConfigPartial } LazySizesConfigPartial
+ */
+function l(window, document, Date) { // Pass in the window Date function also for SSR because the Date class can be lost
+	'use strict';
+	/*jshint eqnull:true */
+
+	var lazysizes,
+		/**
+		 * @type { LazySizesConfigPartial }
+		 */
+		lazySizesCfg;
+
+	(function(){
+		var prop;
+
+		var lazySizesDefaults = {
+			lazyClass: 'lazyload',
+			loadedClass: 'lazyloaded',
+			loadingClass: 'lazyloading',
+			preloadClass: 'lazypreload',
+			errorClass: 'lazyerror',
+			//strictClass: 'lazystrict',
+			autosizesClass: 'lazyautosizes',
+			fastLoadedClass: 'ls-is-cached',
+			iframeLoadMode: 0,
+			srcAttr: 'data-src',
+			srcsetAttr: 'data-srcset',
+			sizesAttr: 'data-sizes',
+			//preloadAfterLoad: false,
+			minSize: 40,
+			customMedia: {},
+			init: true,
+			expFactor: 1.5,
+			hFac: 0.8,
+			loadMode: 2,
+			loadHidden: true,
+			ricTimeout: 0,
+			throttleDelay: 125,
+		};
+
+		lazySizesCfg = window.lazySizesConfig || window.lazysizesConfig || {};
+
+		for(prop in lazySizesDefaults){
+			if(!(prop in lazySizesCfg)){
+				lazySizesCfg[prop] = lazySizesDefaults[prop];
+			}
+		}
+	})();
+
+	if (!document || !document.getElementsByClassName) {
+		return {
+			init: function () {},
+			/**
+			 * @type { LazySizesConfigPartial }
+			 */
+			cfg: lazySizesCfg,
+			/**
+			 * @type { true }
+			 */
+			noSupport: true,
+		};
+	}
+
+	var docElem = document.documentElement;
+
+	var supportPicture = window.HTMLPictureElement;
+
+	var _addEventListener = 'addEventListener';
+
+	var _getAttribute = 'getAttribute';
+
+	/**
+	 * Update to bind to window because 'this' becomes null during SSR
+	 * builds.
+	 */
+	var addEventListener = window[_addEventListener].bind(window);
+
+	var setTimeout = window.setTimeout;
+
+	var requestAnimationFrame = window.requestAnimationFrame || setTimeout;
+
+	var requestIdleCallback = window.requestIdleCallback;
+
+	var regPicture = /^picture$/i;
+
+	var loadEvents = ['load', 'error', 'lazyincluded', '_lazyloaded'];
+
+	var regClassCache = {};
+
+	var forEach = Array.prototype.forEach;
+
+	/**
+	 * @param ele {Element}
+	 * @param cls {string}
+	 */
+	var hasClass = function(ele, cls) {
+		if(!regClassCache[cls]){
+			regClassCache[cls] = new RegExp('(\\s|^)'+cls+'(\\s|$)');
+		}
+		return regClassCache[cls].test(ele[_getAttribute]('class') || '') && regClassCache[cls];
+	};
+
+	/**
+	 * @param ele {Element}
+	 * @param cls {string}
+	 */
+	var addClass = function(ele, cls) {
+		if (!hasClass(ele, cls)){
+			ele.setAttribute('class', (ele[_getAttribute]('class') || '').trim() + ' ' + cls);
+		}
+	};
+
+	/**
+	 * @param ele {Element}
+	 * @param cls {string}
+	 */
+	var removeClass = function(ele, cls) {
+		var reg;
+		if ((reg = hasClass(ele,cls))) {
+			ele.setAttribute('class', (ele[_getAttribute]('class') || '').replace(reg, ' '));
+		}
+	};
+
+	var addRemoveLoadEvents = function(dom, fn, add){
+		var action = add ? _addEventListener : 'removeEventListener';
+		if(add){
+			addRemoveLoadEvents(dom, fn);
+		}
+		loadEvents.forEach(function(evt){
+			dom[action](evt, fn);
+		});
+	};
+
+	/**
+	 * @param elem { Element }
+	 * @param name { string }
+	 * @param detail { any }
+	 * @param noBubbles { boolean }
+	 * @param noCancelable { boolean }
+	 * @returns { CustomEvent }
+	 */
+	var triggerEvent = function(elem, name, detail, noBubbles, noCancelable){
+		var event = document.createEvent('Event');
+
+		if(!detail){
+			detail = {};
+		}
+
+		detail.instance = lazysizes;
+
+		event.initEvent(name, !noBubbles, !noCancelable);
+
+		event.detail = detail;
+
+		elem.dispatchEvent(event);
+		return event;
+	};
+
+	var updatePolyfill = function (el, full){
+		var polyfill;
+		if( !supportPicture && ( polyfill = (window.picturefill || lazySizesCfg.pf) ) ){
+			if(full && full.src && !el[_getAttribute]('srcset')){
+				el.setAttribute('srcset', full.src);
+			}
+			polyfill({reevaluate: true, elements: [el]});
+		} else if(full && full.src){
+			el.src = full.src;
+		}
+	};
+
+	var getCSS = function (elem, style){
+		return (getComputedStyle(elem, null) || {})[style];
+	};
+
+	/**
+	 *
+	 * @param elem { Element }
+	 * @param parent { Element }
+	 * @param [width] {number}
+	 * @returns {number}
+	 */
+	var getWidth = function(elem, parent, width){
+		width = width || elem.offsetWidth;
+
+		while(width < lazySizesCfg.minSize && parent && !elem._lazysizesWidth){
+			width =  parent.offsetWidth;
+			parent = parent.parentNode;
+		}
+
+		return width;
+	};
+
+	var rAF = (function(){
+		var running, waiting;
+		var firstFns = [];
+		var secondFns = [];
+		var fns = firstFns;
+
+		var run = function(){
+			var runFns = fns;
+
+			fns = firstFns.length ? secondFns : firstFns;
+
+			running = true;
+			waiting = false;
+
+			while(runFns.length){
+				runFns.shift()();
+			}
+
+			running = false;
+		};
+
+		var rafBatch = function(fn, queue){
+			if(running && !queue){
+				fn.apply(this, arguments);
+			} else {
+				fns.push(fn);
+
+				if(!waiting){
+					waiting = true;
+					(document.hidden ? setTimeout : requestAnimationFrame)(run);
+				}
+			}
+		};
+
+		rafBatch._lsFlush = run;
+
+		return rafBatch;
+	})();
+
+	var rAFIt = function(fn, simple){
+		return simple ?
+			function() {
+				rAF(fn);
+			} :
+			function(){
+				var that = this;
+				var args = arguments;
+				rAF(function(){
+					fn.apply(that, args);
+				});
+			}
+		;
+	};
+
+	var throttle = function(fn){
+		var running;
+		var lastTime = 0;
+		var gDelay = lazySizesCfg.throttleDelay;
+		var rICTimeout = lazySizesCfg.ricTimeout;
+		var run = function(){
+			running = false;
+			lastTime = Date.now();
+			fn();
+		};
+		var idleCallback = requestIdleCallback && rICTimeout > 49 ?
+			function(){
+				requestIdleCallback(run, {timeout: rICTimeout});
+
+				if(rICTimeout !== lazySizesCfg.ricTimeout){
+					rICTimeout = lazySizesCfg.ricTimeout;
+				}
+			} :
+			rAFIt(function(){
+				setTimeout(run);
+			}, true)
+		;
+
+		return function(isPriority){
+			var delay;
+
+			if((isPriority = isPriority === true)){
+				rICTimeout = 33;
+			}
+
+			if(running){
+				return;
+			}
+
+			running =  true;
+
+			delay = gDelay - (Date.now() - lastTime);
+
+			if(delay < 0){
+				delay = 0;
+			}
+
+			if(isPriority || delay < 9){
+				idleCallback();
+			} else {
+				setTimeout(idleCallback, delay);
+			}
+		};
+	};
+
+	//based on http://modernjavascript.blogspot.de/2013/08/building-better-debounce.html
+	var debounce = function(func) {
+		var timeout, timestamp;
+		var wait = 99;
+		var run = function(){
+			timeout = null;
+			func();
+		};
+		var later = function() {
+			var last = Date.now() - timestamp;
+
+			if (last < wait) {
+				setTimeout(later, wait - last);
+			} else {
+				(requestIdleCallback || run)(run);
+			}
+		};
+
+		return function() {
+			timestamp = Date.now();
+
+			if (!timeout) {
+				timeout = setTimeout(later, wait);
+			}
+		};
+	};
+
+	var loader = (function(){
+		var preloadElems, isCompleted, resetPreloadingTimer, loadMode, started;
+
+		var eLvW, elvH, eLtop, eLleft, eLright, eLbottom, isBodyHidden;
+
+		var regImg = /^img$/i;
+		var regIframe = /^iframe$/i;
+
+		var supportScroll = ('onscroll' in window) && !(/(gle|ing)bot/.test(navigator.userAgent));
+
+		var shrinkExpand = 0;
+		var currentExpand = 0;
+
+		var isLoading = 0;
+		var lowRuns = -1;
+
+		var resetPreloading = function(e){
+			isLoading--;
+			if(!e || isLoading < 0 || !e.target){
+				isLoading = 0;
+			}
+		};
+
+		var isVisible = function (elem) {
+			if (isBodyHidden == null) {
+				isBodyHidden = getCSS(document.body, 'visibility') == 'hidden';
+			}
+
+			return isBodyHidden || !(getCSS(elem.parentNode, 'visibility') == 'hidden' && getCSS(elem, 'visibility') == 'hidden');
+		};
+
+		var isNestedVisible = function(elem, elemExpand){
+			var outerRect;
+			var parent = elem;
+			var visible = isVisible(elem);
+
+			eLtop -= elemExpand;
+			eLbottom += elemExpand;
+			eLleft -= elemExpand;
+			eLright += elemExpand;
+
+			while(visible && (parent = parent.offsetParent) && parent != document.body && parent != docElem){
+				visible = ((getCSS(parent, 'opacity') || 1) > 0);
+
+				if(visible && getCSS(parent, 'overflow') != 'visible'){
+					outerRect = parent.getBoundingClientRect();
+					visible = eLright > outerRect.left &&
+						eLleft < outerRect.right &&
+						eLbottom > outerRect.top - 1 &&
+						eLtop < outerRect.bottom + 1
+					;
+				}
+			}
+
+			return visible;
+		};
+
+		var checkElements = function() {
+			var eLlen, i, rect, autoLoadElem, loadedSomething, elemExpand, elemNegativeExpand, elemExpandVal,
+				beforeExpandVal, defaultExpand, preloadExpand, hFac;
+			var lazyloadElems = lazysizes.elements;
+
+			if((loadMode = lazySizesCfg.loadMode) && isLoading < 8 && (eLlen = lazyloadElems.length)){
+
+				i = 0;
+
+				lowRuns++;
+
+				for(; i < eLlen; i++){
+
+					if(!lazyloadElems[i] || lazyloadElems[i]._lazyRace){continue;}
+
+					if(!supportScroll || (lazysizes.prematureUnveil && lazysizes.prematureUnveil(lazyloadElems[i]))){unveilElement(lazyloadElems[i]);continue;}
+
+					if(!(elemExpandVal = lazyloadElems[i][_getAttribute]('data-expand')) || !(elemExpand = elemExpandVal * 1)){
+						elemExpand = currentExpand;
+					}
+
+					if (!defaultExpand) {
+						defaultExpand = (!lazySizesCfg.expand || lazySizesCfg.expand < 1) ?
+							docElem.clientHeight > 500 && docElem.clientWidth > 500 ? 500 : 370 :
+							lazySizesCfg.expand;
+
+						lazysizes._defEx = defaultExpand;
+
+						preloadExpand = defaultExpand * lazySizesCfg.expFactor;
+						hFac = lazySizesCfg.hFac;
+						isBodyHidden = null;
+
+						if(currentExpand < preloadExpand && isLoading < 1 && lowRuns > 2 && loadMode > 2 && !document.hidden){
+							currentExpand = preloadExpand;
+							lowRuns = 0;
+						} else if(loadMode > 1 && lowRuns > 1 && isLoading < 6){
+							currentExpand = defaultExpand;
+						} else {
+							currentExpand = shrinkExpand;
+						}
+					}
+
+					if(beforeExpandVal !== elemExpand){
+						eLvW = innerWidth + (elemExpand * hFac);
+						elvH = innerHeight + elemExpand;
+						elemNegativeExpand = elemExpand * -1;
+						beforeExpandVal = elemExpand;
+					}
+
+					rect = lazyloadElems[i].getBoundingClientRect();
+
+					if ((eLbottom = rect.bottom) >= elemNegativeExpand &&
+						(eLtop = rect.top) <= elvH &&
+						(eLright = rect.right) >= elemNegativeExpand * hFac &&
+						(eLleft = rect.left) <= eLvW &&
+						(eLbottom || eLright || eLleft || eLtop) &&
+						(lazySizesCfg.loadHidden || isVisible(lazyloadElems[i])) &&
+						((isCompleted && isLoading < 3 && !elemExpandVal && (loadMode < 3 || lowRuns < 4)) || isNestedVisible(lazyloadElems[i], elemExpand))){
+						unveilElement(lazyloadElems[i]);
+						loadedSomething = true;
+						if(isLoading > 9){break;}
+					} else if(!loadedSomething && isCompleted && !autoLoadElem &&
+						isLoading < 4 && lowRuns < 4 && loadMode > 2 &&
+						(preloadElems[0] || lazySizesCfg.preloadAfterLoad) &&
+						(preloadElems[0] || (!elemExpandVal && ((eLbottom || eLright || eLleft || eLtop) || lazyloadElems[i][_getAttribute](lazySizesCfg.sizesAttr) != 'auto')))){
+						autoLoadElem = preloadElems[0] || lazyloadElems[i];
+					}
+				}
+
+				if(autoLoadElem && !loadedSomething){
+					unveilElement(autoLoadElem);
+				}
+			}
+		};
+
+		var throttledCheckElements = throttle(checkElements);
+
+		var switchLoadingClass = function(e){
+			var elem = e.target;
+
+			if (elem._lazyCache) {
+				delete elem._lazyCache;
+				return;
+			}
+
+			resetPreloading(e);
+			addClass(elem, lazySizesCfg.loadedClass);
+			removeClass(elem, lazySizesCfg.loadingClass);
+			addRemoveLoadEvents(elem, rafSwitchLoadingClass);
+			triggerEvent(elem, 'lazyloaded');
+		};
+		var rafedSwitchLoadingClass = rAFIt(switchLoadingClass);
+		var rafSwitchLoadingClass = function(e){
+			rafedSwitchLoadingClass({target: e.target});
+		};
+
+		var changeIframeSrc = function(elem, src){
+			var loadMode = elem.getAttribute('data-load-mode') || lazySizesCfg.iframeLoadMode;
+
+			// loadMode can be also a string!
+			if (loadMode == 0) {
+				elem.contentWindow.location.replace(src);
+			} else if (loadMode == 1) {
+				elem.src = src;
+			}
+		};
+
+		var handleSources = function(source){
+			var customMedia;
+
+			var sourceSrcset = source[_getAttribute](lazySizesCfg.srcsetAttr);
+
+			if( (customMedia = lazySizesCfg.customMedia[source[_getAttribute]('data-media') || source[_getAttribute]('media')]) ){
+				source.setAttribute('media', customMedia);
+			}
+
+			if(sourceSrcset){
+				source.setAttribute('srcset', sourceSrcset);
+			}
+		};
+
+		var lazyUnveil = rAFIt(function (elem, detail, isAuto, sizes, isImg){
+			var src, srcset, parent, isPicture, event, firesLoad;
+
+			if(!(event = triggerEvent(elem, 'lazybeforeunveil', detail)).defaultPrevented){
+
+				if(sizes){
+					if(isAuto){
+						addClass(elem, lazySizesCfg.autosizesClass);
+					} else {
+						elem.setAttribute('sizes', sizes);
+					}
+				}
+
+				srcset = elem[_getAttribute](lazySizesCfg.srcsetAttr);
+				src = elem[_getAttribute](lazySizesCfg.srcAttr);
+
+				if(isImg) {
+					parent = elem.parentNode;
+					isPicture = parent && regPicture.test(parent.nodeName || '');
+				}
+
+				firesLoad = detail.firesLoad || (('src' in elem) && (srcset || src || isPicture));
+
+				event = {target: elem};
+
+				addClass(elem, lazySizesCfg.loadingClass);
+
+				if(firesLoad){
+					clearTimeout(resetPreloadingTimer);
+					resetPreloadingTimer = setTimeout(resetPreloading, 2500);
+					addRemoveLoadEvents(elem, rafSwitchLoadingClass, true);
+				}
+
+				if(isPicture){
+					forEach.call(parent.getElementsByTagName('source'), handleSources);
+				}
+
+				if(srcset){
+					elem.setAttribute('srcset', srcset);
+				} else if(src && !isPicture){
+					if(regIframe.test(elem.nodeName)){
+						changeIframeSrc(elem, src);
+					} else {
+						elem.src = src;
+					}
+				}
+
+				if(isImg && (srcset || isPicture)){
+					updatePolyfill(elem, {src: src});
+				}
+			}
+
+			if(elem._lazyRace){
+				delete elem._lazyRace;
+			}
+			removeClass(elem, lazySizesCfg.lazyClass);
+
+			rAF(function(){
+				// Part of this can be removed as soon as this fix is older: https://bugs.chromium.org/p/chromium/issues/detail?id=7731 (2015)
+				var isLoaded = elem.complete && elem.naturalWidth > 1;
+
+				if( !firesLoad || isLoaded){
+					if (isLoaded) {
+						addClass(elem, lazySizesCfg.fastLoadedClass);
+					}
+					switchLoadingClass(event);
+					elem._lazyCache = true;
+					setTimeout(function(){
+						if ('_lazyCache' in elem) {
+							delete elem._lazyCache;
+						}
+					}, 9);
+				}
+				if (elem.loading == 'lazy') {
+					isLoading--;
+				}
+			}, true);
+		});
+
+		/**
+		 *
+		 * @param elem { Element }
+		 */
+		var unveilElement = function (elem){
+			if (elem._lazyRace) {return;}
+			var detail;
+
+			var isImg = regImg.test(elem.nodeName);
+
+			//allow using sizes="auto", but don't use. it's invalid. Use data-sizes="auto" or a valid value for sizes instead (i.e.: sizes="80vw")
+			var sizes = isImg && (elem[_getAttribute](lazySizesCfg.sizesAttr) || elem[_getAttribute]('sizes'));
+			var isAuto = sizes == 'auto';
+
+			if( (isAuto || !isCompleted) && isImg && (elem[_getAttribute]('src') || elem.srcset) && !elem.complete && !hasClass(elem, lazySizesCfg.errorClass) && hasClass(elem, lazySizesCfg.lazyClass)){return;}
+
+			detail = triggerEvent(elem, 'lazyunveilread').detail;
+
+			if(isAuto){
+				 autoSizer.updateElem(elem, true, elem.offsetWidth);
+			}
+
+			elem._lazyRace = true;
+			isLoading++;
+
+			lazyUnveil(elem, detail, isAuto, sizes, isImg);
+		};
+
+		var afterScroll = debounce(function(){
+			lazySizesCfg.loadMode = 3;
+			throttledCheckElements();
+		});
+
+		var altLoadmodeScrollListner = function(){
+			if(lazySizesCfg.loadMode == 3){
+				lazySizesCfg.loadMode = 2;
+			}
+			afterScroll();
+		};
+
+		var onload = function(){
+			if(isCompleted){return;}
+			if(Date.now() - started < 999){
+				setTimeout(onload, 999);
+				return;
+			}
+
+
+			isCompleted = true;
+
+			lazySizesCfg.loadMode = 3;
+
+			throttledCheckElements();
+
+			addEventListener('scroll', altLoadmodeScrollListner, true);
+		};
+
+		return {
+			_: function(){
+				started = Date.now();
+
+				lazysizes.elements = document.getElementsByClassName(lazySizesCfg.lazyClass);
+				preloadElems = document.getElementsByClassName(lazySizesCfg.lazyClass + ' ' + lazySizesCfg.preloadClass);
+
+				addEventListener('scroll', throttledCheckElements, true);
+
+				addEventListener('resize', throttledCheckElements, true);
+
+				addEventListener('pageshow', function (e) {
+					if (e.persisted) {
+						var loadingElements = document.querySelectorAll('.' + lazySizesCfg.loadingClass);
+
+						if (loadingElements.length && loadingElements.forEach) {
+							requestAnimationFrame(function () {
+								loadingElements.forEach( function (img) {
+									if (img.complete) {
+										unveilElement(img);
+									}
+								});
+							});
+						}
+					}
+				});
+
+				if(window.MutationObserver){
+					new MutationObserver( throttledCheckElements ).observe( docElem, {childList: true, subtree: true, attributes: true} );
+				} else {
+					docElem[_addEventListener]('DOMNodeInserted', throttledCheckElements, true);
+					docElem[_addEventListener]('DOMAttrModified', throttledCheckElements, true);
+					setInterval(throttledCheckElements, 999);
+				}
+
+				addEventListener('hashchange', throttledCheckElements, true);
+
+				//, 'fullscreenchange'
+				['focus', 'mouseover', 'click', 'load', 'transitionend', 'animationend'].forEach(function(name){
+					document[_addEventListener](name, throttledCheckElements, true);
+				});
+
+				if((/d$|^c/.test(document.readyState))){
+					onload();
+				} else {
+					addEventListener('load', onload);
+					document[_addEventListener]('DOMContentLoaded', throttledCheckElements);
+					setTimeout(onload, 20000);
+				}
+
+				if(lazysizes.elements.length){
+					checkElements();
+					rAF._lsFlush();
+				} else {
+					throttledCheckElements();
+				}
+			},
+			checkElems: throttledCheckElements,
+			unveil: unveilElement,
+			_aLSL: altLoadmodeScrollListner,
+		};
+	})();
+
+
+	var autoSizer = (function(){
+		var autosizesElems;
+
+		var sizeElement = rAFIt(function(elem, parent, event, width){
+			var sources, i, len;
+			elem._lazysizesWidth = width;
+			width += 'px';
+
+			elem.setAttribute('sizes', width);
+
+			if(regPicture.test(parent.nodeName || '')){
+				sources = parent.getElementsByTagName('source');
+				for(i = 0, len = sources.length; i < len; i++){
+					sources[i].setAttribute('sizes', width);
+				}
+			}
+
+			if(!event.detail.dataAttr){
+				updatePolyfill(elem, event.detail);
+			}
+		});
+		/**
+		 *
+		 * @param elem {Element}
+		 * @param dataAttr
+		 * @param [width] { number }
+		 */
+		var getSizeElement = function (elem, dataAttr, width){
+			var event;
+			var parent = elem.parentNode;
+
+			if(parent){
+				width = getWidth(elem, parent, width);
+				event = triggerEvent(elem, 'lazybeforesizes', {width: width, dataAttr: !!dataAttr});
+
+				if(!event.defaultPrevented){
+					width = event.detail.width;
+
+					if(width && width !== elem._lazysizesWidth){
+						sizeElement(elem, parent, event, width);
+					}
+				}
+			}
+		};
+
+		var updateElementsSizes = function(){
+			var i;
+			var len = autosizesElems.length;
+			if(len){
+				i = 0;
+
+				for(; i < len; i++){
+					getSizeElement(autosizesElems[i]);
+				}
+			}
+		};
+
+		var debouncedUpdateElementsSizes = debounce(updateElementsSizes);
+
+		return {
+			_: function(){
+				autosizesElems = document.getElementsByClassName(lazySizesCfg.autosizesClass);
+				addEventListener('resize', debouncedUpdateElementsSizes);
+			},
+			checkElems: debouncedUpdateElementsSizes,
+			updateElem: getSizeElement
+		};
+	})();
+
+	var init = function(){
+		if(!init.i && document.getElementsByClassName){
+			init.i = true;
+			autoSizer._();
+			loader._();
+		}
+	};
+
+	setTimeout(function(){
+		if(lazySizesCfg.init){
+			init();
+		}
+	});
+
+	lazysizes = {
+		/**
+		 * @type { LazySizesConfigPartial }
+		 */
+		cfg: lazySizesCfg,
+		autoSizer: autoSizer,
+		loader: loader,
+		init: init,
+		uP: updatePolyfill,
+		aC: addClass,
+		rC: removeClass,
+		hC: hasClass,
+		fire: triggerEvent,
+		gW: getWidth,
+		rAF: rAF,
+	};
+
+	return lazysizes;
+}
+));
+
+},{}],159:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -27801,7 +28800,7 @@ exports.VERSION = VERSION;
 exports.Zone = Zone;
 
 
-},{}],158:[function(require,module,exports){
+},{}],160:[function(require,module,exports){
 'use strict';
 
 var ArrayProto = Array.prototype;
@@ -28127,7 +29126,7 @@ function inOperator(key, val) {
   throw new Error('Cannot use "in" operator to search for "' + key + '" in unexpected types.');
 }
 _exports.inOperator = inOperator;
-},{}],159:[function(require,module,exports){
+},{}],161:[function(require,module,exports){
 'use strict';
 
 var lib = require('./lib');
@@ -28461,7 +29460,7 @@ module.exports = {
   inOperator: lib.inOperator,
   fromIterator: fromIterator
 };
-},{"./lib":158}],160:[function(require,module,exports){
+},{"./lib":160}],162:[function(require,module,exports){
 'use strict';
 
 var SafeString = require('./runtime').SafeString;
@@ -28727,7 +29726,7 @@ function mapping(value) {
   }
 }
 exports.mapping = mapping;
-},{"./runtime":159}],161:[function(require,module,exports){
+},{"./runtime":161}],163:[function(require,module,exports){
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();

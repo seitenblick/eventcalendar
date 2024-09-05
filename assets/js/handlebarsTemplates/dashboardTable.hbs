@@ -13,10 +13,10 @@
                 <div class="d-flex event-item showcontent {{status}}" data-tags="{{categories}}">
                     <a class="simple-ajax-popup event-link d-flex col" href="event_detail.php">
                         <div class="col-date">
-                            <div>{{itemDateLong}}</div>
+                            <div>{{formatDate eventdate 'dd. MMM ´yy'}}</div>
                             <div>
                                 {{#if timeValid}}
-                                    <time>{{itemHour}}:{{itemMinutes}} Uhr</time>
+                                    <time>{{formatDate eventdate 'HH:mm'}} Uhr</time>
                                 {{/if}}
                             </div>
                         </div>

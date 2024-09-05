@@ -2,10 +2,10 @@
     {{#each this}}
         <div class="col-12 col-sm-4">
             <div class="tiles-event-day smallertext">
-            {{itemWeekdayLong}}
+            {{formatDate eventdate 'cccc'}}
             </div>
             <div class="tiles-event-date">
-            {{itemddMMMMyyyy}}
+            {{formatDate eventdate 'dd. MMMM yyyy'}}
             </div>
         </div>
     {{/each}}

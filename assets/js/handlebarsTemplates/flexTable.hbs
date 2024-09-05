@@ -5,8 +5,8 @@
                 <div class="event-item showcontent testtemplate" data-tags="{{category.id}}">
                     <a href="{{url}}">
                         <div class="event-item-date">
-                            <div class="smallertext">{{itemWeekdayLong}}</div>
-                            <div class="event-date">{{itemDateLong}}</div>
+                            <div class="smallertext">{{formatDate eventdate 'cccc'}}</div>
+                            <div class="event-date">{{formatDate eventdate 'dd. MMM ´yy'}}</div>
                         </div>
                         <div class="event-item-info">
                         <div class="event-kicker">
@@ -26,7 +26,7 @@
                             </div>
                             {{#if timeValid}}
                                 <span class="event-time">
-                                    <time>{{itemHour}}:{{itemMinutes}} Uhr</time>
+                                    <time>{{formatDate eventdate 'HH:mm'}} Uhr</time>
                                 </span>
                             {{/if}}
                             <span class="event-location">{{location}}</span>

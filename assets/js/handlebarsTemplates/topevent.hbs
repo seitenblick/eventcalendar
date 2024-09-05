@@ -1,0 +1,40 @@
+<div class="event-col">
+    {{#each this}}
+        <a href="' + item.url +'" class="event-item top-event">
+            <div class="row">
+                <div class="col-12 col-md-5 col-lg-12">
+                    <div class="event-image">
+                        <div class="ratio_topevent">
+                            <div class="focuspoint" data-focus-x="0.00" data-focus-y="0.00">
+                                <img src="{{image.thumb_100px}}" class="img-responsive lazyautosizes ls-is-cached lazyload" title="{{titleTag}}" alt="{{altTag}}" data-sizes="auto"
+                                data-srcset="{{image.thumb_100px}} 100w,
+                                             {{image.thumb_300px}} 300w,
+                                             {{image.thumb_450px}} 450w,
+                                             {{image.thumb_600px}} 600w,
+                                             {{image.thumb_920px}} 920w,
+                                             {{image.thumb_1230px}} 1230w" />
+                            </div>
+                        </div>
+                        <div class="event-date">
+                          <div class="event-date__day">{{formatDate eventdate 'cccc'}}</div>
+                          <div class="event-date__date">{{formatDate eventdate 'dd.MM.'}}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-7 col-lg-12 topevent-overlay">
+                    <div class="event-text">
+                        <div class="event-kicker">\n' +
+                            `${(item.category.title) ? item.category.title : ''}` + ' ' + `${(item.series && item.category.title) ? ' | ' : ''}` + ' ' + item.series +
+                        </div>
+                        <div class="event-title">{{title}}</div>
+                        <div class="event-info' + item.status + '">\n' +
+                    '                                     ' + `${(item.status === "canceled") ? 'Abgesagt' : ''}` + `${(item.status === "postponed") ? 'Verschoben' : ''}` + ' ' +  `${(compareStart === compareEnd) ? DateTime.fromJSDate(item.startdate, {zone:'UTC'}).setLocale(lang).toFormat('dd. MMMM yyyy') : DateTime.fromJSDate(item.startdate, {zone:'UTC'}).setLocale(lang).toFormat('dd.MM.yyyy')}` + `${(compareStart === compareEnd) ? '' : ' - ' + DateTime.fromJSDate(item.enddate, {zone:'UTC'}).setLocale(lang).toFormat('dd.MM.yyyy')}` + ',<br /> ' + `${item.timeValid ?  + itemHour + ':' + itemMinutes + ' Uhr' : ''}` +
+                    '                                    </div>\n' +
+                    '\n' +
+                    '                                </div>\n' +
+                    '                            </div>\n' +
+            </div>
+        </a>
+    {{/each}}
+</div>

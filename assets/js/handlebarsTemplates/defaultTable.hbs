@@ -12,8 +12,8 @@
                   {{#each this}}
                       <tr class="event-item showcontent published showme" data-tags="{{category.id}}">
                             <td>
-                                <div class="smallertext">{{itemWeekdayLong}}</div>
-                                <div class="event-date">{{itemDateLong}}</div>
+                                <div class="smallertext">{{formatDate eventdate 'cccc'}}</div>
+                                <div class="event-date">{{formatDate eventdate 'dd. MMM ´yy'}}</div>
                             </td>
                             <td class="canceled_bg published">
                                 <div class="canceled"></div>
