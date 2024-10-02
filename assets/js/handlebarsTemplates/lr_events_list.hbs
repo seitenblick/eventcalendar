@@ -2,8 +2,8 @@
             {{#each this}}
                         <div class="event-item">
                             <div class="event-date-wrapper">
-                                <span class="event-date">{{itemDateComplete}}</span>
-                                <span class="event-time">{{itemStartTime}}{{#if enddate}} - {{itemEndTime}}{{/if}}</span>
+                                <span class="event-date">{{formatDate eventdate 'dd. MMMM yyyy'}}</span>
+                                <span class="event-time">{{formatDate startdate 'HH:mm'}}{{#if enddate}} - {{formatDate enddate 'HH:mm'}}{{/if}}</span>
                             </div>
                             <div class="event-title">{{title}}</div>
                         </div>

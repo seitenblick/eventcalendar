@@ -1,0 +1,35 @@
+<div class="event-list">
+    {{#each this}}
+        <a href="#" class="event_item {{#if highlight}}sh-event{{/if}}">
+            <div class="row">
+                <div class="col-xl-2">
+                    <div class="event_date">{{formatDate eventdate 'dd.MM.'}}</div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="event_title">{{title}}</div>
+                    <div class="event_lead">Ein Tanzabend mit Choreographien von Minka-Marie Heiß, Alekseij Canepa, Eric Trottier, Domenico Strazzeri</div>
+                </div>
+                <div class="col-lg-4 offset-lg-1 d-flex justify-content-lg-end align-items-center">
+                    <div class="event_info">
+                        <div class="event_info_row">
+                            <span class="label">Datum</span>
+                            <span class="content">{{formatDate eventdate 'EEE, dd. MMMM yyyy'}}</span>
+                        </div>
+                        <div class="event_info_row">
+                            <span class="label">Beginn</span>
+                            <span class="content">{{formatDate startdate 'HH:mm'}} Uhr</span>
+                        </div>
+                        <div class="event_info_row">
+                            <span class="label">Eintritt</span>
+                            <span class="content">ab 17,75€</span>
+                        </div>
+                        <div class="event_info_row">
+                            <span class="label">Veranstaltet von</span>
+                            <span class="content">ABC</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    {{/each}}
+</div>
