@@ -95,6 +95,12 @@ const configuration = {
             ],
             target: 'public/assets/js/events_rebuild.js',
         },
+        {
+            source: [
+                'assets/js/eventCalendar.js',
+            ],
+            target: 'public/assets/js/eventCalendar.js',
+        },
     ],
     images: [
         {

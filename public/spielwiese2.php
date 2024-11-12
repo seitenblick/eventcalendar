@@ -68,7 +68,7 @@
     </div>
 
 
-    <div class="rruleset" data-slice-start="2023-12-11T11:30:30" data-slice-end="2023-12-31T11:30:30" data-mode="simpleTable" data-event-id="998877" data-series-id="12548" data-count="8" data-mandator="168407" data-url="https://eventcalendar.ap.seitenblick.com/json/EventApiRules.php.json"></div>
+    <div class="rruleset" data-slice-start="2023-12-11T11:30:30" data-slice-end="2025-12-31T11:30:30" data-mode="simpleTable" data-event-id="998877" data-series-id="12548" data-count="8" data-mandator="168407" data-url="https://eventcalendar.ap.seitenblick.com/json/EventApiRules.php.json"></div>
     <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="simpleTable" data-event-id="" data-series-id="" data-count="" data-mandator="168407" data-url="<?php /* https://eventcalendar.ap.seitenblick.com/json/EventApiRules.php.json */ ?>"></div>
     <div class="rruleset" data-slice-start="2023-12-11T11:30:30" data-slice-end="2023-12-31T11:30:30" data-mode="simpleTable" data-event-id="998877" data-series-id="12548" data-count="8" data-mandator="168407" data-url="https://eventcalendar.ap.seitenblick.com/json/EventApiRules.php.json"></div>
 </div>

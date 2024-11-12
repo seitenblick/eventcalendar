@@ -17,30 +17,30 @@ import {ge} from "nunjucks/src/tests";
 let apiurl   = 'https://www.aalen.de/api/EventApiRulesTest.php'; //can be overwritten by data-url of .rruleset
 let origin   = window.location.origin;
 if (origin.indexOf("eventcalendar") > -1){
-    var iconpath        = '/assets/img/';
+    var iconpath              = '/assets/img/';
 }
 else if (origin.indexOf("seitenblick") > -1){
-    var iconpath        = '/public/assets/img/';
+    var iconpath              = '/public/assets/img/';
 }
 else {
-    var iconpath        = '/assets/global/img/';
+    var iconpath              = '/assets/global/img/';
 }
-let count               = ''; //data-count aus ruleelement
-let mode                = ''; /*Layout-Mode: list, grid, ...*/
-let allEvents           = []; //Array with all rendered events
-let allEventsResult     = []; //Array with calculated events
-let allEventsResultInit = []; //Array with calculated events (inital)
-let initalEventsResult  = [];
+let count                     = ''; //data-count aus ruleelement
+let mode                      = ''; /*Layout-Mode: list, grid, ...*/
+let allEvents                 = []; //Array with all rendered events
+let allEventsResult           = []; //Array with calculated events
+let allEventsResultInit       = []; //Array with calculated events (inital)
+let initalEventsResult        = [];
 let eventsResultRangeFiltered = [];
-let restoreArray        = [];
+let restoreArray              = [];
 
-let lang                = $('html').attr('lang'); //Language for localization
-let defaultDates        = []; //Alle Events für flatpickr z.B. ["2021-08-04", "2021-08-06", "2021-08-07"]
-let events              = []; //Events with rules (AJAX-JSON)
-let sliceStart          = ''; //Kalenderstart für Darstellung
-let sliceEnd            = ''; //Kalenderende für Darstellung
+let lang                      = $('html').attr('lang'); //Language for localization
+let defaultDates              = []; //Alle Events für flatpickr z.B. ["2021-08-04", "2021-08-06", "2021-08-07"]
+let events                    = []; //Events with rules (AJAX-JSON)
+let sliceStart                = ''; //Kalenderstart für Darstellung
+let sliceEnd                  = ''; //Kalenderende für Darstellung
 let ruleelement;
-// let districtSelect      = $('.event-filters .district-group select');
+// let districtSelect         = $('.event-filters .district-group select');
 
 let data; //Data-Attribute des Ruleelements
 let url; //final-url with get-parameters
@@ -66,13 +66,30 @@ function truncate(input, count) {
     return input;
 }
 
-/* Get JSON*/
+/* Funktion zum Abrufen der JSON-Daten */
 function loadJSON(url) {
     return $.ajax({
         dataType: 'text',
         url: url
     });
 }
+// function loadJSON(url) {
+//     // Falls `url` ein URL-Objekt ist, benutze `url.href` als String
+//     const urlString = (typeof url === 'string') ? url : url.href;
+//
+//     if (urlString.includes("/api")) {
+//         // Wenn die URL "/api" enthält, gehe davon aus, dass es sich um CraftCMS-GraphQL-Daten handelt
+//         return loadGraphQLData(urlString);
+//     } else {
+//         // Abrufen der statischen JSON-Daten (SixCMS)
+//         return $.ajax({
+//             dataType: 'text',
+//             url: url
+//         }).then(response => {
+//             return $.parseJSON(response); // Verarbeite die Antwort als JSON
+//         });
+//     }
+// }
 
 // Check for execution only once
 var executedOnce;
@@ -86,7 +103,7 @@ var onlyonce = (function() {
 })();
 // Check for execution only once
 var initialexecutedOnce;
-var initalonlyonce = (function() {
+var initialonlyonce = (function() {
     initialexecutedOnce = false;
     return function() {
         if (!initialexecutedOnce) {
@@ -196,6 +213,8 @@ function recurrency(sliceStart, sliceEnd) {
         const id              = item.id;
         const url             = item.url;
         const title           = item.title;
+        const teaser          = item.teaser;/* Feld wird für craftcms SH Ulm benötigt */
+        const organiser       = item.organiser;/* Feld wird für craftcms SH Ulm benötigt */
         const image           = item.image;
         const category        = item.category;
         const categories      = item.categories;
@@ -263,6 +282,8 @@ function recurrency(sliceStart, sliceEnd) {
                 startdate: startdate,
                 enddate: enddate,
                 ticketurl: ticketurl,
+                organiser:  organiser,
+                teaser: teaser,
                 location: location,
                 mandators: mandators,
                 highlight: highlight,
@@ -655,7 +676,6 @@ function initCalendar(url,thisobj) {
             initPagination();
         }
 
-
         if(!executedOnce) {
             eventsResultRangeFiltered = allEventsResultInit;
              console.log("eRRF: " + eventsResultRangeFiltered.length);
@@ -667,19 +687,89 @@ function initCalendar(url,thisobj) {
             restoreArray = allEventsResult;
             // alert(restoreArray.length);
         }
-        initalonlyonce();
+        initialonlyonce();
 
     });
 }
 
 
+
+/* CraftCMS*/
+// Funktion zum Abrufen der dynamischen Daten über GraphQL
+function loadGraphQLData(url) {
+    var query = `query eventQuery {
+        craftcmsevents: eventsEntries(orderBy: "eventDateStart ASC") {
+            ... on event_Entry {
+                id
+                title
+                teaser: eventLead
+                location: eventLocation
+                organiser: eventOrganisator
+                image {
+                    url
+                }
+                DTSTART: eventDateStart @formatDateTime(format: "Ymd")
+                UNTIL: eventDateEnd @formatDateTime(format: "Ymd")
+                timeStart: eventTimeStart @formatDateTime(format: "His")
+                timeEnd: eventTimeEnd @formatDateTime(format: "His")
+                rruleRule {
+                    ... on eventRules_Category {
+                        rule
+                    }
+                }
+                rruleWeekday
+                language
+                highlight: switchStadthausEvent
+            }
+        }
+    }`;
+
+    const username = "seitenblick";
+    const password = "blickzurseite";
+
+// Erstellen des Base64-kodierten Auth-Strings
+    const authString = btoa(`${username}:${password}`);
+
+    return fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": `Basic ${authString}`  // Authentifizierungsheader
+        },
+        body: JSON.stringify({ query }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            // Rückgabedaten in ein Standardformat umwandeln
+            return data;
+        })
+        .catch(error => {
+            console.error("Fehler beim Abrufen der GraphQL-Daten:", error);
+            return []; // Leeres Array zurückgeben bei Fehler
+        });
+}
+
+// // Entscheidung über dynamische oder statische Daten
+// function loadData(source) {
+//     if (source === 'graphql') {
+//         // Daten von der GraphQL-API abrufen
+//         return loadGraphQLData();
+//     } else {
+//         // Daten von einer statischen JSON-Datei abrufen
+//         return loadJSON(source).then(response => {
+//             return $.parseJSON(response);
+//         });
+//     }
+// }
+
 // Funktion zur Erkennung des CraftCMS-Formats anhand des geänderten Schlüssels `craftcmsevents`
 // Überarbeitete Erkennungsfunktion mit detaillierten Debug-Ausgaben
 function isCraftCMSFormat(data) {
-    console.log("Prüfe, ob es sich um ein CraftCMS-Format handelt...");
+    // console.log("Prüfe, ob es sich um ein CraftCMS-Format handelt...");
 
     // Zusätzliche Debug-Ausgabe für die gesamte Struktur des übergebenen Objekts
-    console.log("Übergebene Datenstruktur:", JSON.stringify(data, null, 2));
+    // console.log("Übergebene Datenstruktur:", JSON.stringify(data, null, 2));
 
     // Prüfung auf Existenz von "data" und "craftcmsevents" mit Typüberprüfung
     const hasDataKey = data && typeof data === 'object' && data.hasOwnProperty('data');
@@ -689,9 +779,9 @@ function isCraftCMSFormat(data) {
     const isValid = hasEventsKey && Array.isArray(data.data.craftcmsevents);
 
     // Debug-Ausgaben zur Verfolgung der Erkennung
-    console.log("Hat 'data'-Schlüssel:", hasDataKey);
-    console.log("Hat 'craftcmsevents'-Schlüssel:", hasEventsKey);
-    console.log("CraftCMS-Erkennung:", isValid ? "Ja" : "Nein");
+    // console.log("Hat 'data'-Schlüssel:", hasDataKey);
+    // console.log("Hat 'craftcmsevents'-Schlüssel:", hasEventsKey);
+    // console.log("CraftCMS-Erkennung:", isValid ? "Ja" : "Nein");
 
     return isValid;
 }
@@ -702,11 +792,11 @@ function isCraftCMSFormat(data) {
 function transformCraftCMSToSixCMSFormat(craftCMSData) {
     // Sicherstellen, dass es sich um ein CraftCMS-Format handelt
     if (!isCraftCMSFormat(craftCMSData)) {
-        console.log("Kein CraftCMS-Format. Rückgabe der unveränderten Daten.");
+        // console.log("Kein CraftCMS-Format. Rückgabe der unveränderten Daten.");
         return craftCMSData; // Unveränderte Rückgabe, wenn es kein CraftCMS-Format ist
     }
 
-    console.log("Beginne mit der Umwandlung von CraftCMS zu SixCMS-Format...");
+    // console.log("Beginne mit der Umwandlung von CraftCMS zu SixCMS-Format...");
     // Verarbeiten der Events aus dem CraftCMS-Format
     const events = craftCMSData.data.craftcmsevents;
 
@@ -715,6 +805,9 @@ function transformCraftCMSToSixCMSFormat(craftCMSData) {
         const eventId = event.id || "";
         const title = event.title || "";
         const highlight = event.highlight || "";
+        const organiser = event.organiser || "";
+        const teaser = event.teaser || "";
+
 
         // Funktion zum Zusammenbauen des Datums- und Zeitstrings im Format YYYYMMDDTHHmmssZ
         const buildDateTimeString = (date, time) => {
@@ -770,24 +863,25 @@ function transformCraftCMSToSixCMSFormat(craftCMSData) {
             series: "",
             seriesUrl: "",
             ticketUrl: "",
-            organiser: "",
+            organiser: organiser,
+            teaser: teaser,
             location: event.eventLocation ? event.eventLocation.replace(/<[^>]+>/g, "") : "",
             status: "published"
         };
     });
 
-    console.log("Umwandlung abgeschlossen. SixCMS-Format erstellt.");
+    // console.log("Umwandlung abgeschlossen. SixCMS-Format erstellt.");
     return sixCMSFormat;
 }
 
 // Funktion, um das gesamte JSON auf das erwartete Format zu prüfen und ggf. zu konvertieren
 function processCMSData(inputData) {
-    console.log("Starte die Verarbeitung der Daten...");
+    // console.log("Starte die Verarbeitung der Daten...");
     // Prüfen, ob es das SixCMS- oder CraftCMS-Format ist und entsprechend verarbeiten
     const dataToProcess = Array.isArray(inputData) ? inputData : transformCraftCMSToSixCMSFormat(inputData);
 
     // Debug-Ausgabe des verarbeiteten Formats
-    console.log("Verarbeitetes SixCMS-Format:", JSON.stringify(dataToProcess, null, 2));
+    // console.log("Verarbeitetes SixCMS-Format:", JSON.stringify(dataToProcess, null, 2));
     return dataToProcess;
 }
 /* Ende CraftCMS Adaption*/
