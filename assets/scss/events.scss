@@ -73,7 +73,6 @@
 
         @include icon-base($icon-mask: true, $show: after) {
           @include svg-icon("../../../assets/img/icon_event_close.svg", 14px, 14px, $light);
-          margin: 8px 0 0 15px;
         }
       }
     }
@@ -93,7 +92,7 @@
   }
   .searchval-group {
     display: flex;
-    width: 100%;
+//     width: 100%;
 
     .clearspace {
       position: absolute;
@@ -101,7 +100,7 @@
       top: calc(50% - 7px);
     }
     @include media-breakpoint-up(lg) {
-      width: 60%;
+//       width: 60%;
 
       input {
         margin-right: 20px;
@@ -119,7 +118,7 @@
 /* Flatpickr */
 .flatpickr-group {
   display: inline-block;
-  width: 40%;
+//   width: 40%;
 
   @include icon-base($icon-mask: true, $position: absolute, $show: after) {
     @include svg-icon("../../../assets/img/icon_event_calendar.svg", 22px, 24px, $primary);
@@ -702,9 +701,9 @@
   }
 }
 
-#event-table tbody tr,
-#event-table .event-item,
-#event-table .showcontent{
+#event-table tbody tr {
+// #event-table .event-item {
+// #event-table .showcontent{
   display: none!important;
 }
 #event-table tr.event-item.showcontent.showme

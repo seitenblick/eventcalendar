@@ -40,6 +40,10 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -65,7 +69,7 @@ function stringToDate(value) {
 }
 
 //Handlebars
-var lang = (0, _jquery.default)('html').attr('lang');
+var lang = document.documentElement.getAttribute("lang");
 // Handlebars-Helper registrieren
 Handlebars.registerHelper('eq', function (arg1, arg2, options) {
   return arg1 == arg2 ? options.fn(this) : options.inverse(this);
@@ -193,19 +197,31 @@ var EventCalendar = /*#__PURE__*/function () {
         }
       });
 
-      // Optionale: Button zum Löschen des Suchbegriffs
-      (0, _jquery.default)(".searchval-group .clear").on("click", function () {
-        (0, _jquery.default)("#searchval").val("");
+      // Optionale: Button zum Löschen des Suchbegriffs hinzufügen
+      var searchInput = document.querySelector(".searchval-group #searchval");
+      var clearButtonContainer = document.createElement("span");
+      clearButtonContainer.className = "clearspace";
+      var clearButton = document.createElement("img");
+      clearButton.src = "assets/global/img/icon_event_close.svg";
+      clearButton.className = "clear";
+      clearButton.title = "clear";
+      clearButtonContainer.appendChild(clearButton);
+      searchInput.parentNode.insertBefore(clearButtonContainer, searchInput.nextSibling);
+
+      // Click-Event für den Clear-Button
+      clearButton.addEventListener("click", function () {
+        searchInput.value = "";
         _this2.searchTerm = "";
         _this2.loadData(); // Lade alle Events ohne Filter
-        (0, _jquery.default)(".searchval-group .clear").removeClass("show"); // Clear-Button ausblenden
+        clearButton.classList.remove("show"); // Clear-Button ausblenden
       });
+
       // Überwacht die Eingabe im Suchfeld und zeigt den Clear-Button an, wenn das Feld nicht leer ist
-      (0, _jquery.default)("#searchval").on("input", function () {
-        if ((0, _jquery.default)(this).val()) {
-          (0, _jquery.default)(".searchval-group .clear").addClass("show"); // Clear-Button anzeigen
+      searchInput.addEventListener("input", function () {
+        if (searchInput.value) {
+          clearButton.classList.add("show"); // Clear-Button anzeigen
         } else {
-          (0, _jquery.default)(".searchval-group .clear").removeClass("show"); // Clear-Button ausblenden
+          clearButton.classList.remove("show"); // Clear-Button ausblenden
         }
       });
     }
@@ -235,13 +251,21 @@ var EventCalendar = /*#__PURE__*/function () {
         onClose: function onClose(selectedDates) {
           console.log("flatpickr onClose()");
           if (selectedDates.length !== 0) {
-            _this4.dateRangeStart = selectedDates[0];
-            selectedDates[1].setHours(23, 59, 59);
-            _this4.dateRangeEnd = selectedDates[1];
-            console.log(_this4.dateRangeStart);
-            console.log(_this4.dateRangeEnd);
-            (0, _jquery.default)('.rruleset').data('slice-start', _this4.formatDate(selectedDates[0]));
-            (0, _jquery.default)('.rruleset').data('slice-end', _this4.formatDate(selectedDates[1]));
+            // Manuelle Anpassung an UTC-Zeit
+            _this4.dateRangeStart = new Date(Date.UTC(selectedDates[0].getFullYear(), selectedDates[0].getMonth(), selectedDates[0].getDate()));
+            _this4.dateRangeEnd = new Date(Date.UTC(selectedDates[1].getFullYear(), selectedDates[1].getMonth(), selectedDates[1].getDate(), 23, 59, 59, 999));
+
+            // Konsolenausgabe zur Überprüfung des Datums in UTC-Format
+            console.log("Startdatum in UTC (ISO):", _this4.dateRangeStart.toISOString());
+            console.log("Enddatum in UTC (ISO):", _this4.dateRangeEnd.toISOString());
+
+            // Setze die Daten im .rruleset-Element für den Datumsbereich
+            (0, _jquery.default)('.rruleset').data('slice-start', _this4.formatDate(_this4.dateRangeStart));
+            (0, _jquery.default)('.rruleset').data('slice-end', _this4.formatDate(_this4.dateRangeEnd));
+
+            // Setze die Daten im .rruleset-Element für den Datumsbereich
+            (0, _jquery.default)('.rruleset').data('slice-start', _this4.formatDate(_this4.dateRangeStart));
+            (0, _jquery.default)('.rruleset').data('slice-end', _this4.formatDate(_this4.dateRangeEnd));
 
             // Ladeanzeige anzeigen
             _this4.showLoadingMessage();
@@ -259,17 +283,31 @@ var EventCalendar = /*#__PURE__*/function () {
         }
       });
 
-      // Clear-Button für das Datumsbereichsfeld
-      (0, _jquery.default)(".flatpickr-range").on('keyup input', function () {
-        if ((0, _jquery.default)(this).val()) {
-          (0, _jquery.default)(".flatpickr-group .clear").addClass("show");
+      // Clear-Button für das Datumsbereichsfeld hinzufügen
+      var flatpickrRange = document.querySelector(".flatpickr-range");
+      var clearButtonWrapper = document.createElement("span");
+      clearButtonWrapper.className = "clearspace";
+      var clearButton = document.createElement("img");
+      clearButton.src = "assets/global/img/icon_event_close.svg";
+      clearButton.className = "clear";
+      clearButton.title = "clear";
+      clearButtonWrapper.appendChild(clearButton);
+      flatpickrRange.parentNode.insertBefore(clearButtonWrapper, flatpickrRange.nextSibling);
+
+      // Event-Listener für Eingabe im Datumsfeld hinzufügen
+      flatpickrRange.addEventListener('keyup', handleInput);
+      flatpickrRange.addEventListener('input', handleInput);
+      function handleInput() {
+        var flatpickrGroupClear = document.querySelector(".flatpickr-group .clear");
+        if (flatpickrRange.value) {
+          flatpickrGroupClear.classList.add("show");
         } else {
-          (0, _jquery.default)(".flatpickr-group .clear").removeClass("show");
+          flatpickrGroupClear.classList.remove("show");
         }
-      });
+      }
 
       // Clear-Button Click-Handler
-      (0, _jquery.default)(".flatpickr-group .clear").on('click', function () {
+      clearButton.addEventListener("click", function () {
         _this4.flatpickrRange.clear(); // Clear das Flatpickr
         _this4.dateRangeStart = null;
         _this4.dateRangeEnd = null;
@@ -376,7 +414,8 @@ var EventCalendar = /*#__PURE__*/function () {
     value: function loadData() {
       var _this6 = this;
       var baseUrl = "https://www.aalen.de/api/EventApiRulesTest.php";
-      var staticDataUrl = "https://eventcalendar.seitenblick.com/json/EventApiRulesTest.php.json"; // Fallback-URL für statische JSON-Datei
+      // const staticDataUrl = "https://eventcalendar.seitenblick.com/json/EventApiRulesTest.php.json"; // Fallback-URL für statische JSON-Datei
+      var staticDataUrl = "/assets/mandator/kultur/js/events.json"; // Fallback-URL für statische JSON-Datei
       var searchParams = new URLSearchParams();
 
       // Wenn ein Suchbegriff eingegeben wurde und mindestens 3 Zeichen lang ist
@@ -385,21 +424,29 @@ var EventCalendar = /*#__PURE__*/function () {
         searchParams.append("search", searchVal);
       }
 
+      //Wenn ein Mandant vorgegeben ist über das rruleset
+      if (this.mandator) {
+        searchParams.append("md", this.mandator);
+      }
+
+      // Filterkriterien prüfen, die eine dynamische Abfrage erfordern (nur bei Suchbegriff)
+      var requiresApiRequest = searchParams.has("search") || !staticDataUrl;
+
       // // Wenn ein Distrikt ausgewählt wurde
       // if (this.activeDistrictFilter) {
       //     searchParams.append("di", this.activeDistrictFilter);
       // }
 
-      // Prüfen, ob Filterparameter gesetzt sind
-      var hasFilterParams = searchParams.toString().length > 0;
+      // // Prüfen, ob Filterparameter gesetzt sind
+      // const hasFilterParams = searchParams.toString().length > 0;
 
       // API-URL zusammenstellen
       var apiUrl = "".concat(baseUrl, "?").concat(searchParams.toString());
 
       // Datenquelle abhängig von Filterparametern festlegen:
       // 1. Wenn Filterparameter gesetzt sind, nutze die API mit baseUrl.
-      // 2. Wenn keine Filter gesetzt sind, nutze entweder die statische dataUrl (falls vorhanden) oder staticDataUrl.
-      var dataSourceUrl = hasFilterParams ? apiUrl : this.dataUrl || staticDataUrl;
+      // 2. Wenn keine Filter gesetzt sind, nutze entweder die statische dataUrl (falls vorhanden) oder staticDataUrl oder die API als endgültiges Fallback.
+      var dataSourceUrl = requiresApiRequest ? apiUrl : this.dataUrl || staticDataUrl || apiUrl;
 
       // Ladeanzeige anzeigen
       this.showLoadingMessage();
@@ -645,8 +692,8 @@ var EventCalendar = /*#__PURE__*/function () {
     key: "calculateOccurrences",
     value: function calculateOccurrences(event) {
       var occurrences = [];
-      var today = new Date(); // Aktuelles Datum und Uhrzeit
-      today.setHours(0, 0, 0, 0); // Setzt die Uhrzeit auf 00:00 für Vergleich ab Tagesbeginn
+      var now = new Date();
+      var today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())); // 00:00 in UTC
 
       // Erstelle die Wiederholungsregel aus dem `rule`-Feld
       var rule = _rrule.RRule.fromString(event.rule);
@@ -666,6 +713,13 @@ var EventCalendar = /*#__PURE__*/function () {
       // Füge nur die Daten hinzu, die nicht in `exdates` enthalten sind und in der Zukunft liegen
       eventDates.forEach(function (date) {
         var eventDate = new Date(date);
+        if (event.timeStart) {
+          var _event$timeStart$spli = event.timeStart.split(":").map(Number),
+            _event$timeStart$spli2 = _slicedToArray(_event$timeStart$spli, 2),
+            hours = _event$timeStart$spli2[0],
+            minutes = _event$timeStart$spli2[1];
+          eventDate.setHours(hours, minutes);
+        }
         var utcDate = stringToDate(date.toISOString()).getTime(); // Sicherstellen, dass auch berechnete Termine in UTC-Zeit vorliegen
 
         if (!exdateSet.has(utcDate) && eventDate >= today) {
@@ -677,7 +731,12 @@ var EventCalendar = /*#__PURE__*/function () {
             // Speichere den Timestamp direkt (wird für die schnellere Sortierung benötigt)
             location: event.location,
             url: event.url,
-            image: event.image.thumb_100px
+            image: event.image.thumb_100px,
+            timeStart: event.timeStart,
+            // Startzeit aus JSON
+            timeEnd: event.timeEnd,
+            // Endzeit aus JSON
+            timeValid: event.timeValid
           }, event));
         }
       });

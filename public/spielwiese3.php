@@ -19,7 +19,7 @@
           integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="assets/css/events.css">
-<!--    <link rel="stylesheet" href="assets/css/extern/dashboard.css">-->
+    <link rel="stylesheet" href="assets/css/extern/dashboard.css">
     <style>
         .rruleset {
             margin-bottom: 30px;
@@ -77,7 +77,7 @@
         </div>
     </div>
     <div class="service-messages"></div>
-    <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="flexTable" data-event-id=""
+    <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="table-dashboard" data-event-id=""
          data-series-id="" data-count="" data-mandator=""
          data-url="<?php /*https://eventcalendar.seitenblick.com/json/EventApiRulesTest.php.json */ ?>"></div>
 </div>

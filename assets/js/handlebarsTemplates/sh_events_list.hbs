@@ -15,10 +15,12 @@
                             <span class="label">Datum</span>
                             <span class="content">{{formatDate eventdate 'EEE, dd. MMMM yyyy'}}</span>
                         </div>
-                        <div class="event_info_row">
-                            <span class="label">Beginn</span>
-                            <span class="content">{{formatDate startdate 'HH:mm'}} Uhr</span>
-                        </div>
+                        {{#if timeValid}}
+                            <div class="event_info_row">
+                                <span class="label">Beginn</span>
+                                <span class="content">{{timeStart}} Uhr</span>
+                            </div>
+                        {{/if}}
 {{!--                         <div class="event_info_row"> --}}
 {{!--                             <span class="label">Eintritt</span> --}}
 {{!--                             <span class="content">ab 17,75€</span> --}}
