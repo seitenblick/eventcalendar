@@ -90,7 +90,7 @@ this["Hbs"]["flexTable"] = Handlebars.template({"1":function(container,depth0,he
     + alias1(((helper = (helper = lookupProperty(helpers,"location") || (depth0 != null ? lookupProperty(depth0,"location") : depth0)) != null ? helper : alias3),(typeof helper === alias4 ? helper.call(alias2,{"name":"location","hash":{},"data":data,"loc":{"start":{"line":32,"column":57},"end":{"line":32,"column":69}}}) : helper)))
     + "</span>\r\n                        </div>\r\n                    </a>\r\n                    <div class=\"event-item-links\">\r\n"
     + ((stack1 = (lookupProperty(helpers,"eq")||(depth0 && lookupProperty(depth0,"eq"))||alias3).call(alias2,(depth0 != null ? lookupProperty(depth0,"status") : depth0),"canceled",{"name":"eq","hash":{},"fn":container.program(11, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":36,"column":20},"end":{"line":38,"column":27}}})) != null ? stack1 : "")
-    + ((stack1 = lookupProperty(helpers,"if").call(alias2,(depth0 != null ? lookupProperty(depth0,"ticketurl") : depth0),{"name":"if","hash":{},"fn":container.program(13, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":39,"column":20},"end":{"line":41,"column":27}}})) != null ? stack1 : "")
+    + ((stack1 = lookupProperty(helpers,"if").call(alias2,(depth0 != null ? lookupProperty(depth0,"ticketUrl") : depth0),{"name":"if","hash":{},"fn":container.program(13, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":39,"column":20},"end":{"line":41,"column":27}}})) != null ? stack1 : "")
     + "                    </div>\r\n                </div>\r\n";
 },"2":function(container,depth0,helpers,partials,data) {
     var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {
@@ -138,7 +138,7 @@ this["Hbs"]["flexTable"] = Handlebars.template({"1":function(container,depth0,he
     };
 
   return "                        <a href=\""
-    + container.escapeExpression(((helper = (helper = lookupProperty(helpers,"ticketurl") || (depth0 != null ? lookupProperty(depth0,"ticketurl") : depth0)) != null ? helper : container.hooks.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"ticketurl","hash":{},"data":data,"loc":{"start":{"line":40,"column":33},"end":{"line":40,"column":46}}}) : helper)))
+    + container.escapeExpression(((helper = (helper = lookupProperty(helpers,"ticketUrl") || (depth0 != null ? lookupProperty(depth0,"ticketUrl") : depth0)) != null ? helper : container.hooks.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"ticketUrl","hash":{},"data":data,"loc":{"start":{"line":40,"column":33},"end":{"line":40,"column":46}}}) : helper)))
     + "\" class=\"rotation-wrapper-outer\"><div class=\"buttonlink ticket rotation-wrapper-inner\"><span class=\"linktext element-to-rotate\">Tickets</span></div></a>\r\n";
 },"compiler":[8,">= 4.3.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, lookupProperty = container.lookupProperty || function(parent, propertyName) {

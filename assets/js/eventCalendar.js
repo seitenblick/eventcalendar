@@ -1,4 +1,4 @@
-import $ from './lib/jquery';
+// import $ from './lib/jquery';
 import { DateTime } from 'luxon';
 import flatpickr from "flatpickr";
 import { German } from "flatpickr/dist/l10n/de";
@@ -29,7 +29,12 @@ Handlebars.registerHelper('formatDate', function(eventdate, format) {
 
 class EventCalendar {
     constructor(container) {
-        this.container = $(container); // Referenz auf das HTML-Element
+        this.container = container instanceof HTMLElement ? container : document.querySelector(container);
+        // Wenn `this.container` nicht gefunden wird, eine Fehlermeldung ausgeben
+        if (!this.container) {
+            console.error("Container element not found:", container);
+            return;
+        }
         this.data = [];                // Das JSON-Dataset
         this.events = [];              // Array für berechnete Ereignisse
         this.activeCategoryFilters = []; //Array für Button-Filter (categories)
@@ -37,20 +42,22 @@ class EventCalendar {
         this.activeDistrictFilter = ""; // Hinzufügen einer Variable für den Distriktfilter
 
         // Attribute (data-Attribute) aus dem HTML-Container lesen
-        this.sliceStart = this.container.data("slice-start") || null;
-        this.sliceEnd = this.container.data("slice-end") || null;
-        this.mode = this.container.data("mode") || "list";  // Standard-Modus auf "list" setzen
-        this.mandator = this.container.data("mandator") || "";
-        this.eventId = String(this.container.data("event-id") || ""); // Konvertierung in String
-        this.seriesId = this.container.data("series-id") || "";
-        this.dataUrl = this.container.data("url") || null; // benutzerdefinierte Daten-URL
+        this.sliceStart = this.container.getAttribute("data-slice-start") || null;
+        this.sliceEnd = this.container.getAttribute("data-slice-end") || null;
+        this.mode = this.container.getAttribute("data-mode") || "list";  // Standard-Modus auf "list" setzen
+        this.mandator = this.container.getAttribute("data-mandator") || "";
+        this.eventId = String(this.container.getAttribute("data-event-id") || ""); // Konvertierung in String
+        this.seriesId = this.container.getAttribute("data-series-id") || "";
+        this.dataUrl = this.container.getAttribute("data-url") || null; // benutzerdefinierte Daten-URL
+        this.jsonDataUrl = container.getAttribute("data-json-url") || null; // Neue URL für das statische JSON, falls angegeben
 
-        const countValue = this.container.data("count");
+        const countValue = this.container.getAttribute("data-count");
         this.totalCount = (countValue === undefined || countValue === "") ? null : parseInt(countValue); // null, um "Alle" anzuzeigen
 
         this.currentPage = 1;
         this.limitPerPage = 10; // Anzahl der Listenelelemente pro Seite
 
+        this.districtSelect = document.querySelector("#districtval");
         this.flatpickrRange = null; // Variable für die Flatpickr-Instanz
 
 
@@ -65,73 +72,88 @@ class EventCalendar {
 
     // Filter-Setup: Event-Listener für Filter-Buttons einrichten
     setupFilterButtons() {
-        $(".event-categories button").on("click", (event) => {
-            const filterValue = $(event.currentTarget).data("filter").toString();
+        // Alle Filter-Buttons auswählen
+        const filterButtons = document.querySelectorAll(".event-categories button");
+        filterButtons.forEach(button => {
+            button.addEventListener("click", (event) => {
+                const filterValue = event.currentTarget.dataset.filter.toString();
 
-            if (filterValue === "") {
-                // Reset für alle Kategorien
-                this.activeCategoryFilters = [];
-                $(".event-categories button").removeClass("active");
-                $(event.currentTarget).addClass("active");
+                if (filterValue === "") {
+                    // Reset für alle Kategorien
+                    this.activeCategoryFilters = [];
+                    filterButtons.forEach(btn => btn.classList.remove("active"));
+                    event.currentTarget.classList.add("active");
 
-                // Zurücksetzen von Suchfeld und Distrikt-Filter
-                $("#searchval").val(""); // Suchtextfilter zurücksetzen
-                $("#districtval").val(""); // Distriktfilter zurücksetzen
-                this.activeDistrictFilter = ""; // Distriktfilter zurücksetzen
+                    // Zurücksetzen von Suchfeld und Distrikt-Filter
+                    document.getElementById("searchval").value = ""; // Suchtextfilter zurücksetzen
+                    // document.getElementById("districtval").value = ""; // Distriktfilter zurücksetzen
+                    if (this.districtSelect) {
+                        this.districtSelect.value = ""; // Distriktfilter zurücksetzen
+                    }
+                    this.activeDistrictFilter = ""; // Distriktfilter zurücksetzen
 
-                // Flatpickr-Range zurücksetzen
-                this.flatpickrRange.clear(); // Das Flatpickr-Range-Feld zurücksetzen
+                    // Flatpickr-Range zurücksetzen
+                    this.flatpickrRange.clear(); // Das Flatpickr-Range-Feld zurücksetzen
 
-                // Rücksetzen der Datumsfilterwerte
-                this.dateRangeStart = null;
-                this.dateRangeEnd = null;
+                    // Rücksetzen der Datumsfilterwerte
+                    this.dateRangeStart = null;
+                    this.dateRangeEnd = null;
 
-                // Ladeanzeige anzeigen
-                this.showLoadingMessage();
+                    // Ladeanzeige anzeigen
+                    this.showLoadingMessage();
 
-                // Daten neu laden ohne Filter
-                // Verzögerung hinzufügen, bevor loadData aufgerufen wird, damit loading-message angezeigt wird
-                setTimeout(() => {
-                    this.loadData();
-                }, 10);
+                    // Daten neu laden ohne Filter
+                    // Verzögerung hinzufügen, bevor loadData aufgerufen wird, damit loading-message angezeigt wird
+                    setTimeout(() => {
+                        this.loadData();
+                    }, 10);
 
-            } else {
-                // Hinzufügen oder Entfernen des Filters
-                const index = this.activeCategoryFilters.indexOf(filterValue);
-                if (index === -1) {
-                    // Filter hinzufügen
-                    this.activeCategoryFilters.push(filterValue);
-                    $(event.currentTarget).addClass("active");
                 } else {
-                    // Filter entfernen
-                    this.activeCategoryFilters.splice(index, 1);
-                    $(event.currentTarget).removeClass("active");
+                    // Hinzufügen oder Entfernen des Filters
+                    const index = this.activeCategoryFilters.indexOf(filterValue);
+                    if (index === -1) {
+                        // Filter hinzufügen
+                        this.activeCategoryFilters.push(filterValue);
+                        event.currentTarget.classList.add("active");
+                    } else {
+                        // Filter entfernen
+                        this.activeCategoryFilters.splice(index, 1);
+                        event.currentTarget.classList.remove("active");
+                    }
+
+                    // Entfernen der "Alle"-Option
+                    document.querySelector(".event-categories button[data-filter='']").classList.remove("active");
                 }
 
-                // Entfernen der "Alle"-Option
-                $(".event-categories button[data-filter='']").removeClass("active");
-            }
-
-            // Lade die gefilterten Events neu und zeige sie an
-            this.loadEvents();
-            this.render();
-            this.setupPagination();
+                // Lade die gefilterten Events neu und zeige sie an
+                this.loadEvents();
+                this.render();
+                this.setupPagination();
+            });
         });
 
         // Click-Handler für den "Mehr anzeigen"-Button
-        var showAllCategories = false;
-        $('.more-filters').on('click', function () {
-            showAllCategories = true;
-            $(this).hide(); // Versteckt den "Mehr anzeigen"-Button
-            $('.event-categories').css('height', 'auto'); // Setzt die Höhe auf "auto"
-            $('.event-categories button').removeClass('hide'); // Entfernt die "hide"-Klasse von den Buttons
-        });
+        let showAllCategories = false;
+        const moreFiltersButton = document.querySelector(".more-filters");
+        const eventCategoriesContainer = document.querySelector(".event-categories");
+
+        if (moreFiltersButton) {
+            moreFiltersButton.addEventListener("click", () => {
+                showAllCategories = true;
+                moreFiltersButton.style.display = "none"; // Versteckt den "Mehr anzeigen"-Button
+                eventCategoriesContainer.style.height = "auto"; // Setzt die Höhe auf "auto"
+                filterButtons.forEach(btn => btn.classList.remove("hide")); // Entfernt die "hide"-Klasse von den Buttons
+            });
+        }
     }
+
 
 
     // Methode: Suchfeld-Setup, um bei Eingabe ab 3 Zeichen eine API-Anfrage zu starten
     setupSearchField() {
-        $("#searchval").on("input", (event) => {
+        // Event-Listener für die Eingabe im Suchfeld hinzufügen
+        const searchInput = document.querySelector("#searchval");
+        searchInput.addEventListener("input", (event) => {
             const newSearchTerm = event.target.value.trim();
 
             // Falls Suchterm >= 3 Zeichen und nicht gleich dem aktuellen
@@ -145,8 +167,7 @@ class EventCalendar {
             }
         });
 
-        // Optionale: Button zum Löschen des Suchbegriffs hinzufügen
-        const searchInput = document.querySelector(".searchval-group #searchval");
+        // Optional: Button zum Löschen des Suchbegriffs hinzufügen
         const clearButtonContainer = document.createElement("span");
         clearButtonContainer.className = "clearspace";
 
@@ -158,7 +179,7 @@ class EventCalendar {
         clearButtonContainer.appendChild(clearButton);
         searchInput.parentNode.insertBefore(clearButtonContainer, searchInput.nextSibling);
 
-        // Click-Event für den Clear-Button
+        // Click-Event für den Clear-Button hinzufügen
         clearButton.addEventListener("click", () => {
             searchInput.value = "";
             this.searchTerm = "";
@@ -167,7 +188,7 @@ class EventCalendar {
         });
 
         // Überwacht die Eingabe im Suchfeld und zeigt den Clear-Button an, wenn das Feld nicht leer ist
-        searchInput.addEventListener("input", function() {
+        searchInput.addEventListener("input", () => {
             if (searchInput.value) {
                 clearButton.classList.add("show"); // Clear-Button anzeigen
             } else {
@@ -176,17 +197,25 @@ class EventCalendar {
         });
     }
 
+
     // Methode zur Einrichtung des Districtfilters
     setupDistrictSelect() {
-        $("#districtval").on("change", (event) => {
-            this.activeDistrictFilter = $(event.currentTarget).val(); // Wert des ausgewählten Distrikts speichern
-            this.loadData(); // Daten neu laden, um Events mit dem neuen Distriktfilter anzuzeigen
-        });
+        // Überprüfen, ob das Element mit der ID "districtval" existiert
+        this.districtSelect = document.querySelector("#districtval");
+
+        if (this.districtSelect) {
+            // Event-Listener für Änderungen im District-Select-Feld
+            this.districtSelect.addEventListener("change", (event) => {
+                this.activeDistrictFilter = event.currentTarget.value; // Wert des ausgewählten Distrikts speichern
+                this.loadData(); // Daten neu laden, um Events mit dem neuen Distriktfilter anzuzeigen
+            });
+        }
     }
 
-    // Methode zur Einrichtung des Datumsbereichs-Filters
+
     setupDateRangePicker() {
-        this.flatpickrRange = $(".flatpickr-range").flatpickr({
+        // Initiiere den DateRange Picker mit flatpickr
+        this.flatpickrRange = flatpickr(".flatpickr-range", {
             mode: "range",
             locale: "de",
             dateFormat: "Y-m-d",
@@ -205,12 +234,11 @@ class EventCalendar {
                     console.log("Enddatum in UTC (ISO):", this.dateRangeEnd.toISOString());
 
                     // Setze die Daten im .rruleset-Element für den Datumsbereich
-                    $('.rruleset').data('slice-start', this.formatDate(this.dateRangeStart));
-                    $('.rruleset').data('slice-end', this.formatDate(this.dateRangeEnd));
-
-                    // Setze die Daten im .rruleset-Element für den Datumsbereich
-                    $('.rruleset').data('slice-start', this.formatDate(this.dateRangeStart));
-                    $('.rruleset').data('slice-end', this.formatDate(this.dateRangeEnd));
+                    const rruleset = document.querySelectorAll('.rruleset');
+                    rruleset.forEach((element) => {
+                        element.dataset.sliceStart = this.formatDate(this.dateRangeStart);
+                        element.dataset.sliceEnd = this.formatDate(this.dateRangeEnd);
+                    });
 
                     // Ladeanzeige anzeigen
                     this.showLoadingMessage();
@@ -221,8 +249,12 @@ class EventCalendar {
                     this.dateRangeStart = null;
                     this.dateRangeEnd = null;
 
-                    $('.rruleset').data('slice-start', '');
-                    $('.rruleset').data('slice-end', '');
+                    const rruleset = document.querySelectorAll('.rruleset');
+                    rruleset.forEach((element) => {
+                        element.dataset.sliceStart = '';
+                        element.dataset.sliceEnd = '';
+                    });
+
                     // Daten ohne Filter neu laden
                     this.loadData();
                 }
@@ -269,11 +301,12 @@ class EventCalendar {
         });
     }
 
+
     // Ladeanzeige anzeigen
     showLoadingMessage() {
         console.log("loading message...")
         // Blende die Liste aus und zeige die Ladeanzeige an
-        this.container.html('<div class="loading-message">Daten werden geladen...</div>');
+        this.container.innerHTML = '<div class="loading-message">Daten werden geladen...</div>';
     }
 
     // Formatierungsfunktion für das Datum
@@ -296,12 +329,15 @@ class EventCalendar {
             const minDate = new Date(Math.min(...dateArray));
             const maxDate = new Date(Math.max(...dateArray));
 
-            const flatpickrCal = $(".flatpickr");
-            if (!flatpickrCal.length) {
+            // Das Element für den Flatpickr (ohne jQuery)
+            const flatpickrCal = document.querySelectorAll(".flatpickr");
+
+            if (flatpickrCal.length === 0) {
                 console.error("Flatpickr input element not found.");
                 return;
             }
 
+            // Falls keine Instanz vorhanden ist, erstellen wir sie
             if (!this.flatpickrInstance) {
                 this.flatpickrInstance = flatpickr(flatpickrCal[0], {
                     dateFormat: "Y-m-d",
@@ -313,32 +349,25 @@ class EventCalendar {
                         this.applyDateFilter(selectedDates);
                     },
                     onDayCreate: (dObj, dStr, fp, dayElem) => {
-                        // console.log("onDayCreate aufgerufen");
-
                         // Zugriff auf das Datum über dayElem.dateObj
                         const dateObj = dayElem.dateObj;
-                        // console.log("dateObj:", dateObj);  // Logge das dateObj
 
                         // Sicherstellen, dass dateObj ein gültiges Datum ist
                         if (dateObj instanceof Date && !isNaN(dateObj)) {
-                            // console.log("Valid dateObj:", dateObj);
-
-                            // Formatieren des Datums für den Vergleich
-                            const dateStr = fp.formatDate(dateObj, "Y-m-d");
-                            // console.log("Formatiertes Datum für Vergleich:", dateStr);
+                            const formattedDate = fp.formatDate(dateObj, "Y-m-d");
 
                             // Überprüfen, ob dieses Datum in den eventDates enthalten ist
-                            if (dateArray.some(d => d.toISOString().split('T')[0] === dateStr)) {
-                                // console.log("Markiere Tag:", dateStr);
+                            if (dateArray.some(d => d.toISOString().split('T')[0] === formattedDate)) {
+                                // Markiere den Tag
                                 dayElem.classList.add("selected");
                             } else {
                                 dayElem.classList.remove("flatpickr-disabled");
-                                // console.log("Tag nicht markiert:", formattedDate);
                             }
                         }
                     }
                 });
             } else {
+                // Wenn die Instanz schon existiert, aktualisieren wir minDate und maxDate
                 this.flatpickrInstance.set("minDate", minDate);
                 this.flatpickrInstance.set("maxDate", maxDate);
             }
@@ -349,20 +378,24 @@ class EventCalendar {
 
 
 
+
     // Daten laden und Events berechnen
-    loadData() {
-        const baseUrl = "https://www.aalen.de/api/EventApiRulesTest.php";
-        // const staticDataUrl = "https://eventcalendar.seitenblick.com/json/EventApiRulesTest.php.json"; // Fallback-URL für statische JSON-Datei
-        const staticDataUrl = "/assets/mandator/kultur/js/events.json"; // Fallback-URL für statische JSON-Datei
+    async loadData() {
+        // Hole die baseUrl aus dem data-url Attribut des Containers (wenn vorhanden), sonst verwende die Default-URL
+        const baseUrl = this.container.getAttribute("data-url") || "https://www.aalen.de/api/EventApiRules.php";
+        // Hole die staticDataUrl aus dem json-data-url Attribut des Containers (wenn vorhanden), ansonsten auf NULL setzen
+        const staticDataUrl = this.jsonDataUrl || null;
+        console.log("Statische URL:", staticDataUrl);
+
         const searchParams = new URLSearchParams();
 
         // Wenn ein Suchbegriff eingegeben wurde und mindestens 3 Zeichen lang ist
-        const searchVal = $("#searchval").length ? $("#searchval").val().trim() : "";
+        const searchVal = document.querySelector("#searchval") ? document.querySelector("#searchval").value.trim() : "";
         if (searchVal.length >= 3) {
             searchParams.append("search", searchVal);
         }
 
-        //Wenn ein Mandant vorgegeben ist über das rruleset
+        // Wenn ein Mandant vorgegeben ist über das rruleset
         if (this.mandator) {
             searchParams.append("md", this.mandator);
         }
@@ -370,39 +403,41 @@ class EventCalendar {
         // Filterkriterien prüfen, die eine dynamische Abfrage erfordern (nur bei Suchbegriff)
         const requiresApiRequest = searchParams.has("search") || !staticDataUrl;
 
-        // // Wenn ein Distrikt ausgewählt wurde
-        // if (this.activeDistrictFilter) {
-        //     searchParams.append("di", this.activeDistrictFilter);
-        // }
-
-        // // Prüfen, ob Filterparameter gesetzt sind
-        // const hasFilterParams = searchParams.toString().length > 0;
-
         // API-URL zusammenstellen
         const apiUrl = `${baseUrl}?${searchParams.toString()}`;
 
-        // Datenquelle abhängig von Filterparametern festlegen:
-        // 1. Wenn Filterparameter gesetzt sind, nutze die API mit baseUrl.
-        // 2. Wenn keine Filter gesetzt sind, nutze entweder die statische dataUrl (falls vorhanden) oder staticDataUrl oder die API als endgültiges Fallback.
-        const dataSourceUrl = requiresApiRequest ? apiUrl : (this.dataUrl || staticDataUrl || apiUrl);
+        // Bestimme die Datenquelle:
+        // - Wenn ein Suchparameter gesetzt ist oder keine statische URL existiert, wird die API (baseUrl) verwendet.
+        // - Ansonsten, falls staticDataUrl vorhanden ist, wird diese verwendet.
+        const dataSourceUrl = requiresApiRequest ? apiUrl : staticDataUrl || baseUrl;
+        console.log("Verwendete URL:", dataSourceUrl);
 
         // Ladeanzeige anzeigen
         this.showLoadingMessage();
 
-        // API-Abruf
-        $.getJSON(dataSourceUrl, (data) => {
+        try {
+            // API-Abruf mit fetch
+            const response = await fetch(dataSourceUrl);
+
+            if (!response.ok) {
+                throw new Error('Fehler beim Laden der Daten');
+            }
+
+            const data = await response.json();
+
             this.data = data || []; // Sicherstellen, dass data ein Array ist
             this.loadEvents();
             this.render();
             this.setupPagination();
-        }).fail(() => {
+        } catch (error) {
             // Bei einem Fehler eine Fehlermeldung anzeigen
-            this.container.html('<div class="error-message">Fehler beim Laden der Daten. Bitte versuchen Sie es später erneut.</div>');
-        });
+            this.container.innerHTML = '<div class="error-message">Fehler beim Laden der Daten. Bitte versuchen Sie es später erneut.</div>';
+        }
     }
 
 
-// Methode - Lädt die Events und berechnet die Wiederholungstermine
+
+    // Methode - Lädt die Events und berechnet die Wiederholungstermine
     loadEvents() {
         const futureEventDates = []; // Array für zukünftige Event-Daten
         this.events = [];
@@ -485,15 +520,20 @@ class EventCalendar {
 
 
 
-    // Methode: Ausgabe der Events mit Handlebars
+// Methode: Ausgabe der Events mit Handlebars
     render() {
         // Wähle das Template anhand des `data-mode` aus
-        const template = Hbs[this.mode]
+        const template = Hbs[this.mode];
 
         // Überprüfen, ob Events vorhanden sind
         if (!this.events.length) {
-            this.container.html("<p class='no-events'>Keine passende Veranstaltung gefunden.</p>");
-            $(".pagination").hide();  // Paginierung ausblenden
+            this.container.innerHTML = "<p class='no-events'>Keine passende Veranstaltung gefunden.</p>";
+
+            // Paginierung ausblenden (Kein jQuery, nur DOM)
+            const pagination = document.querySelector(".pagination");
+            if (pagination) {
+                pagination.style.display = "none";
+            }
             return;
         }
 
@@ -506,47 +546,67 @@ class EventCalendar {
         const paginatedEvents = this.getPaginatedEvents();
 
         // Rendern des Templates und Einfügen in den Container
-        this.container.html(template(paginatedEvents));
-        $(".pagination").show();  // Paginierung einblenden
+        this.container.innerHTML = template(paginatedEvents);
+
+        // Paginierung einblenden (Kein jQuery, nur DOM)
+        const paginationElement = document.querySelector(".pagination");
+        if (paginationElement) {
+            paginationElement.style.display = "flex";
+        }
     }
+
 
     setupPagination() {
         // Überprüfen, ob mehr Events vorhanden sind als limitPerPage
         if (this.events.length <= this.limitPerPage) {
             // Wenn nicht, Pagination ausblenden
-            $(".pagination").hide();
+            const pagination = document.querySelector(".pagination");
+            if (pagination) {
+                pagination.style.display = "none";
+            }
             return;
         } else {
             // Wenn ja, sicherstellen, dass die Pagination sichtbar ist
-            $(".pagination").show();
+            const pagination = document.querySelector(".pagination");
+            if (pagination) {
+                pagination.style.display = "block";
+            }
         }
 
         console.log("Setting up pagination"); // Debug-Ausgabe
 
         // Sicherstellen, dass das Pagination-Element existiert
-        const paginationContainer = $(".pagination");
+        const paginationContainer = document.querySelector(".pagination");
 
-        if (paginationContainer.length === 0) {
+        if (!paginationContainer) {
             console.warn("Pagination-Element ist nicht vorhanden.");
             return;
         }
 
         // Leeren der Pagination
-        $(".pagination").empty();
+        paginationContainer.innerHTML = "";
 
         // Previous-Button hinzufügen
-        $(".pagination").append(
-            $("<li>").addClass("control-item").attr({ id: "previous-page" }).append(
-                $("<a>").addClass("page-link").attr({ href: "javascript:void(0)" }).text("«")
-            )
-        );
+        const previousPageItem = document.createElement("li");
+        previousPageItem.classList.add("control-item");
+        previousPageItem.id = "previous-page";
+        const previousPageLink = document.createElement("a");
+        previousPageLink.classList.add("page-link");
+        previousPageLink.href = "javascript:void(0)";
+        previousPageLink.textContent = "«";
+        previousPageItem.appendChild(previousPageLink);
+        paginationContainer.appendChild(previousPageItem);
 
         // Next-Button hinzufügen
-        $(".pagination").append(
-            $("<li>").addClass("control-item").attr({ id: "next-page" }).append(
-                $("<a>").addClass("page-link").attr({ href: "javascript:void(0)" }).text("»")
-            )
-        );
+        const nextPageItem = document.createElement("li");
+        nextPageItem.classList.add("control-item");
+        nextPageItem.id = "next-page";
+        const nextPageLink = document.createElement("a");
+        nextPageLink.classList.add("page-link");
+        nextPageLink.href = "javascript:void(0)";
+        nextPageLink.textContent = "»";
+        nextPageItem.appendChild(nextPageLink);
+        paginationContainer.appendChild(nextPageItem);
 
         // Ermitteln der Gesamtseiten
         const totalPages = Math.ceil(this.events.length / this.limitPerPage);
@@ -555,19 +615,34 @@ class EventCalendar {
         this.showPage(1);
 
         // Event-Listener für die Seitenwechsel-Buttons
-        $(document).off("click", ".pagination li.current-page:not(.active)").on("click", ".pagination li.current-page:not(.active)", (event) => {
-            const page = +$(event.target).text();
-            this.showPage(page);
+        paginationContainer.querySelectorAll(".current-page:not(.active)").forEach(pageItem => {
+            pageItem.addEventListener("click", (event) => {
+                const page = +event.target.textContent;
+                this.showPage(page);
+            });
         });
 
         // Event-Listener für `previous` und `next`
-        $("#next-page").off("click").on("click", () => this.showPage(this.currentPage + 1));
-        $("#previous-page").off("click").on("click", () => this.showPage(this.currentPage - 1));
+        const nextPageButton = document.getElementById("next-page");
+        const previousPageButton = document.getElementById("previous-page");
+
+        if (nextPageButton) {
+            nextPageButton.addEventListener("click", () => this.showPage(this.currentPage + 1));
+        }
+
+        if (previousPageButton) {
+            previousPageButton.addEventListener("click", () => this.showPage(this.currentPage - 1));
+        }
     }
+
 
     createPaginationControls(totalPages, maxLength) {
         // Entferne alte Seitenzahlen und disabled-Elemente
-        $(".pagination li.current-page, .pagination li.page-item.disabled").remove();
+        const paginationContainer = document.querySelector(".pagination");
+        if (paginationContainer) {
+            const currentPageItems = paginationContainer.querySelectorAll("li.current-page, li.page-item.disabled");
+            currentPageItems.forEach(item => item.remove());
+        }
 
         const getPageList = (totalPages, page, maxLength) => {
             if (maxLength < 5) throw "maxLength must be at least 5";
@@ -587,24 +662,44 @@ class EventCalendar {
         };
 
         // Generiere die Seitenzahlen für die aktuelle Seite
-        getPageList(totalPages, this.currentPage, maxLength).forEach(item => {
-            const pageItem = $("<li>")
-                .addClass("page-item")
-                .toggleClass("disabled", item === 0) // "disabled" für Ellipsen
-                .toggleClass("current-page", item !== 0) // "current-page" für echte Seitenzahlen
-                .toggleClass("active", item === this.currentPage)
-                .append(
-                    $("<a>").addClass("page-link").attr({ href: "javascript:void(0)" }).text(item || "...")
-                );
+        const pageList = getPageList(totalPages, this.currentPage, maxLength);
+        const nextPageButton = document.querySelector("#next-page");
+        pageList.forEach(item => {
+            const pageItem = document.createElement("li");
+            pageItem.classList.add("page-item");
+            if (item === 0) {
+                pageItem.classList.add("disabled"); // "disabled" für Ellipsen
+            } else {
+                pageItem.classList.add("current-page"); // "current-page" für echte Seitenzahlen
+                if (item === this.currentPage) {
+                    pageItem.classList.add("active");
+                }
+            }
 
-            pageItem.insertBefore("#next-page"); // Vor dem Next-Button einfügen
+            const pageLink = document.createElement("a");
+            pageLink.classList.add("page-link");
+            pageLink.href = "javascript:void(0)";
+            pageLink.textContent = item || "...";
+
+            pageItem.appendChild(pageLink);
+
+            if (nextPageButton) {
+                paginationContainer.insertBefore(pageItem, nextPageButton); // Vor dem Next-Button einfügen
+            }
         });
 
-
         // Hier setzen wir den Status des Previous-Buttons
-        $("#previous-page").toggleClass("disabled", this.currentPage === 1);
-        $("#next-page").toggleClass("disabled", this.currentPage === totalPages);
+        const previousPageButton = document.querySelector("#previous-page");
+        if (previousPageButton) {
+            previousPageButton.classList.toggle("disabled", this.currentPage === 1);
+        }
+
+        // Hier setzen wir den Status des Next-Buttons
+        if (nextPageButton) {
+            nextPageButton.classList.toggle("disabled", this.currentPage === totalPages);
+        }
     }
+
 
     showPage(page) {
         const totalPages = Math.ceil(this.events.length / this.limitPerPage);
@@ -615,17 +710,29 @@ class EventCalendar {
         this.createPaginationControls(totalPages, 7); // Aktualisiere die Seitenzahlen bei jedem Seitenwechsel
 
         // Deaktivierung von `previous` und `next`, wenn auf erster oder letzter Seite
-        $("#previous-page").toggleClass("disabled", this.currentPage === 1);
-        $("#next-page").toggleClass("disabled", this.currentPage === totalPages);
+        const previousPageButton = document.querySelector("#previous-page");
+        const nextPageButton = document.querySelector("#next-page");
 
-        const tablePos = $('#event-table').offset().top - 300;
-        $('html, body').animate({ scrollTop: tablePos }, 'slow');
+        if (previousPageButton) {
+            previousPageButton.classList.toggle("disabled", this.currentPage === 1);
+        }
+
+        if (nextPageButton) {
+            nextPageButton.classList.toggle("disabled", this.currentPage === totalPages);
+        }
+
+        // Scrollen zum Event-Table (ohne jQuery)
+        const table = document.querySelector('#event-table');
+        if (table) {
+            const tablePos = table.offsetTop - 300;
+            window.scrollTo({
+                top: tablePos,
+                behavior: 'smooth' // Diese Methode sorgt für ein sanftes Scrollen
+            });
+        }
 
         return true;
     }
-
-
-
 
     getPaginatedEvents() {
         const start = (this.currentPage - 1) * this.limitPerPage;
@@ -636,7 +743,10 @@ class EventCalendar {
     calculateOccurrences(event) {
         const occurrences = [];
         const now = new Date();
-        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())); // 00:00 in UTC
+        // const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())); // 00:00 in UTC
+        // Heute in UTC mit der exakten Zeit (keine Mitternacht)
+        const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds()); // genaue UTC-Zeit
+
 
         // Erstelle die Wiederholungsregel aus dem `rule`-Feld
         const rule = RRule.fromString(event.rule);
@@ -672,6 +782,7 @@ class EventCalendar {
                     timeStart: event.timeStart,     // Startzeit aus JSON
                     timeEnd: event.timeEnd,         // Endzeit aus JSON
                     timeValid: event.timeValid,     // Gültigkeit der Zeitangabe
+                    ticketUrl: event.ticketUrl,
                     ...event // Optionale zusätzliche Felder hinzufügen
                 });
             }
@@ -684,8 +795,8 @@ class EventCalendar {
 
 
 // Beispiel: EventCalendar-Instanz für die rruleset-Container erstellen
-$(document).ready(function() {
-    $(".rruleset").each(function() {
-        new EventCalendar(this);
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".rruleset").forEach(function(container) {
+        new EventCalendar(container); // 'container' ist hier das native DOM-Element
     });
 });
