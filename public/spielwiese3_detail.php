@@ -5,10 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Eventcalendar</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"
-            integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="assets/js/handlebarsTemplates/hbstemplates.js"></script>
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"-->
+<!--            integrity="sha512-RNLkV3d+aLtfcpEyFG8jRbnWHxUqVZozacROI4J2F1sTaDqo1dPQYs01OMi1t1w9Y2FdbSCDSQ2ZVdAC8bzgAg=="-->
+<!--            crossorigin="anonymous" referrerpolicy="no-referrer"></script>-->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
             crossorigin="anonymous"></script>
@@ -16,6 +16,7 @@
 <!--    <script src="assets/js/events_v2.js"></script>-->
 <!--    <script src="assets/js/events_rebuild.js"></script>-->
     <script src="assets/js/eventCalendar.js"></script>
+    <script src="assets/js/handlebarsTemplates/hbstemplates.js"></script>
     <!-- Styles -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
@@ -73,25 +74,26 @@
                         </div>
                     </div>
                 </div>
-                <div class="break">
-                    <h2>Nächste Termine</h2>
-                    <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="tiles" data-count="3" data-event-id="211896"></div>
-                </div>
-                <div class="break mb-0">
-                    <a class="expand-link collapsed" data-bs-toggle="collapse" href="#collapseAllEvents" role="button" aria-expanded="false" aria-controls="collapseAllEvents">Alle Termine ansehen</a>
-                    <div id="collapseAllEvents" class="collapse break">
-                        <div class="row">
-                            <div class="col-12 col-sm-6">
-                                <div class="flatpickr-wrapper unclickable">
-                                    <div class="flatpickr"></div>
+                    <div class="break">
+                        <h2>Nächste Termine</h2>
+                        <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="tiles" data-count="3" data-event-id="210687" data-url="https://www.aalen.de/api/EventApiRules.php"
+                             data-json-url="https://eventcalendar.seitenblick.com/json/EventApiRulesTest.php.json"></div>
+                    </div>
+                    <div class="break mb-0">
+                        <a class="expand-link collapsed" data-bs-toggle="collapse" href="#collapseAllEvents" role="button" aria-expanded="false" aria-controls="collapseAllEvents">Alle Termine ansehen</a>
+                        <div id="collapseAllEvents" class="collapse break">
+                            <div class="row">
+                                <div class="col-12 col-sm-6">
+                                    <div class="flatpickr-wrapper unclickable">
+                                        <div class="flatpickr"></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-12 col-sm-6">
-                                Alle kommenden Termine sind im Kalender markiert.
+                                <div class="col-12 col-sm-6">
+                                    Alle kommenden Termine sind im Kalender markiert.
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
                 <div class="break">
                     <img src="http://placehold.it/200x133" class="lazyload img-responsive" title="Bildtitel" alt="Alt-Tag" data-sizes="auto" data-srcset="http://placehold.it/200x133 200w,   http://placehold.it/250x167 250w, http://placehold.it/300x200 300w, http://placehold.it/350x233 350w, http://placehold.it/365x243 365w, http://placehold.it/500x334 500w, http://placehold.it/600x400 600w, http://placehold.it/750x500 750w, http://placehold.it/1250x833 1250w" />
                 </div>

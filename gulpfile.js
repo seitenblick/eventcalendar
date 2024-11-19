@@ -59,7 +59,7 @@ const configuration = {
     // JavaScript-files (multiple source-files are compiled to one target-file)
     javaScript: [
         {
-           source: [
+            source: [
                 // 'assets/js/hbstemplates.js',
                 'assets/js/events.js',
             ],
@@ -287,3 +287,4 @@ gulp.task('build', gulp.parallel('sass', 'handlebars', 'scripts', 'images'));
  * Default task, running just `gulp` will only build the project
  */
 gulp.task('default', gulp.parallel('build'));
+

@@ -3,42 +3,27 @@ import { DateTime } from 'luxon';
 import flatpickr from "flatpickr";
 import { German } from "flatpickr/dist/l10n/de";
 import { RRule, RRuleSet } from 'rrule';
-import Handlebars from 'handlebars';
-window.Handlebars = Handlebars; // Macht Handlebars global verfügbar
 
+// Helper-Funktionen
 
-//Helper-Funktionen
-
-//Datumsformatierung (utc)
+// Datumsformatierung (utc)
 function stringToDate(value) {
     // ISO-String in Luxon-Objekt umwandeln
     let dt = DateTime.fromISO(value, { zone: 'utc' });
     return dt.toJSDate(); // Konvertiert DateTime zu einem UTC JavaScript Date
 }
 
-//Handlebars
-let lang = document.documentElement.getAttribute("lang");
-// Handlebars-Helper registrieren
-Handlebars.registerHelper('eq', function(arg1, arg2, options) {
-    return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
-});
-Handlebars.registerHelper('formatDate', function(eventdate, format) {
-    if (!eventdate) return ''; // Falls kein Datum vorhanden ist, gibt es einen leeren String zurück
-    return DateTime
-        .fromJSDate(new Date(eventdate)) // Konvertiere das Datum in Luxon's DateTime-Objekt
-        .setLocale(lang) // Setze die gewünschte Sprache
-        .toFormat(format); // Formatiere das Datum
-});
+// Handlebars
+import './registerHelpers.js'; // Stelle sicher, dass die Helper registriert sind
+import flexTable from './handlebarsTemplates/flexTable.hbs';
+import simpleTable from './handlebarsTemplates/simpleTable.hbs';
+import tableDashboard from './handlebarsTemplates/table-dashboard.hbs';
 
-Handlebars.registerHelper('isSingleDayEvent', function(startdate, enddate) {
-    // Erstelle DateTime-Objekte aus den gegebenen Start- und Enddaten
-    const start = DateTime.fromJSDate(new Date(startdate), { zone: 'utc' }).startOf('day'); // Nur Datum, keine Uhrzeit
-    const end = DateTime.fromJSDate(new Date(enddate), { zone: 'utc' }).startOf('day'); // Nur Datum, keine Uhrzeit
-
-    // Vergleiche nur das Datum, ohne die Uhrzeit zu berücksichtigen
-    return start.equals(end);  // Gibt true zurück, wenn Start- und Enddatum gleich sind
-});
-
+const Hbs = {
+    defaultTemplate: simpleTable,
+    flexTable: flexTable,
+    tableDashboard: tableDashboard,
+};
 
 
 
@@ -62,15 +47,9 @@ class EventCalendar {
         this.mode = this.container.getAttribute("data-mode") || "list";  // Standard-Modus auf "list" setzen
         this.mandator = this.container.getAttribute("data-mandator") || "";
         this.eventId = String(this.container.getAttribute("data-event-id") || ""); // Konvertierung in String
-        // Wenn im Container keine Event-ID vorhanden ist, im <main> Element suchen
-        if (!this.eventId) {
-            const mainElement = document.querySelector("main[data-event-id]");
-            this.eventId = mainElement ? String(mainElement.getAttribute("data-event-id")) : "";
-        }
         this.seriesId = this.container.getAttribute("data-series-id") || "";
         this.dataUrl = this.container.getAttribute("data-url") || null; // benutzerdefinierte Daten-URL
         this.jsonDataUrl = container.getAttribute("data-json-url") || null; // Neue URL für das statische JSON, falls angegeben
-        this.noduplicates = this.container.getAttribute("data-noduplicates") || 'false';
 
         const countValue = this.container.getAttribute("data-count");
         this.totalCount = (countValue === undefined || countValue === "") ? null : parseInt(countValue); // null, um "Alle" anzuzeigen
@@ -80,7 +59,6 @@ class EventCalendar {
 
         this.districtSelect = document.querySelector("#districtval");
         this.flatpickrRange = null; // Variable für die Flatpickr-Instanz
-        this.allowPastEvents = false; // Standardmäßig keine vergangenen Termine zulassen
 
 
 
@@ -122,7 +100,6 @@ class EventCalendar {
                     // Rücksetzen der Datumsfilterwerte
                     this.dateRangeStart = null;
                     this.dateRangeEnd = null;
-                    this.allowPastEvents = false;
 
                     // Ladeanzeige anzeigen
                     this.showLoadingMessage();
@@ -178,10 +155,6 @@ class EventCalendar {
     setupSearchField() {
         // Event-Listener für die Eingabe im Suchfeld hinzufügen
         const searchInput = document.querySelector("#searchval");
-        if (!searchInput) {
-            console.warn("Suchfeld #searchval nicht gefunden. setupSearchField wird übersprungen.");
-            return;
-        }
         searchInput.addEventListener("input", (event) => {
             const newSearchTerm = event.target.value.trim();
 
@@ -243,13 +216,6 @@ class EventCalendar {
 
 
     setupDateRangePicker() {
-        // Überprüfen, ob ein Element mit der Klasse .flatpickr-range existiert
-        const flatpickrRangeElement = document.querySelector(".flatpickr-range");
-        if (!flatpickrRangeElement) {
-            console.warn("Kein .flatpickr-range-Element gefunden. setupDateRangePicker wird übersprungen.");
-            return; // Beende die Funktion, falls das Element nicht existiert
-        }
-
         // Initiiere den DateRange Picker mit flatpickr
         this.flatpickrRange = flatpickr(".flatpickr-range", {
             mode: "range",
@@ -269,12 +235,6 @@ class EventCalendar {
                     console.log("Startdatum in UTC (ISO):", this.dateRangeStart.toISOString());
                     console.log("Enddatum in UTC (ISO):", this.dateRangeEnd.toISOString());
 
-                    // Überprüfen, ob der Benutzer einen Bereich in der Vergangenheit ausgewählt hat
-                    const now = new Date();
-                    this.allowPastEvents = this.dateRangeStart < now; // Setze das Flag, wenn das Startdatum in der Vergangenheit liegt
-                    console.log("Vergangene Termine zulassen:", this.allowPastEvents);
-
-
                     // Setze die Daten im .rruleset-Element für den Datumsbereich
                     const rruleset = document.querySelectorAll('.rruleset');
                     rruleset.forEach((element) => {
@@ -290,7 +250,6 @@ class EventCalendar {
                 } else {
                     this.dateRangeStart = null;
                     this.dateRangeEnd = null;
-                    this.allowPastEvents = false; // Standardmäßig keine vergangenen Termine zulassen
 
                     const rruleset = document.querySelectorAll('.rruleset');
                     rruleset.forEach((element) => {
@@ -461,20 +420,12 @@ class EventCalendar {
         try {
             // API-Abruf mit fetch
             const response = await fetch(dataSourceUrl);
-            console.log("Response:", response); // Debugging
 
             if (!response.ok) {
-                console.error("Fehler beim Abrufen der Daten:", response.status, response.statusText);
                 throw new Error('Fehler beim Laden der Daten');
             }
 
             const data = await response.json();
-            console.log("Geladene Daten:", data); // Debugging
-
-            // Stellen Sie sicher, dass die Daten die erwartete Struktur haben
-            if (!Array.isArray(data)) {
-                throw new Error("Unerwartete Datenstruktur");
-            }
 
             this.data = data || []; // Sicherstellen, dass data ein Array ist
             this.loadEvents();
@@ -482,7 +433,6 @@ class EventCalendar {
             this.setupPagination();
         } catch (error) {
             // Bei einem Fehler eine Fehlermeldung anzeigen
-            console.error("Fehler:", error); // Zusätzliche Fehlerdetails in der Konsole
             this.container.innerHTML = '<div class="error-message">Fehler beim Laden der Daten. Bitte versuchen Sie es später erneut.</div>';
         }
     }
@@ -491,17 +441,12 @@ class EventCalendar {
 
     // Methode - Lädt die Events und berechnet die Wiederholungstermine
     loadEvents() {
-        const now = new Date();
-        const allEventDates = []; // Array für alle Event-Daten (Vergangenheit und Zukunft)
+        const futureEventDates = []; // Array für zukünftige Event-Daten
         this.events = [];
-        const seenEventIds = new Set();  // Set zum Speichern bereits hinzugefügter Event-IDs
 
         // Überprüfen, ob spezifische Filter für Event-ID oder Serien-ID gesetzt sind
         const isSpecificEventId = this.eventId && this.eventId.trim() !== ""; // trim() nur auf String anwenden
         const isSpecificSeriesId = this.seriesId && this.seriesId.trim() !== ""; // trim() nur auf String anwenden
-        const isHighlightMode = this.mode === 'highlights';
-        const isTopeventMode = this.mode === 'topevent';
-        const isNoDuplicates = this.noduplicates === "true";
 
         this.data.forEach(event => {
             // Kategorien und Serien in Arrays umwandeln (falls kommasepariert als String vorliegend)
@@ -517,10 +462,7 @@ class EventCalendar {
             const matchesCategory = this.activeCategoryFilters.length === 0 ||
                 eventCategories.some(category => this.activeCategoryFilters.includes(category));
 
-            // Prüfen, ob das Event den Modus erfüllt
-            const matchesMode = (!isHighlightMode || event.highlight) && (!isTopeventMode || event.topevent);
-
-            if (matchesCategory && matchesDistrict  && matchesMode) {
+            if (matchesCategory && matchesDistrict) {
                 // Prüfen, ob eine Event-ID vorgegeben ist - dann nur diesen Termin berechnen
                 if (!isSpecificEventId || event.id === this.eventId) {
                     // Berechne Wiederholungstermine für das Event
@@ -529,32 +471,20 @@ class EventCalendar {
                     occurrences.forEach(occurrence => {
                         const eventDate = new Date(occurrence.eventdate); // Sicherstellen, dass es ein Date-Objekt ist
 
-                        // Prüfen, ob vergangene Termine zugelassen sind
-                        if (this.allowPastEvents || eventDate >= now) {
-                            // Füge das Datum für die Flatpickr-Befüllung hinzu
-                            allEventDates.push(eventDate.toISOString().split("T")[0]);
+                        // Füge das Datum für die Flatpickr-Befüllung hinzu
+                        futureEventDates.push(eventDate.toISOString().split("T")[0]);
 
-                            // Prüfen, ob das Datum im gewählten Bereich liegt
-                            const isInDateRange = (!this.dateRangeStart || eventDate >= new Date(this.dateRangeStart)) &&
-                                (!this.dateRangeEnd || eventDate < new Date(this.dateRangeEnd));
+                        // Prüfen, ob das Datum im gewählten Bereich liegt
+                        const isInDateRange = (!this.dateRangeStart || eventDate >= new Date(this.dateRangeStart)) &&
+                            (!this.dateRangeEnd || eventDate < new Date(this.dateRangeEnd));
 
-                            // Prüfen, ob Event-ID und/oder Serien-ID passen
-                            const matchesEventId = !isSpecificEventId || event.id === this.eventId;
-                            const matchesSeriesId = !isSpecificSeriesId || eventSeries.includes(this.seriesId);
+                        // Prüfen, ob Event-ID und/oder Serien-ID passen
+                        const matchesEventId = !isSpecificEventId || event.id === this.eventId;
+                        const matchesSeriesId = !isSpecificSeriesId || eventSeries.includes(this.seriesId);
 
-                            // Wenn alle aktiven Filterbedingungen erfüllt sind, das Event zur Liste hinzufügen
-                            if (isInDateRange && matchesEventId && matchesSeriesId) {
-                                if (isNoDuplicates) {
-                                    // Überprüfen, ob das Event bereits anhand der `eventId` in der Liste vorhanden ist
-                                    if (!seenEventIds.has(event.id)) {
-                                        seenEventIds.add(event.id); // Event-ID zum Set hinzufügen
-                                        this.events.push(occurrence); // Ereignis zur Liste hinzufügen
-                                    }
-                                } else {
-                                    // Wenn keine Duplikate gewünscht sind, füge das Event ohne Prüfung hinzu
-                                    this.events.push(occurrence);
-                                }
-                            }
+                        // Wenn alle aktiven Filterbedingungen erfüllt sind, das Event zur Liste hinzufügen
+                        if (isInDateRange && matchesEventId && matchesSeriesId) {
+                            this.events.push(occurrence);
                         }
                     });
                 }
@@ -586,17 +516,16 @@ class EventCalendar {
 
         // Befülle Flatpickr mit zukünftigen Event-Terminen
         if (isSpecificEventId) {
-            this.setupFlatpickr(allEventDates);
+            this.setupFlatpickr(futureEventDates);
         }
     }
 
 
 
-    // Methode: Ausgabe der Events mit Handlebars
+// Methode: Ausgabe der Events mit Handlebars
     render() {
-        console.log("Render-Methode wird ausgeführt ...");
         // Wähle das Template anhand des `data-mode` aus
-        const template = Hbs[this.mode];
+        const template = Hbs[this.mode] || Hbs['defaultTemplate'] ;
 
         if (!template) {
             console.warn(`Kein Template für Modus ${this.mode} gefunden.`);
@@ -631,57 +560,56 @@ class EventCalendar {
 
 
 
-        // Generiere das HTML mit dem Template und den Events
+// Generiere das HTML mit dem Template und den Events
         const htmlOutput = template(paginatedEvents);
 
         // Debugging: Überprüfe das generierte HTML
         console.log('Generiertes HTML:', htmlOutput);
 
 
+
+
+
+
         // Rendern des Templates und Einfügen in den Container
         this.container.innerHTML = template(paginatedEvents);
-
 
         // Paginierung einblenden (Kein jQuery, nur DOM)
         const paginationElement = document.querySelector(".pagination");
         if (paginationElement) {
             paginationElement.style.display = "flex";
         }
-
-        // FocusPoint-Initialisierung
-        this.container.querySelectorAll('.focuspoint').forEach(element => {
-            // console.log("Gefundenes Element mit .focuspoint:", element);
-
-            // Umwandeln des Elements in ein jQuery-Objekt und Aufruf der Funktion
-            if (window.jQuery && typeof jQuery(element).focusPoint === 'function') {
-                jQuery(element).focusPoint();
-                // console.log("focusPoint wurde für das Element aufgerufen.");
-            } else {
-                console.warn("focusPoint ist nicht als Funktion verfügbar für dieses Element:", element);
-            }
-        });
     }
 
 
     setupPagination() {
-        console.log("setupPagination Methode wird ausgeführt ...");
+        // Überprüfen, ob mehr Events vorhanden sind als limitPerPage
+        if (this.events.length <= this.limitPerPage) {
+            // Wenn nicht, Pagination ausblenden
+            const pagination = document.querySelector(".pagination");
+            if (pagination) {
+                pagination.style.display = "none";
+            }
+            return;
+        } else {
+            // Wenn ja, sicherstellen, dass die Pagination sichtbar ist
+            const pagination = document.querySelector(".pagination");
+            if (pagination) {
+                pagination.style.display = "block";
+            }
+        }
 
-        // Pagination-Container holen oder überprüfen
+        console.log("Setting up pagination"); // Debug-Ausgabe
+
+        // Sicherstellen, dass das Pagination-Element existiert
         const paginationContainer = document.querySelector(".pagination");
+
         if (!paginationContainer) {
             console.warn("Pagination-Element ist nicht vorhanden.");
             return;
         }
 
-        // Überprüfen, ob Pagination nötig ist
-        if (this.events.length <= this.limitPerPage) {
-            paginationContainer.style.display = "none";
-            return;
-        } else {
-            paginationContainer.style.display = "flex";
-        }
-
-        // Entferne alte Pagination-Inhalte
+        // Leeren der Pagination
         paginationContainer.innerHTML = "";
 
         // Previous-Button hinzufügen
@@ -695,13 +623,6 @@ class EventCalendar {
         previousPageItem.appendChild(previousPageLink);
         paginationContainer.appendChild(previousPageItem);
 
-        // Event-Listener für `previous`
-        previousPageLink.addEventListener("click", () => {
-            if (this.currentPage > 1) {
-                this.showPage(this.currentPage - 1);
-            }
-        });
-
         // Next-Button hinzufügen
         const nextPageItem = document.createElement("li");
         nextPageItem.classList.add("control-item");
@@ -713,20 +634,32 @@ class EventCalendar {
         nextPageItem.appendChild(nextPageLink);
         paginationContainer.appendChild(nextPageItem);
 
-        // Event-Listener für `next`
-        nextPageLink.addEventListener("click", () => {
-            const totalPages = Math.ceil(this.events.length / this.limitPerPage);
-            if (this.currentPage < totalPages) {
-                this.showPage(this.currentPage + 1);
-            }
+        // Ermitteln der Gesamtseiten
+        const totalPages = Math.ceil(this.events.length / this.limitPerPage);
+
+        // Zeige die erste Seite initial an
+        this.showPage(1);
+
+        // Event-Listener für die Seitenwechsel-Buttons
+        paginationContainer.querySelectorAll(".current-page:not(.active)").forEach(pageItem => {
+            pageItem.addEventListener("click", (event) => {
+                const page = +event.target.textContent;
+                this.showPage(page);
+            });
         });
 
-        // Gesamtseiten ermitteln und Seitenzahlen erstellen
-        const totalPages = Math.ceil(this.events.length / this.limitPerPage);
-        this.createPaginationControls(totalPages, 7); // Beispiel: maxLength = 7
+        // Event-Listener für `previous` und `next`
+        const nextPageButton = document.getElementById("next-page");
+        const previousPageButton = document.getElementById("previous-page");
+
+        if (nextPageButton) {
+            nextPageButton.addEventListener("click", () => this.showPage(this.currentPage + 1));
+        }
+
+        if (previousPageButton) {
+            previousPageButton.addEventListener("click", () => this.showPage(this.currentPage - 1));
+        }
     }
-
-
 
 
     createPaginationControls(totalPages, maxLength) {
@@ -779,11 +712,6 @@ class EventCalendar {
             if (nextPageButton) {
                 paginationContainer.insertBefore(pageItem, nextPageButton); // Vor dem Next-Button einfügen
             }
-
-            // Event-Listener für Seitenzahlen
-            if (item !== 0) { // Ellipsen ("...") haben keinen Event-Listener
-                pageLink.addEventListener("click", () => this.showPage(item));
-            }
         });
 
         // Hier setzen wir den Status des Previous-Buttons
@@ -797,7 +725,6 @@ class EventCalendar {
             nextPageButton.classList.toggle("disabled", this.currentPage === totalPages);
         }
     }
-
 
 
     showPage(page) {
@@ -853,10 +780,6 @@ class EventCalendar {
         // Ausnahme-Termine als UTC-Zeiten in ein Set speichern
         const exdateSet = new Set(event.exdates.map(date => stringToDate(date).getTime()));
 
-        // Start- und Enddatum aus der RRule ableiten
-        const startDate = rule.options.dtstart ? new Date(rule.options.dtstart) : null; // Startdatum der RRule
-        const endDate = rule.options.until ? new Date(rule.options.until) : startDate; // Enddatum au
-
         // RRuleSet verwenden, um Wiederholungstermine zu berechnen
         const rruleSet = new RRuleSet();
         rruleSet.rrule(rule);
@@ -871,20 +794,13 @@ class EventCalendar {
                 const [hours, minutes] = event.timeStart.split(":").map(Number);
                 eventDate.setHours(hours, minutes);
             }
-
             const utcDate = stringToDate(date.toISOString()).getTime();  // Sicherstellen, dass auch berechnete Termine in UTC-Zeit vorliegen
 
-            // if (!exdateSet.has(utcDate) && eventDate >= today) {
-            if (
-                !exdateSet.has(utcDate) &&
-                (this.allowPastEvents || eventDate >= now) // Vergangene Termine nur, wenn erlaubt
-            ) {
+            if (!exdateSet.has(utcDate) && eventDate >= today) {
                 occurrences.push({
                     id: event.id,
                     title: event.title,
-                    startdate: startDate, // Startdatum aus der RRule
-                    enddate: endDate, // Enddatum aud UNTIL der RRule
-                    eventdate: eventDate, // der berechnete Termin
+                    eventdate: eventDate,
                     eventdateTimestamp: eventDate.getTime(), // Speichere den Timestamp direkt (wird für die schnellere Sortierung benötigt)
                     location: event.location,
                     url: event.url,

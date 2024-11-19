@@ -1,10 +1,10 @@
 <div class="event-col">
     {{#each this}}
-        <a href="{{url}}" class="event-item top-event">
+        <a href="{{url}}" class="event-item">
             <div class="row">
-                <div class="col-12 col-md-5 col-lg-12">
+                <div class="col-12 col-md-5 col-lg-12 col-xl-5">
                     <div class="event-image">
-                        <div class="ratio_topevent">
+                        <div class="ratio_events">
                             <div class="focuspoint" {{{image.focuspoint_data}}}>
                                 <img src="{{image.thumb_100px}}" class="lazyload img-responsive" title="{{titleTag}}" alt="{{altTag}}" data-sizes="auto"
                                 data-srcset="{{image.thumb_100px}} 100w,
@@ -16,13 +16,13 @@
                             </div>
                         </div>
                         <div class="event-date">
-                          <div class="event-date__day">{{formatDate eventdate 'cccc'}}</div>
+                          <div class="event-date__day d-md-none d-lg-block d-xl-none d-xxl-none">{{formatDate eventdate 'cccc'}}</div>
                           <div class="event-date__date">{{formatDate eventdate 'dd.MM.'}}</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 col-md-7 col-lg-12 topevent-overlay">
+                <div class="col-12 col-md-7">
                     <div class="event-text">
                         <div class="event-kicker">
                             {{#if category}}
@@ -43,13 +43,12 @@
                             {{#eq status "postponed"}}
                                 Verschoben:
                             {{/eq}}
-
                             {{#if (isSingleDayEvent startdate enddate)}}
                                 <!-- Eintägiger Termin: Ausgabe des Startdatums im Format dd. MMMM yyyy -->
-                                {{formatDate startdate 'dd. MMMM yyyy'}}
+                                {{formatDate startdate 'ccc dd. MMM yyyy'}}
                             {{else}}
                                 <!-- Mehrtägiger Termin: Ausgabe von Startdatum und Enddatum -->
-                                {{formatDate startdate 'dd.MM.yyyy'}} - {{formatDate enddate 'dd.MM.yyyy'}}
+                                {{formatDate startdate 'dd.MMM.yyyy'}} - {{formatDate enddate 'dd.MM.yyyy'}}
                             {{/if}}
 
                             {{#if timeValid}}
