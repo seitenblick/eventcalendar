@@ -260,7 +260,12 @@ class EventCalendar {
             onClose: (selectedDates) => {
                 console.log("flatpickr onClose()");
 
-                if (selectedDates.length !== 0) {
+                if (selectedDates.length > 0) {
+                    // Wenn nur ein Datum ausgewählt wurde, setze Start- und Enddatum gleich
+                    if (selectedDates.length === 1) {
+                        selectedDates[1] = selectedDates[0]; // Das gleiche Datum als Enddatum setzen
+                    }
+
                     // Manuelle Anpassung an UTC-Zeit
                     this.dateRangeStart = new Date(Date.UTC(selectedDates[0].getFullYear(), selectedDates[0].getMonth(), selectedDates[0].getDate()));
                     this.dateRangeEnd = new Date(Date.UTC(selectedDates[1].getFullYear(), selectedDates[1].getMonth(), selectedDates[1].getDate(), 23, 59, 59, 999));
@@ -273,7 +278,6 @@ class EventCalendar {
                     const now = new Date();
                     this.allowPastEvents = this.dateRangeStart < now; // Setze das Flag, wenn das Startdatum in der Vergangenheit liegt
                     console.log("Vergangene Termine zulassen:", this.allowPastEvents);
-
 
                     // Setze die Daten im .rruleset-Element für den Datumsbereich
                     const rruleset = document.querySelectorAll('.rruleset');
@@ -335,6 +339,7 @@ class EventCalendar {
             this.flatpickrRange.clear(); // Clear das Flatpickr
             this.dateRangeStart = null;
             this.dateRangeEnd = null;
+            this.allowPastEvents = false;
 
             // Ladeanzeige anzeigen
             this.showLoadingMessage();
@@ -869,14 +874,15 @@ class EventCalendar {
             const eventDate = new Date(date);
             if (event.timeStart) {
                 const [hours, minutes] = event.timeStart.split(":").map(Number);
-                eventDate.setHours(hours, minutes);
+                eventDate.setUTCHours(hours, minutes);
             }
 
-            const utcDate = stringToDate(date.toISOString()).getTime();  // Sicherstellen, dass auch berechnete Termine in UTC-Zeit vorliegen
+            // UTC-Timestamp für Vergleich
+            const eventTimestampUTC = eventDate.getTime();
 
             // if (!exdateSet.has(utcDate) && eventDate >= today) {
             if (
-                !exdateSet.has(utcDate) &&
+                !exdateSet.has(eventTimestampUTC) &&
                 (this.allowPastEvents || eventDate >= now) // Vergangene Termine nur, wenn erlaubt
             ) {
                 occurrences.push({
@@ -885,7 +891,7 @@ class EventCalendar {
                     startdate: startDate, // Startdatum aus der RRule
                     enddate: endDate, // Enddatum aud UNTIL der RRule
                     eventdate: eventDate, // der berechnete Termin
-                    eventdateTimestamp: eventDate.getTime(), // Speichere den Timestamp direkt (wird für die schnellere Sortierung benötigt)
+                    eventdateTimestamp: eventTimestampUTC, // Speichere den Timestamp direkt (wird für die schnellere Sortierung benötigt)
                     location: event.location,
                     url: event.url,
                     image: event.image.thumb_100px,

@@ -322,7 +322,12 @@ var EventCalendar = /*#__PURE__*/function () {
         altFormat: "d.m.Y",
         onClose: function onClose(selectedDates) {
           console.log("flatpickr onClose()");
-          if (selectedDates.length !== 0) {
+          if (selectedDates.length > 0) {
+            // Wenn nur ein Datum ausgewählt wurde, setze Start- und Enddatum gleich
+            if (selectedDates.length === 1) {
+              selectedDates[1] = selectedDates[0]; // Das gleiche Datum als Enddatum setzen
+            }
+
             // Manuelle Anpassung an UTC-Zeit
             _this4.dateRangeStart = new Date(Date.UTC(selectedDates[0].getFullYear(), selectedDates[0].getMonth(), selectedDates[0].getDate()));
             _this4.dateRangeEnd = new Date(Date.UTC(selectedDates[1].getFullYear(), selectedDates[1].getMonth(), selectedDates[1].getDate(), 23, 59, 59, 999));
@@ -393,6 +398,7 @@ var EventCalendar = /*#__PURE__*/function () {
         _this4.flatpickrRange.clear(); // Clear das Flatpickr
         _this4.dateRangeStart = null;
         _this4.dateRangeEnd = null;
+        _this4.allowPastEvents = false;
 
         // Ladeanzeige anzeigen
         _this4.showLoadingMessage();
@@ -942,12 +948,14 @@ var EventCalendar = /*#__PURE__*/function () {
             _event$timeStart$spli2 = _slicedToArray(_event$timeStart$spli, 2),
             hours = _event$timeStart$spli2[0],
             minutes = _event$timeStart$spli2[1];
-          eventDate.setHours(hours, minutes);
+          eventDate.setUTCHours(hours, minutes);
         }
-        var utcDate = stringToDate(date.toISOString()).getTime(); // Sicherstellen, dass auch berechnete Termine in UTC-Zeit vorliegen
+
+        // UTC-Timestamp für Vergleich
+        var eventTimestampUTC = eventDate.getTime();
 
         // if (!exdateSet.has(utcDate) && eventDate >= today) {
-        if (!exdateSet.has(utcDate) && (_this9.allowPastEvents || eventDate >= now) // Vergangene Termine nur, wenn erlaubt
+        if (!exdateSet.has(eventTimestampUTC) && (_this9.allowPastEvents || eventDate >= now) // Vergangene Termine nur, wenn erlaubt
         ) {
           occurrences.push(_objectSpread({
             id: event.id,
@@ -958,7 +966,7 @@ var EventCalendar = /*#__PURE__*/function () {
             // Enddatum aud UNTIL der RRule
             eventdate: eventDate,
             // der berechnete Termin
-            eventdateTimestamp: eventDate.getTime(),
+            eventdateTimestamp: eventTimestampUTC,
             // Speichere den Timestamp direkt (wird für die schnellere Sortierung benötigt)
             location: event.location,
             url: event.url,
