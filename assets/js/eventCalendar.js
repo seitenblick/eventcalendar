@@ -201,7 +201,7 @@ class EventCalendar {
         clearButtonContainer.className = "clearspace";
 
         const clearButton = document.createElement("img");
-        clearButton.src = "assets/global/img/icon_event_close.svg";
+        clearButton.src = "/assets/global/img/icon_event_close.svg";
         clearButton.className = "clear";
         clearButton.title = "clear";
 
@@ -314,7 +314,7 @@ class EventCalendar {
         clearButtonWrapper.className = "clearspace";
 
         const clearButton = document.createElement("img");
-        clearButton.src = "assets/global/img/icon_event_close.svg";
+        clearButton.src = "/assets/global/img/icon_event_close.svg";
         clearButton.className = "clear";
         clearButton.title = "clear";
 

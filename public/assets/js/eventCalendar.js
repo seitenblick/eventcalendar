@@ -263,7 +263,7 @@ var EventCalendar = /*#__PURE__*/function () {
       var clearButtonContainer = document.createElement("span");
       clearButtonContainer.className = "clearspace";
       var clearButton = document.createElement("img");
-      clearButton.src = "assets/global/img/icon_event_close.svg";
+      clearButton.src = "/assets/global/img/icon_event_close.svg";
       clearButton.className = "clear";
       clearButton.title = "clear";
       clearButtonContainer.appendChild(clearButton);
@@ -375,7 +375,7 @@ var EventCalendar = /*#__PURE__*/function () {
       var clearButtonWrapper = document.createElement("span");
       clearButtonWrapper.className = "clearspace";
       var clearButton = document.createElement("img");
-      clearButton.src = "assets/global/img/icon_event_close.svg";
+      clearButton.src = "/assets/global/img/icon_event_close.svg";
       clearButton.className = "clear";
       clearButton.title = "clear";
       clearButtonWrapper.appendChild(clearButton);

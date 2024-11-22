@@ -53,7 +53,7 @@
         <div class="mb-4">
             <div class="filter-group d-flex flex-wrap">
                 <div class="searchval-group">
-                    <input type="text" value="" id="searchval" name="search" placeholder="Suchbegriff" class="form-control"><span class="clearspace"><img src="/assets/img/icon_event_close.svg" class="clear" title="clear"></span>
+                    <input type="text" value="" id="searchval" name="search" placeholder="Suchbegriff" class="form-control"></span>
                 </div>
                 <div class="district-group">
                     <select class="form-select" id="districtval">
@@ -72,7 +72,7 @@
                     </select>
                 </div>
                 <div class="flatpickr-group">
-                    <input class="flatpickr-range form-control input" placeholder="Datum auswählen.." tabindex="0" type="text" readonly="readonly"><span class="clearspace"><img src=" /assets//img/icon_event_close.svg" class="clear" title="clear"></span>
+                    <input class="flatpickr-range form-control input" placeholder="Datum auswählen.." tabindex="0" type="text" readonly="readonly">
                 </div>
             </div>
         </div>
