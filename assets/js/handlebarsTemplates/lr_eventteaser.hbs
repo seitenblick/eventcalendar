@@ -1,7 +1,7 @@
                     <div class="event-teaser">
             {{#each this}}
                         <div class="event-item">
-                            <div class="event-date">{{itemDateShort}}</div>
+                            <div class="event-date">{{formatDate eventdate 'dd. MM.'}}</div>
                             <div class="event-title">{{title}}</div>
                         </div>
             {{/each}}

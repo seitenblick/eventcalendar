@@ -20,8 +20,15 @@ function stringToDate(value) {
 let lang = document.documentElement.getAttribute("lang");
 // Handlebars-Helper registrieren
 Handlebars.registerHelper('eq', function(arg1, arg2, options) {
-    return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+    if (options && typeof options.fn === "function") {
+        // Block-Kontext
+        return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+    } else {
+        // Inline-Kontext
+        return arg1 == arg2;
+    }
 });
+
 Handlebars.registerHelper('formatDate', function(eventdate, format) {
     if (!eventdate) return ''; // Falls kein Datum vorhanden ist, gibt es einen leeren String zurück
     return DateTime
@@ -473,7 +480,11 @@ class EventCalendar {
                 throw new Error('Fehler beim Laden der Daten');
             }
 
-            const data = await response.json();
+            const rawData = await response.json();
+
+            // Daten verarbeiten: Automatische Erkennung  ob ggf. das CraftCMS gemappt werden muss
+            const data = this.processCMSData(rawData);
+
             console.log("Geladene Daten:", data); // Debugging
 
             // Stellen Sie sicher, dass die Daten die erwartete Struktur haben
@@ -906,6 +917,130 @@ class EventCalendar {
 
         return occurrences;
     }
+
+    /* Erweiterung für CraftCMS*/
+    // Funktion zur Erkennung des CraftCMS-Formats anhand des geänderten Schlüssels `craftcmsevents`
+    // Überarbeitete Erkennungsfunktion mit detaillierten Debug-Ausgaben
+    isCraftCMSFormat(data) {
+        // console.log("Prüfe, ob es sich um ein CraftCMS-Format handelt...");
+
+        // Zusätzliche Debug-Ausgabe für die gesamte Struktur des übergebenen Objekts
+        // console.log("Übergebene Datenstruktur:", JSON.stringify(data, null, 2));
+
+        // Prüfung auf Existenz von "data" und "craftcmsevents" mit Typüberprüfung
+        const hasDataKey = data && typeof data === 'object' && data.hasOwnProperty('data');
+        const hasEventsKey = hasDataKey && data.data.hasOwnProperty('craftcmsevents');
+
+        // Prüfung, ob craftcmsevents ein Array ist
+        const isValid = hasEventsKey && Array.isArray(data.data.craftcmsevents);
+
+        // Debug-Ausgaben zur Verfolgung der Erkennung
+        // console.log("Hat 'data'-Schlüssel:", hasDataKey);
+        // console.log("Hat 'craftcmsevents'-Schlüssel:", hasEventsKey);
+        // console.log("CraftCMS-Erkennung:", isValid ? "Ja" : "Nein");
+
+        return isValid;
+    }
+
+
+
+    // Funktion zur Umwandlung des CraftCMS-Formats in das SixCMS-Format
+    transformCraftCMSToSixCMSFormat(craftCMSData) {
+        // Sicherstellen, dass es sich um ein CraftCMS-Format handelt
+        if (!this.isCraftCMSFormat(craftCMSData)) {
+            // console.log("Kein CraftCMS-Format. Rückgabe der unveränderten Daten.");
+            return craftCMSData; // Unveränderte Rückgabe, wenn es kein CraftCMS-Format ist
+        }
+
+        // console.log("Beginne mit der Umwandlung von CraftCMS zu SixCMS-Format...");
+        // Verarbeiten der Events aus dem CraftCMS-Format
+        const events = craftCMSData.data.craftcmsevents;
+
+        // Mappe die CraftCMS-Daten auf das SixCMS-Format
+        const sixCMSFormat = events.map(event => {
+            const eventId = event.id || "";
+            const title = event.title || "";
+            const highlight = event.highlight || "";
+            const organiser = event.organiser || "";
+            const teaser = event.teaser || "";
+
+
+            // Funktion zum Zusammenbauen des Datums- und Zeitstrings im Format YYYYMMDDTHHmmssZ
+            const buildDateTimeString = (date, time) => {
+                return `${date}${time ? `T${time}Z` : "T000000Z"}`;  // Wenn Zeit vorhanden, einfügen, sonst Standardzeit "T000000Z"
+            };
+            // Direktes Extrahieren und Formatieren der Daten aus dem JSON
+            const dtstart = event.DTSTART ? buildDateTimeString(event.DTSTART, event.timeStart || "000000") : "";
+            const until = event.UNTIL ? buildDateTimeString(event.UNTIL, event.timeEnd || "235900") : "";
+
+            // Zeitangaben anpassen (Format: HHMMSS -> HH:MM)
+            const timeStart = event.timeStart ? `${event.timeStart.substring(0, 2)}:${event.timeStart.substring(2, 4)}` : "00:00";
+            const timeEnd = event.timeEnd ? `${event.timeEnd.substring(0, 2)}:${event.timeEnd.substring(2, 4)}` : "23:59";
+
+            // RRULE-Regel im gewünschten Format zusammensetzen
+            const rrule = `DTSTART:${dtstart}\nRRULE:${
+                event.rruleRule && event.rruleRule.length > 0 ? event.rruleRule.map(r => r.rule).join(";") : ""
+            }${event.rruleWeekday && event.rruleWeekday.length > 0 ? `;BYDAY=${event.rruleWeekday.join(",")}` : ""}${until ? `;UNTIL=${until}` : ""}`;
+
+            // Bilddaten anpassen (falls vorhanden)
+            const image = event.image && event.image.length > 0 ? event.image[0].url : "";
+
+            // Erstellen eines SixCMS-Event-Formats
+            return {
+                id: eventId,
+                rule: rrule,
+                exdates: [], // Im aktuellen CraftCMS-Format keine exdates vorhanden
+                timeStart: timeStart,
+                timeEnd: timeEnd,
+                timeValid: true,
+                title: title,
+                lang: event.language || "de",
+                image: {
+                    titleTag: "",
+                    altTag: title,
+                    copyright: "",
+                    thumb_100px: image,
+                    thumb_300px: image,
+                    thumb_450px: image,
+                    thumb_600px: image,
+                    thumb_920px: image,
+                    thumb_1230px: image,
+                    focuspoint_data: ""
+                },
+                url: "",
+                highlight: highlight,
+                topevent: false,
+                category: {
+                    id: "",
+                    title: ""
+                },
+                categories: "",
+                dictrict: "",
+                series: "",
+                seriesUrl: "",
+                ticketUrl: "",
+                organiser: organiser,
+                teaser: teaser,
+                location: event.eventLocation ? event.eventLocation.replace(/<[^>]+>/g, "") : "",
+                status: "published"
+            };
+        });
+
+        // console.log("Umwandlung abgeschlossen. SixCMS-Format erstellt.");
+        return sixCMSFormat;
+    }
+
+    // Funktion, um das gesamte JSON auf das erwartete Format zu prüfen und ggf. zu konvertieren
+    processCMSData(inputData) {
+        // console.log("Starte die Verarbeitung der Daten...");
+        // Prüfen, ob es das SixCMS- oder CraftCMS-Format ist und entsprechend verarbeiten
+        const dataToProcess = Array.isArray(inputData) ? inputData : this.transformCraftCMSToSixCMSFormat(inputData);
+
+        // Debug-Ausgabe des verarbeiteten Formats
+        // console.log("Verarbeitetes SixCMS-Format:", JSON.stringify(dataToProcess, null, 2));
+        return dataToProcess;
+    }
+    /* ENDE Erweiterung für CraftCMS */
 
 }
 
