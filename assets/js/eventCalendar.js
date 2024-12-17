@@ -68,6 +68,9 @@ class EventCalendar {
         this.sliceEnd = this.container.getAttribute("data-slice-end") || null;
         this.mode = this.container.getAttribute("data-mode") || "list";  // Standard-Modus auf "list" setzen
         this.mandator = this.container.getAttribute("data-mandator") || "";
+        this.org = this.container.getAttribute("data-org") || "";
+        this.ven = this.container.getAttribute("data-ven") || "";
+
         this.eventId = String(this.container.getAttribute("data-event-id") || ""); // Konvertierung in String
         // Wenn im Container keine Event-ID vorhanden ist, im <main> Element suchen
         if (!this.eventId) {
@@ -426,8 +429,22 @@ class EventCalendar {
                 this.flatpickrInstance.set("minDate", minDate);
                 this.flatpickrInstance.set("maxDate", maxDate);
             }
+            //Start- und Enddatum für Zeitraum auf der Serien-Detailseite
+            const startElement = document.querySelector(".event-period-start");
+            const endElement = document.querySelector(".event-period-end");
+            if (startElement) {
+                startElement.textContent = DateTime.fromJSDate(minDate).toFormat('DD') + ' - ';
+            }
+            if (endElement) {
+                endElement.textContent = DateTime.fromJSDate(maxDate).toFormat('DD');
+            }
         } else {
             console.error("eventDates ist kein gültiger Array oder leer:", eventDates);
+            // Verstecke das <div> mit der Klasse "module-next-events", falls es existiert
+            const moduleNextEvents = document.querySelector(".module-next-events");
+            if (moduleNextEvents) {
+                moduleNextEvents.style.display = "none";
+            }
         }
     }
 
@@ -440,7 +457,9 @@ class EventCalendar {
         const baseUrl = this.container.getAttribute("data-url") || "https://www.aalen.de/api/EventApiRules.php";
         // Hole die staticDataUrl aus dem json-data-url Attribut des Containers (wenn vorhanden), ansonsten auf NULL setzen
         const staticDataUrl = this.jsonDataUrl || null;
+        const graphqlApiUrl = this.container.getAttribute("data-graphql-url") || null; // Optionaler GraphQL-Endpunkt
         console.log("Statische URL:", staticDataUrl);
+        console.log("GraphQL-URL:", graphqlApiUrl);
 
         const searchParams = new URLSearchParams();
 
@@ -453,6 +472,14 @@ class EventCalendar {
         // Wenn ein Mandant vorgegeben ist über das rruleset
         if (this.mandator) {
             searchParams.append("md", this.mandator);
+        }
+        // Wenn ein Veranstalter vorgegeben ist über das rruleset
+        if (this.org) {
+            searchParams.append("org", this.org.split(',').map(org => org.trim()).join(',')); // Kommaseparierte IDs
+        }
+        // Wenn ein Veranstaltungsort vorgegeben ist über das rruleset
+        if (this.ven) {
+            searchParams.append("ven", this.ven.split(',').map(ven => ven.trim()).join(',')); // Kommaseparierte IDs
         }
 
         // Filterkriterien prüfen, die eine dynamische Abfrage erfordern (nur bei Suchbegriff)
@@ -518,16 +545,33 @@ class EventCalendar {
         const isHighlightMode = this.mode === 'highlights';
         const isTopeventMode = this.mode === 'topevent';
         const isNoDuplicates = this.noduplicates === "true";
+        const isOrganizerFilterActive = this.org && this.org.trim() !== "";
+        const isVenueFilterActive = this.ven && String(this.ven).trim() !== "";
+
+
+
+// Organizer- und Venue-Filter in Arrays umwandeln
+        const activeOrganizers = isOrganizerFilterActive ? this.org.split(',').map(org => org.trim()) : [];
+        const activeVenues = isVenueFilterActive ? String(this.ven).split(',').map(ven => ven.trim()) : [];
 
         this.data.forEach(event => {
             // Kategorien und Serien in Arrays umwandeln (falls kommasepariert als String vorliegend)
+            const eventOrganizers = event.org ? event.org.split(',') : [];
+            const eventVenues = event.ven ? event.ven.split(',') : [];
             const eventCategories = event.categories ? event.categories.split(',') : [];
-            const eventSeries = event.series ? event.series.split(',') : [];
+            const eventSeries = event.seriesId ? event.seriesId.split(',') : [];
+
+            // Prüfen, ob der Organizer-Filter (Veranstalter) gesetzt ist und ob das Event diesem Organizer zugewiesen ist
+            const matchesOrganizer = !isOrganizerFilterActive ||
+                activeOrganizers.some(orgId => eventOrganizers.includes(orgId));
+
+            // Prüfen, ob der Venue-Filter (Veranstaltungsort) gesetzt ist und ob das Event diesem VA-Ort zugewiesen ist
+            const matchesVenue = !isVenueFilterActive ||
+                activeVenues.some(venId => eventVenues.includes(venId));
 
             // Prüfen, ob der Distrikt-Filter gesetzt ist und ob das Event in diesen Distrikt fällt
             const matchesDistrict = !this.activeDistrictFilter ||
                 (event.dictrict && event.dictrict.split(',').includes(this.activeDistrictFilter));
-
 
             // Prüfen, ob das Event in eine der aktiven Kategorien passt (oder keine Kategorie aktiviert ist)
             const matchesCategory = this.activeCategoryFilters.length === 0 ||
@@ -536,9 +580,10 @@ class EventCalendar {
             // Prüfen, ob das Event den Modus erfüllt
             const matchesMode = (!isHighlightMode || event.highlight) && (!isTopeventMode || event.topevent);
 
-            if (matchesCategory && matchesDistrict  && matchesMode) {
+            // Kombinierte Prüfung aller Bedingungen
+            if (matchesOrganizer && matchesVenue && matchesDistrict && matchesCategory && matchesMode) {
                 // Prüfen, ob eine Event-ID vorgegeben ist - dann nur diesen Termin berechnen
-                if (!isSpecificEventId || event.id === this.eventId) {
+                if ((!isSpecificEventId && !isSpecificSeriesId) || event.id === this.eventId || eventSeries.includes(this.seriesId)) {
                     // Berechne Wiederholungstermine für das Event
                     const occurrences = this.calculateOccurrences(event);
 
@@ -602,6 +647,11 @@ class EventCalendar {
 
         // Befülle Flatpickr mit zukünftigen Event-Terminen
         if (isSpecificEventId) {
+            this.setupFlatpickr(allEventDates);
+        }
+
+        // Befülle Flatpickr mit zukünftigen Event-Terminen
+        if (isSpecificSeriesId) {
             this.setupFlatpickr(allEventDates);
         }
     }
@@ -963,6 +1013,7 @@ class EventCalendar {
             const highlight = event.highlight || "";
             const organiser = event.organiser || "";
             const teaser = event.teaser || "";
+            const url = event.url || "";
 
 
             // Funktion zum Zusammenbauen des Datums- und Zeitstrings im Format YYYYMMDDTHHmmssZ
@@ -1007,7 +1058,7 @@ class EventCalendar {
                     thumb_1230px: image,
                     focuspoint_data: ""
                 },
-                url: "",
+                url: url || "",
                 highlight: highlight,
                 topevent: false,
                 category: {

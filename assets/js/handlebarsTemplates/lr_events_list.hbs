@@ -1,6 +1,6 @@
                     <div class="event-list">
             {{#each this}}
-                        <div class="event-item">
+                        <a href="{{url}}" class="event-item">
                             <div class="event-date-wrapper">
                                 <span class="event-date">{{formatDate eventdate 'dd. MMMM yyyy'}}</span>
                                 <span class="event-time">{{timeStart}} Uhr
@@ -10,6 +10,6 @@
                                 </span>
                             </div>
                             <div class="event-title">{{title}}</div>
-                        </div>
+                        </a>
             {{/each}}
                     </div>
