@@ -60,43 +60,6 @@ const configuration = {
     javaScript: [
         {
             source: [
-                // 'assets/js/hbstemplates.js',
-                'assets/js/events.js',
-            ],
-            target: 'public/assets/js/events.js',
-        },
-        {
-            source: [
-                'assets/js/events_v2.js',
-            ],
-            target: 'public/assets/js/events_v2.js',
-        },
-        {
-            source: [
-                'assets/js/events_v2_new.js',
-            ],
-            target: 'public/assets/js/events_v2_new.js',
-        },
-        {
-            source: [
-                'assets/js/events_v3.js',
-            ],
-            target: 'public/assets/js/events_v3.js',
-        },
-        {
-            source: [
-                'assets/js/events_jquery.js',
-            ],
-            target: 'public/assets/js/events_jquery.js',
-        },
-        {
-            source: [
-                'assets/js/events_rebuild.js',
-            ],
-            target: 'public/assets/js/events_rebuild.js',
-        },
-        {
-            source: [
                 'assets/js/eventCalendar.js',
             ],
             target: 'public/assets/js/eventCalendar.js',
