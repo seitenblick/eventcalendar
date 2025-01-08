@@ -6,8 +6,16 @@ import { RRule, RRuleSet } from 'rrule';
 import Handlebars from 'handlebars';
 window.Handlebars = Handlebars; // Macht Handlebars global verfügbar
 
+const DEBUG_MODE = false; //Debug-Ausgaben (console.log) aktivieren/deaktivieren
 
 //Helper-Funktionen
+
+// Debug-Ausgaben einblenden
+function debugLog(...args) {
+    if (DEBUG_MODE) {
+        console.log(...args);
+    }
+}
 
 //Datumsformatierung (utc)
 function stringToDate(value) {
@@ -268,7 +276,7 @@ class EventCalendar {
             altInput: true,
             altFormat: "d.m.Y",
             onClose: (selectedDates) => {
-                console.log("flatpickr onClose()");
+                debugLog("flatpickr onClose()");
 
                 if (selectedDates.length > 0) {
                     // Wenn nur ein Datum ausgewählt wurde, setze Start- und Enddatum gleich
@@ -281,13 +289,13 @@ class EventCalendar {
                     this.dateRangeEnd = new Date(Date.UTC(selectedDates[1].getFullYear(), selectedDates[1].getMonth(), selectedDates[1].getDate(), 23, 59, 59, 999));
 
                     // Konsolenausgabe zur Überprüfung des Datums in UTC-Format
-                    console.log("Startdatum in UTC (ISO):", this.dateRangeStart.toISOString());
-                    console.log("Enddatum in UTC (ISO):", this.dateRangeEnd.toISOString());
+                    debugLog("Startdatum in UTC (ISO):", this.dateRangeStart.toISOString());
+                    debugLog("Enddatum in UTC (ISO):", this.dateRangeEnd.toISOString());
 
                     // Überprüfen, ob der Benutzer einen Bereich in der Vergangenheit ausgewählt hat
                     const now = new Date();
                     this.allowPastEvents = this.dateRangeStart < now; // Setze das Flag, wenn das Startdatum in der Vergangenheit liegt
-                    console.log("Vergangene Termine zulassen:", this.allowPastEvents);
+                    debugLog("Vergangene Termine zulassen:", this.allowPastEvents);
 
                     // Setze die Daten im .rruleset-Element für den Datumsbereich
                     const rruleset = document.querySelectorAll('.rruleset');
@@ -362,7 +370,7 @@ class EventCalendar {
 
     // Ladeanzeige anzeigen
     showLoadingMessage() {
-        console.log("loading message...")
+        debugLog("loading message...")
         // Blende die Liste aus und zeige die Ladeanzeige an
         this.container.innerHTML = '<div class="loading-message">Daten werden geladen...</div>';
     }
@@ -378,11 +386,11 @@ class EventCalendar {
     }
 
     setupFlatpickr(eventDates) {
-        console.log("Gefilterte Events:", eventDates);
+        debugLog("Gefilterte Events:", eventDates);
 
         if (Array.isArray(eventDates) && eventDates.length > 0) {
             const dateArray = eventDates.map(date => new Date(date));
-            console.log("Converted dateArray:", dateArray);
+            debugLog("Converted dateArray:", dateArray);
 
             const minDate = new Date(Math.min(...dateArray));
             const maxDate = new Date(Math.max(...dateArray));
@@ -458,8 +466,8 @@ class EventCalendar {
         // Hole die staticDataUrl aus dem json-data-url Attribut des Containers (wenn vorhanden), ansonsten auf NULL setzen
         const staticDataUrl = this.jsonDataUrl || null;
         const graphqlApiUrl = this.container.getAttribute("data-graphql-url") || null; // Optionaler GraphQL-Endpunkt
-        console.log("Statische URL:", staticDataUrl);
-        console.log("GraphQL-URL:", graphqlApiUrl);
+        debugLog("Statische URL:", staticDataUrl);
+        debugLog("GraphQL-URL:", graphqlApiUrl);
 
         const searchParams = new URLSearchParams();
 
@@ -492,7 +500,7 @@ class EventCalendar {
         // - Wenn ein Suchparameter gesetzt ist oder keine statische URL existiert, wird die API (baseUrl) verwendet.
         // - Ansonsten, falls staticDataUrl vorhanden ist, wird diese verwendet.
         const dataSourceUrl = requiresApiRequest ? apiUrl : staticDataUrl || baseUrl;
-        console.log("Verwendete URL:", dataSourceUrl);
+        debugLog("Verwendete URL:", dataSourceUrl);
 
         // Ladeanzeige anzeigen
         this.showLoadingMessage();
@@ -500,7 +508,7 @@ class EventCalendar {
         try {
             // API-Abruf mit fetch
             const response = await fetch(dataSourceUrl);
-            console.log("Response:", response); // Debugging
+            debugLog("Response:", response); // Debugging
 
             if (!response.ok) {
                 console.error("Fehler beim Abrufen der Daten:", response.status, response.statusText);
@@ -512,7 +520,7 @@ class EventCalendar {
             // Daten verarbeiten: Automatische Erkennung  ob ggf. das CraftCMS gemappt werden muss
             const data = this.processCMSData(rawData);
 
-            console.log("Geladene Daten:", data); // Debugging
+            debugLog("Geladene Daten:", data); // Debugging
 
             // Stellen Sie sicher, dass die Daten die erwartete Struktur haben
             if (!Array.isArray(data)) {
@@ -630,7 +638,7 @@ class EventCalendar {
             this.events = this.events.slice(0, this.totalCount);
         }
 
-        console.log("Gefilterte Events:", this.events);  // Ausgabe der gefilterten Events
+        debugLog("Gefilterte Events:", this.events);  // Ausgabe der gefilterten Events
 
         // Pagination ein- oder ausblenden je nach Anzahl der Events
         const paginationElement = document.getElementById('pagination');
@@ -660,7 +668,7 @@ class EventCalendar {
 
     // Methode: Ausgabe der Events mit Handlebars
     render() {
-        console.log("Render-Methode wird ausgeführt ...");
+        debugLog("Render-Methode wird ausgeführt ...");
         // Wähle das Template anhand des `data-mode` aus
         const template = Hbs[this.mode];
 
@@ -668,9 +676,9 @@ class EventCalendar {
             console.warn(`Kein Template für Modus ${this.mode} gefunden.`);
             return;
         }
-        console.log("Modus:", this.mode);
-        console.log('Verwendetes Template:', template);
-        console.log('Daten für Template:', this.events);
+        debugLog("Modus:", this.mode);
+        debugLog('Verwendetes Template:', template);
+        debugLog('Daten für Template:', this.events);
 
 
         // Überprüfen, ob Events vorhanden sind
@@ -692,8 +700,8 @@ class EventCalendar {
         }
 
         const paginatedEvents = this.getPaginatedEvents();
-        console.log('Paginated Events:', paginatedEvents); // Überprüfe, was hier ausgegeben wird
-        console.log('Paginated Events:', JSON.stringify(paginatedEvents, null, 2));
+        debugLog('Paginated Events:', paginatedEvents); // Überprüfe, was hier ausgegeben wird
+        debugLog('Paginated Events:', JSON.stringify(paginatedEvents, null, 2));
 
 
 
@@ -701,7 +709,7 @@ class EventCalendar {
         const htmlOutput = template(paginatedEvents);
 
         // Debugging: Überprüfe das generierte HTML
-        console.log('Generiertes HTML:', htmlOutput);
+        debugLog('Generiertes HTML:', htmlOutput);
 
 
         // Rendern des Templates und Einfügen in den Container
@@ -716,12 +724,12 @@ class EventCalendar {
 
         // FocusPoint-Initialisierung
         this.container.querySelectorAll('.focuspoint').forEach(element => {
-            // console.log("Gefundenes Element mit .focuspoint:", element);
+            // debugLog("Gefundenes Element mit .focuspoint:", element);
 
             // Umwandeln des Elements in ein jQuery-Objekt und Aufruf der Funktion
             if (window.jQuery && typeof jQuery(element).focusPoint === 'function') {
                 jQuery(element).focusPoint();
-                // console.log("focusPoint wurde für das Element aufgerufen.");
+                // debugLog("focusPoint wurde für das Element aufgerufen.");
             } else {
                 console.warn("focusPoint ist nicht als Funktion verfügbar für dieses Element:", element);
             }
@@ -730,7 +738,7 @@ class EventCalendar {
 
 
     setupPagination() {
-        console.log("setupPagination Methode wird ausgeführt ...");
+        debugLog("setupPagination Methode wird ausgeführt ...");
 
         // Pagination-Container holen oder überprüfen
         const paginationContainer = document.querySelector(".pagination");
@@ -972,10 +980,10 @@ class EventCalendar {
     // Funktion zur Erkennung des CraftCMS-Formats anhand des geänderten Schlüssels `craftcmsevents`
     // Überarbeitete Erkennungsfunktion mit detaillierten Debug-Ausgaben
     isCraftCMSFormat(data) {
-        // console.log("Prüfe, ob es sich um ein CraftCMS-Format handelt...");
+        // debugLog("Prüfe, ob es sich um ein CraftCMS-Format handelt...");
 
         // Zusätzliche Debug-Ausgabe für die gesamte Struktur des übergebenen Objekts
-        // console.log("Übergebene Datenstruktur:", JSON.stringify(data, null, 2));
+        // debugLog("Übergebene Datenstruktur:", JSON.stringify(data, null, 2));
 
         // Prüfung auf Existenz von "data" und "craftcmsevents" mit Typüberprüfung
         const hasDataKey = data && typeof data === 'object' && data.hasOwnProperty('data');
@@ -985,9 +993,9 @@ class EventCalendar {
         const isValid = hasEventsKey && Array.isArray(data.data.craftcmsevents);
 
         // Debug-Ausgaben zur Verfolgung der Erkennung
-        // console.log("Hat 'data'-Schlüssel:", hasDataKey);
-        // console.log("Hat 'craftcmsevents'-Schlüssel:", hasEventsKey);
-        // console.log("CraftCMS-Erkennung:", isValid ? "Ja" : "Nein");
+        // debugLog("Hat 'data'-Schlüssel:", hasDataKey);
+        // debugLog("Hat 'craftcmsevents'-Schlüssel:", hasEventsKey);
+        // debugLog("CraftCMS-Erkennung:", isValid ? "Ja" : "Nein");
 
         return isValid;
     }
@@ -998,11 +1006,11 @@ class EventCalendar {
     transformCraftCMSToSixCMSFormat(craftCMSData) {
         // Sicherstellen, dass es sich um ein CraftCMS-Format handelt
         if (!this.isCraftCMSFormat(craftCMSData)) {
-            // console.log("Kein CraftCMS-Format. Rückgabe der unveränderten Daten.");
+            // debugLog("Kein CraftCMS-Format. Rückgabe der unveränderten Daten.");
             return craftCMSData; // Unveränderte Rückgabe, wenn es kein CraftCMS-Format ist
         }
 
-        // console.log("Beginne mit der Umwandlung von CraftCMS zu SixCMS-Format...");
+        // debugLog("Beginne mit der Umwandlung von CraftCMS zu SixCMS-Format...");
         // Verarbeiten der Events aus dem CraftCMS-Format
         const events = craftCMSData.data.craftcmsevents;
 
@@ -1077,18 +1085,18 @@ class EventCalendar {
             };
         });
 
-        // console.log("Umwandlung abgeschlossen. SixCMS-Format erstellt.");
+        // debugLog("Umwandlung abgeschlossen. SixCMS-Format erstellt.");
         return sixCMSFormat;
     }
 
     // Funktion, um das gesamte JSON auf das erwartete Format zu prüfen und ggf. zu konvertieren
     processCMSData(inputData) {
-        // console.log("Starte die Verarbeitung der Daten...");
+        // debugLog("Starte die Verarbeitung der Daten...");
         // Prüfen, ob es das SixCMS- oder CraftCMS-Format ist und entsprechend verarbeiten
         const dataToProcess = Array.isArray(inputData) ? inputData : this.transformCraftCMSToSixCMSFormat(inputData);
 
         // Debug-Ausgabe des verarbeiteten Formats
-        // console.log("Verarbeitetes SixCMS-Format:", JSON.stringify(dataToProcess, null, 2));
+        // debugLog("Verarbeitetes SixCMS-Format:", JSON.stringify(dataToProcess, null, 2));
         return dataToProcess;
     }
     /* ENDE Erweiterung für CraftCMS */

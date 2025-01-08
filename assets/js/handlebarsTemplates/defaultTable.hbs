@@ -19,7 +19,7 @@
                                 <div class="canceled"></div>
                             </td>
                             <td>
-                                <a href="{{url}}" class="series"></a>
+                                <a href="{{seriesUrl}}" class="series">{{series}}</a>
                                 <div class="event-title">{{#if highlight}}<div class="highlight-icon"></div>{{/if}}{{title}}</div>
                                 <div>
                                     <span class="event-location">{{location}}</span>
@@ -27,6 +27,9 @@
                             </td>
                             <td>
                                 <a href="{{url}}" class="more-link">Details</a>
+                                 {{#if ticketUrl}}
+                                    <a href="{{ticketUrl}}" class="more-link">Tickets</a>
+                                {{/if}}
                             </td>
                       </tr>
                   {{/each}}
