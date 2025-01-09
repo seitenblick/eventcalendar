@@ -368,7 +368,7 @@ this["Hbs"]["nextEventsList"] = Handlebars.template({"1":function(container,dept
   return "        <div class=\"next-event-entry\">\n            <a href=\""
     + alias4(((helper = (helper = lookupProperty(helpers,"url") || (depth0 != null ? lookupProperty(depth0,"url") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"url","hash":{},"data":data,"loc":{"start":{"line":4,"column":21},"end":{"line":4,"column":28}}}) : helper)))
     + "\" tabindex=\"0\" class=\"\">\n                <span class=\"next-event-day\">"
-    + alias4(((helper = (helper = lookupProperty(helpers,"itemDateWeekdayDayMonth") || (depth0 != null ? lookupProperty(depth0,"itemDateWeekdayDayMonth") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"itemDateWeekdayDayMonth","hash":{},"data":data,"loc":{"start":{"line":5,"column":45},"end":{"line":5,"column":72}}}) : helper)))
+    + alias4((lookupProperty(helpers,"formatDate")||(depth0 && lookupProperty(depth0,"formatDate"))||alias2).call(alias1,(depth0 != null ? lookupProperty(depth0,"eventdate") : depth0),"EEE dd.MM.",{"name":"formatDate","hash":{},"data":data,"loc":{"start":{"line":5,"column":45},"end":{"line":5,"column":82}}}))
     + "</span>\n                <span class=\"next-event-title\">"
     + alias4(((helper = (helper = lookupProperty(helpers,"title") || (depth0 != null ? lookupProperty(depth0,"title") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"title","hash":{},"data":data,"loc":{"start":{"line":6,"column":47},"end":{"line":6,"column":56}}}) : helper)))
     + "</span>\n            </a>\n        </div>\n";
