@@ -40,7 +40,7 @@ Handlebars.registerHelper('eq', function(arg1, arg2, options) {
 Handlebars.registerHelper('formatDate', function(eventdate, format) {
     if (!eventdate) return ''; // Falls kein Datum vorhanden ist, gibt es einen leeren String zurück
     return DateTime
-        .fromJSDate(new Date(eventdate)) // Konvertiere das Datum in Luxon's DateTime-Objekt
+        .fromJSDate(new Date(eventdate), { zone: 'utc' }) // Konvertiere das Datum in Luxon's DateTime-Objekt
         .setLocale(lang) // Setze die gewünschte Sprache
         .toFormat(format); // Formatiere das Datum
 });

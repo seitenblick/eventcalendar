@@ -78,7 +78,7 @@
         </div>
     </div>
     <div class="service-messages"></div>
-    <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="table-dashboard" data-event-id=""
+    <div class="rruleset" data-slice-start="" data-slice-end="" data-mode="highlights" data-event-id=""
          data-series-id="" data-count="" data-mandator=""
          data-url="https://www.aalen.de/api/EventApiRules.php"
          data-json-url="https://eventcalendar.seitenblick.com/json/EventApiRulesTest.php.json"></div>
