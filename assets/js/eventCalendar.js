@@ -924,8 +924,11 @@ class EventCalendar {
         // Erstelle die Wiederholungsregel aus dem `rule`-Feld
         const rule = RRule.fromString(event.rule);
 
-        // Ausnahme-Termine als UTC-Zeiten in ein Set speichern
-        const exdateSet = new Set(event.exdates.map(date => stringToDate(date).getTime()));
+        // Ausnahme-Termine in ein Set speichern (nur Datum, ohne Uhrzeit)
+        const exdateSet = new Set(event.exdates.map(date => {
+            const exDate = stringToDate(date);
+            return Date.UTC(exDate.getUTCFullYear(), exDate.getUTCMonth(), exDate.getUTCDate()); // Nur das Datum speichern
+        }));
 
         // Start- und Enddatum aus der RRule ableiten
         const startDate = rule.options.dtstart ? new Date(rule.options.dtstart) : null; // Startdatum der RRule
@@ -946,29 +949,26 @@ class EventCalendar {
                 eventDate.setUTCHours(hours, minutes);
             }
 
-            // UTC-Timestamp für Vergleich
-            const eventTimestampUTC = eventDate.getTime();
+            // UTC-Timestamp für das Datum ohne Uhrzeit
+            const eventDateUTC = Date.UTC(eventDate.getUTCFullYear(), eventDate.getUTCMonth(), eventDate.getUTCDate());
 
-            // if (!exdateSet.has(utcDate) && eventDate >= today) {
-            if (
-                !exdateSet.has(eventTimestampUTC) &&
-                (this.allowPastEvents || eventDate >= now) // Vergangene Termine nur, wenn erlaubt
-            ) {
+            // Vergleich nur mit dem Datumsteil der Ausnahmetermine
+            if (!exdateSet.has(eventDateUTC) && (this.allowPastEvents || eventDate >= now)) {
                 occurrences.push({
                     id: event.id,
                     title: event.title,
-                    startdate: startDate, // Startdatum aus der RRule
-                    enddate: endDate, // Enddatum aud UNTIL der RRule
-                    eventdate: eventDate, // der berechnete Termin
-                    eventdateTimestamp: eventTimestampUTC, // Speichere den Timestamp direkt (wird für die schnellere Sortierung benötigt)
+                    startdate: startDate,
+                    enddate: endDate,
+                    eventdate: eventDate,
+                    eventdateTimestamp: eventDate.getTime(),
                     location: event.location,
                     url: event.url,
                     image: event.image.thumb_100px,
-                    timeStart: event.timeStart,     // Startzeit aus JSON
-                    timeEnd: event.timeEnd,         // Endzeit aus JSON
-                    timeValid: event.timeValid,     // Gültigkeit der Zeitangabe
+                    timeStart: event.timeStart,
+                    timeEnd: event.timeEnd,
+                    timeValid: event.timeValid,
                     ticketUrl: event.ticketUrl,
-                    ...event // Optionale zusätzliche Felder hinzufügen
+                    ...event
                 });
             }
         });
